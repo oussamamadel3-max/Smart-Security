@@ -1,0 +1,17 @@
+﻿## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+appsettings.Development.json
+appsettings.Local.json
+**/appsettings.*.local.json
+**/secrets.json
+**/secrets.*.json
+storage/
+uploads/
+*.log
+TestResults/
+artifacts/

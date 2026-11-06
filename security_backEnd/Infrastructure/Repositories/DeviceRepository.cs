@@ -1,0 +1,72 @@
+using Application.Interfaces.Repositories;
+using Domain.Constants;
+using Domain.Entities.Devices;
+using Domain.Entities.Operations;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Repositories;
+
+public sealed class DeviceRepository : IDeviceRepository
+{
+    private readonly AppDbContext _db;
+
+    public DeviceRepository(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    public Task<bool> ExistsByHardwareUidAsync(string hardwareUid, CancellationToken ct = default)
+        => _db.Devices.AnyAsync(d => d.HardwareUid == hardwareUid, ct);
+
+    public void AddRegistrationGraph(
+        Device device,
+        DeviceState state,
+        DeviceSettings settings,
+        DeviceCredential credential)
+    {
+        _db.Devices.Add(device);
+        _db.DeviceStates.Add(state);
+        _db.DeviceSettings.Add(settings);
+        _db.DeviceCredentials.Add(credential);
+    }
+
+    public Task<Device?> GetByIdAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.Devices.SingleOrDefaultAsync(d => d.Id == deviceId, ct);
+
+    public Task<DeviceState?> GetStateAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.DeviceStates.SingleOrDefaultAsync(s => s.DeviceId == deviceId, ct);
+
+    public Task<DeviceOwnership?> GetOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.DeviceOwnerships.SingleOrDefaultAsync(
+            o => o.DeviceId == deviceId && o.EndedAt == null,
+            ct);
+
+    public Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.DeviceOwnerships.AnyAsync(o => o.DeviceId == deviceId && o.EndedAt == null, ct);
+
+    public void AddOwnership(DeviceOwnership ownership)
+        => _db.DeviceOwnerships.Add(ownership);
+
+    public void AddOutboxMessage(OutboxMessage message)
+        => _db.OutboxMessages.Add(message);
+
+    public async Task<IReadOnlyList<OwnerDeviceRow>> ListOpenOwnershipDevicesForOwnerAsync(
+        Guid ownerUserId,
+        CancellationToken ct = default)
+    {
+        var rows = await (
+            from ownership in _db.DeviceOwnerships.AsNoTracking()
+            join device in _db.Devices.AsNoTracking() on ownership.DeviceId equals device.Id
+            join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
+            where ownership.OwnerUserId == ownerUserId
+                  && ownership.EndedAt == null
+                  && (ownership.Status == DbStatusCodes.Ownership.Pending
+                      || ownership.Status == DbStatusCodes.Ownership.Active)
+            orderby ownership.StartedAt descending
+            select new OwnerDeviceRow(device, ownership, state)
+        ).ToListAsync(ct);
+
+        return rows;
+    }
+}
