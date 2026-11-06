@@ -9,6 +9,8 @@ public static class AuditActions
     public const string DeviceRegistered = "DEVICE_REGISTERED";
     public const string DeviceLinked = "DEVICE_LINKED";
     public const string OwnershipActivated = "OWNERSHIP_ACTIVATED";
+    public const string OwnershipTransferred = "OWNERSHIP_TRANSFERRED";
+    public const string OwnershipUnlinked = "OWNERSHIP_UNLINKED";
     public const string DeviceArchived = "DEVICE_ARCHIVED";
     public const string DeviceCommandAccepted = "DEVICE_COMMAND_ACCEPTED";
     public const string AlarmEventPersisted = "ALARM_EVENT_PERSISTED";

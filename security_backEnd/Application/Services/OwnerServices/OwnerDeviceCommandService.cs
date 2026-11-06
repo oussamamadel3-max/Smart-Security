@@ -99,11 +99,12 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
             if (device.LifecycleStatus == DbStatusCodes.DeviceLifecycle.Retired)
                 throw new ConflictException("الجهاز مؤرشف.", "DEVICE_RETIRED");
 
-            if (ownership.Status != DbStatusCodes.Ownership.Active
-                || state.ConfirmedOwnershipVersion < ownership.Version)
+            // ACTIVE ownership may accept a command request immediately (FR-006 / BR-015).
+            // Device-confirmed ownership sync is enforced at Outbox publish time, not here.
+            if (ownership.Status != DbStatusCodes.Ownership.Active)
             {
                 throw new ConflictException(
-                    "التحكم غير متاح قبل تأكيد إصدار الملكية.",
+                    "التحكم غير متاح قبل تفعيل الملكية.",
                     ExecuteCommandDraft.RejectCodes.OwnershipNotControllable);
             }
 
@@ -246,15 +247,35 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
         Guid commandId,
         CancellationToken ct = default)
     {
-        _ = await _devices.GetOpenOwnershipDeviceForOwnerAsync(ownerUserId, deviceId, ct)
+        var row = await _devices.GetOpenOwnershipDeviceForOwnerAsync(ownerUserId, deviceId, ct)
             ?? throw new NotFoundException("الجهاز غير موجود ضمن ملكيتك.", "DEVICE_NOT_FOUND");
 
         var command = await _commands.GetByIdAsync(commandId, ct);
-        if (command is null || command.DeviceId != deviceId || command.RequestedByUserId != ownerUserId)
+        // Isolate by current ownership period — prior-owner history never leaks (FR-032).
+        if (command is null
+            || command.DeviceId != deviceId
+            || command.OwnershipId != row.Ownership.Id)
+        {
             throw new NotFoundException("الأمر غير موجود.", "COMMAND_NOT_FOUND");
+        }
 
         var state = await _devices.GetStateAsync(deviceId, ct);
         return Map(command, state?.ArmState, state?.SirenState, idempotentReplay: false);
+    }
+
+    public async Task<IReadOnlyList<OwnerDeviceCommandResponseDto>> ListMineAsync(
+        Guid ownerUserId,
+        Guid deviceId,
+        CancellationToken ct = default)
+    {
+        var row = await _devices.GetOpenOwnershipDeviceForOwnerAsync(ownerUserId, deviceId, ct)
+            ?? throw new NotFoundException("الجهاز غير موجود ضمن ملكيتك.", "DEVICE_NOT_FOUND");
+
+        var commands = await _commands.ListForOwnershipAsync(deviceId, row.Ownership.Id, ct);
+        var state = await _devices.GetStateAsync(deviceId, ct);
+        return commands
+            .Select(c => Map(c, state?.ArmState, state?.SirenState, idempotentReplay: false))
+            .ToList();
     }
 
     private static void ValidateTypeSpecificRules(

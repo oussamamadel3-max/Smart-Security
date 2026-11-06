@@ -15,4 +15,9 @@ public interface IOwnerDeviceCommandService
         Guid deviceId,
         Guid commandId,
         CancellationToken ct = default);
+
+    Task<IReadOnlyList<OwnerDeviceCommandResponseDto>> ListMineAsync(
+        Guid ownerUserId,
+        Guid deviceId,
+        CancellationToken ct = default);
 }

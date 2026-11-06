@@ -53,6 +53,32 @@ public sealed class DevicesController : ControllerBase
     }
 
     /// <summary>
+    /// Transfers open ownership to a new ACTIVE owner in one transaction (FR-006).
+    /// Prior-owner pending commands/notifications are cancelled; draft OWNERSHIP_SYNC is queued.
+    /// </summary>
+    [HttpPost("{deviceId:guid}/transfer")]
+    public async Task<IResult> Transfer(
+        Guid deviceId,
+        [FromBody] TransferDeviceRequestDto request,
+        CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Devices.Manage);
+        var dto = await _ownerships.TransferAsync(deviceId, request, RequireUserId(), ct);
+        return ApiResponse.Success("تم نقل ملكية الجهاز.", dto);
+    }
+
+    /// <summary>
+    /// Ends open ownership without a new owner and queues draft OWNERSHIP_SYNC (isLinked=false).
+    /// </summary>
+    [HttpPost("{deviceId:guid}/unlink")]
+    public async Task<IResult> Unlink(Guid deviceId, CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Devices.Manage);
+        var dto = await _ownerships.UnlinkAsync(deviceId, RequireUserId(), ct);
+        return ApiResponse.Success("تم إلغاء ربط الجهاز.", dto);
+    }
+
+    /// <summary>
     /// Archives a device: RETIRED + end ownership + revoke credentials/broker access (FR-007).
     /// </summary>
     [HttpPost("{deviceId:guid}/archive")]

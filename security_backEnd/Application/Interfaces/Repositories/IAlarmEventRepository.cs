@@ -71,6 +71,32 @@ public interface IAlarmEventRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// Cancels QUEUED/SENDING ALARM and FAULT notifications for a closed ownership period.
+    /// Never touches ADMIN_ALERT rows.
+    /// </summary>
+    Task<int> CancelPendingAlarmAndFaultNotificationsForOwnershipAsync(
+        Guid ownershipId,
+        Guid recipientUserId,
+        DateTimeOffset cancelledAt,
+        string cancellationReason,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<AlarmEvent>> ListForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        CancellationToken ct = default);
+
+    Task<AlarmEvent?> GetForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        Guid alarmEventId,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<Notification>> ListForRecipientAsync(
+        Guid recipientUserId,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// Clears tracked inserts after a unique-constraint race so the ambient transaction can continue.
     /// </summary>
     void Detach(object entity);

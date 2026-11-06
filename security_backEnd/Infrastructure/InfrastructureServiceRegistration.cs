@@ -120,6 +120,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDeviceOwnershipService, DeviceOwnershipService>();
         services.AddScoped<IOwnerDeviceQueryService, OwnerDeviceQueryService>();
         services.AddScoped<IOwnerDeviceCommandService, OwnerDeviceCommandService>();
+        services.AddScoped<IOwnerDeviceHistoryService, OwnerDeviceHistoryService>();
         services.AddScoped<IDeviceInboundTelemetryService, DeviceInboundTelemetryService>();
         services.AddScoped<IAlarmEventIngestService, AlarmEventIngestService>();
         services.AddScoped<INotificationRecipientGuard, NotificationRecipientGuard>();

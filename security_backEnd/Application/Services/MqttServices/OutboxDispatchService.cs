@@ -257,13 +257,28 @@ public sealed class OutboxDispatchService : IOutboxDispatchService
         var now = DateTimeOffset.UtcNow;
         outbox.AttemptCount += 1;
 
+        // Peek device id without command lock so we can take state → ownership → command
+        // in the same order as transfer/unlink (avoids deadlock and TOCTOU on ownership).
+        var peeked = await _commands.GetByIdAsync(outbox.AggregateId, ct);
+        if (peeked is null)
+        {
+            outbox.LastErrorCode = ExecuteCommandDraft.RejectCodes.AggregateMissing;
+            outbox.AvailableAt = now.AddSeconds(Math.Max(1, opts.RetryDelaySeconds));
+            if (outbox.AttemptCount >= Math.Max(1, opts.MaxAttempts))
+                outbox.ProcessedAt = now; // park — do not publish a missing aggregate forever
+            return;
+        }
+
+        var deviceId = peeked.DeviceId;
+        var state = await _devices.GetStateForUpdateAsync(deviceId, ct);
+        var openOwnership = await _devices.GetOpenOwnershipForUpdateAsync(deviceId, ct);
         var command = await _commands.GetByIdForUpdateAsync(outbox.AggregateId, ct);
         if (command is null)
         {
             outbox.LastErrorCode = ExecuteCommandDraft.RejectCodes.AggregateMissing;
             outbox.AvailableAt = now.AddSeconds(Math.Max(1, opts.RetryDelaySeconds));
             if (outbox.AttemptCount >= Math.Max(1, opts.MaxAttempts))
-                outbox.ProcessedAt = now; // park — do not publish a missing aggregate forever
+                outbox.ProcessedAt = now;
             return;
         }
 
@@ -284,7 +299,20 @@ public sealed class OutboxDispatchService : IOutboxDispatchService
             return;
         }
 
-        var state = await _devices.GetStateAsync(command.DeviceId, ct);
+        // Refuse publish for a prior ownership period after transfer/unlink.
+        // Held under state+ownership+command FOR UPDATE until this transaction commits,
+        // so transfer cannot Commit an ownership change underneath an in-flight publish decision.
+        if (openOwnership is null
+            || openOwnership.Id != command.OwnershipId
+            || openOwnership.Version != command.OwnershipVersion
+            || openOwnership.Status != DbStatusCodes.Ownership.Active)
+        {
+            CancelCommandForEndedOwnership(command, now);
+            outbox.LastErrorCode = ExecuteCommandDraft.RejectCodes.OwnershipTransferred;
+            outbox.ProcessedAt = now;
+            return;
+        }
+
         if (state is null || state.ConfirmedOwnershipVersion < command.OwnershipVersion)
         {
             // Hold publish until ownership is device-confirmed (transfer / initial sync).
@@ -312,9 +340,13 @@ public sealed class OutboxDispatchService : IOutboxDispatchService
         try
         {
             var topic = ExecuteCommandDraft.Topics.Commands(command.DeviceId);
+            // Publish while still holding state/ownership/command locks inside the ambient TX.
             await _publisher.PublishAsync(topic, outbox.Payload, ct);
 
+            // Ownership cannot have been ended underneath us: transfer waits on the same locks.
+            // Re-read tracked open ownership is unnecessary; locks are held until Commit.
             // PUBACK / transport success is NOT device execution — only marks sent for ACK wait.
+            // Backend cannot retract a message already handed to the publisher/broker (G1/ESP concern).
             if (command.SentAt is null)
                 command.SentAt = now;
 
@@ -342,5 +374,29 @@ public sealed class OutboxDispatchService : IOutboxDispatchService
                 outbox.AvailableAt = now.AddHours(1);
             }
         }
+    }
+
+    private void CancelCommandForEndedOwnership(
+        Domain.Entities.Commands.DeviceCommand command,
+        DateTimeOffset now)
+    {
+        if (command.Status is not (DbStatusCodes.CommandStatus.Pending or DbStatusCodes.CommandStatus.TimedOut))
+            return;
+
+        var from = command.Status;
+        command.Status = DbStatusCodes.CommandStatus.Cancelled;
+        command.RejectCode = ExecuteCommandDraft.RejectCodes.OwnershipTransferred;
+        if (from == DbStatusCodes.CommandStatus.TimedOut && command.ReconciledAt is null)
+            command.ReconciledAt = now;
+
+        _commands.AddStatusHistory(new CommandStatusHistory
+        {
+            CommandId = command.Id,
+            FromStatus = from,
+            ToStatus = DbStatusCodes.CommandStatus.Cancelled,
+            ReasonCode = ExecuteCommandDraft.HistoryReasons.OwnershipTransferred,
+            ChangedAt = now,
+            IsLateAck = false
+        });
     }
 }

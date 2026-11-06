@@ -27,6 +27,27 @@ public interface IDeviceCommandRepository
         Guid deviceId,
         CancellationToken ct = default);
 
+    /// <summary>
+    /// PENDING and unreconciled TIMED_OUT commands for a device (cancelled inside transfer/unlink).
+    /// </summary>
+    Task<IReadOnlyList<DeviceCommand>> ListCancellableCommandsForDeviceForUpdateAsync(
+        Guid deviceId,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<DeviceCommand>> ListForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Marks unprocessed EXECUTE_COMMAND outbox rows for the given command aggregates as processed.
+    /// </summary>
+    Task<int> MarkCommandOutboxProcessedAsync(
+        IReadOnlyCollection<Guid> commandIds,
+        DateTimeOffset processedAt,
+        string lastErrorCode,
+        CancellationToken ct = default);
+
     void AddCommand(DeviceCommand command);
 
     void AddStatusHistory(CommandStatusHistory history);

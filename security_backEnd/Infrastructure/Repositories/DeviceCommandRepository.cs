@@ -89,6 +89,62 @@ public sealed class DeviceCommandRepository : IDeviceCommandRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<DeviceCommand>> ListCancellableCommandsForDeviceForUpdateAsync(
+        Guid deviceId,
+        CancellationToken ct = default)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             SELECT 1 FROM device_commands
+             WHERE device_id = {deviceId}
+               AND (
+                 status = {DbStatusCodes.CommandStatus.Pending}
+                 OR (status = {DbStatusCodes.CommandStatus.TimedOut} AND reconciled_at IS NULL)
+               )
+             FOR UPDATE
+             """,
+            ct);
+
+        return await _db.DeviceCommands
+            .Where(c => c.DeviceId == deviceId
+                        && (c.Status == DbStatusCodes.CommandStatus.Pending
+                            || (c.Status == DbStatusCodes.CommandStatus.TimedOut && c.ReconciledAt == null)))
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<DeviceCommand>> ListForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        CancellationToken ct = default)
+    {
+        return await _db.DeviceCommands
+            .AsNoTracking()
+            .Where(c => c.DeviceId == deviceId && c.OwnershipId == ownershipId)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<int> MarkCommandOutboxProcessedAsync(
+        IReadOnlyCollection<Guid> commandIds,
+        DateTimeOffset processedAt,
+        string lastErrorCode,
+        CancellationToken ct = default)
+    {
+        if (commandIds.Count == 0)
+            return 0;
+
+        return await _db.OutboxMessages
+            .Where(m => m.MessageType == ExecuteCommandDraft.OutboxPublishMessageType
+                        && commandIds.Contains(m.AggregateId)
+                        && m.ProcessedAt == null)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(m => m.ProcessedAt, processedAt)
+                    .SetProperty(m => m.LastErrorCode, lastErrorCode),
+                ct);
+    }
+
     public void AddCommand(DeviceCommand command)
         => _db.DeviceCommands.Add(command);
 

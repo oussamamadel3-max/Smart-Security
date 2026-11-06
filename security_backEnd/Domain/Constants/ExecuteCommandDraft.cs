@@ -32,6 +32,7 @@ public static class ExecuteCommandDraft
         public const string IdempotencyConflict = "IDEMPOTENCY_CONFLICT";
         public const string CommandExpired = "COMMAND_EXPIRED";
         public const string OwnershipVersionStale = "OWNERSHIP_VERSION_STALE";
+        public const string OwnershipTransferred = "OWNERSHIP_TRANSFERRED";
         public const string AggregateMissing = "AGGREGATE_MISSING";
         public const string PublishDisabled = "MQTT_OUTBOX_DISABLED";
         public const string PublishFailed = "MQTT_PUBLISH_FAILED";
@@ -45,5 +46,6 @@ public static class ExecuteCommandDraft
         public const string LateAck = "LATE_ACK";
         public const string ReconciledByState = "RECONCILED_BY_STATE";
         public const string DeviceAck = "DEVICE_ACK";
+        public const string OwnershipTransferred = "OWNERSHIP_TRANSFERRED";
     }
 }

@@ -30,8 +30,14 @@ public static class EventPersistedDraft
     {
         /// <summary>
         /// Recipient no longer holds ACTIVE ownership for the alarm's device/ownership.
-        /// Prepared for FCM workers (T-09); ownership-transfer bulk cancel is T-07.
+        /// Used by <c>INotificationRecipientGuard</c> before FCM (T-09).
         /// </summary>
         public const string OwnershipNotActive = "OWNERSHIP_NOT_ACTIVE";
+
+        /// <summary>
+        /// Bulk cancel inside the ownership transfer/unlink transaction (T-07).
+        /// Does not cancel independent ADMIN_ALERT notification rows.
+        /// </summary>
+        public const string OwnershipTransferred = "OWNERSHIP_TRANSFERRED";
     }
 }

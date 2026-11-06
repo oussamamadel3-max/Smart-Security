@@ -26,6 +26,13 @@ public sealed class OwnerDeviceCommandsController : ControllerBase
         _commands = commands;
     }
 
+    [HttpGet]
+    public async Task<IResult> List(Guid deviceId, CancellationToken ct)
+    {
+        var items = await _commands.ListMineAsync(RequireUserId(), deviceId, ct);
+        return ApiResponse.Success("سجل أوامر فترة الملكية الحالية.", items);
+    }
+
     [HttpPost]
     public async Task<IResult> Create(
         Guid deviceId,

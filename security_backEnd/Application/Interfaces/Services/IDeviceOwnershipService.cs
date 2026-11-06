@@ -3,7 +3,7 @@ using Application.Dtos.AdminDtos;
 namespace Application.Interfaces.Services;
 
 /// <summary>
-/// Initial PENDING link and ownership-version acknowledgment (FR-004 / FR-035).
+/// Initial PENDING link, ownership-version acknowledgment, transfer, and unlink (FR-004 / FR-006 / FR-035).
 /// Confirmation is also applied by the MQTT STATE ingest path; tests may call it via DI.
 /// </summary>
 public interface IDeviceOwnershipService
@@ -21,6 +21,24 @@ public interface IDeviceOwnershipService
     Task<OwnershipConfirmationResultDto> ConfirmOwnershipVersionAsync(
         Guid deviceId,
         long confirmedOwnershipVersion,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Ends the open ownership and opens a new ACTIVE ownership for the new owner in one transaction.
+    /// Cancels prior-owner pending commands/notifications and queues draft OWNERSHIP_SYNC.
+    /// </summary>
+    Task<TransferredDeviceResponseDto> TransferAsync(
+        Guid deviceId,
+        TransferDeviceRequestDto request,
+        Guid actorUserId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Ends the open ownership without assigning a new owner; queues draft OWNERSHIP_SYNC with isLinked=false.
+    /// </summary>
+    Task<UnlinkedDeviceResponseDto> UnlinkAsync(
+        Guid deviceId,
+        Guid actorUserId,
         CancellationToken ct = default);
 }
 

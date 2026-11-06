@@ -15,6 +15,11 @@ public interface IDeviceRepository
 
     Task<Device?> GetByIdAsync(Guid deviceId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Loads <c>devices</c> with PostgreSQL <c>FOR UPDATE</c> inside the ambient transaction (transfer/unlink).
+    /// </summary>
+    Task<Device?> GetByIdForUpdateAsync(Guid deviceId, CancellationToken ct = default);
+
     Task<DeviceState?> GetStateAsync(Guid deviceId, CancellationToken ct = default);
 
     /// <summary>
@@ -26,6 +31,11 @@ public interface IDeviceRepository
     Task<DeviceSettings?> GetSettingsAsync(Guid deviceId, CancellationToken ct = default);
 
     Task<DeviceOwnership?> GetOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Loads the open ownership row with <c>FOR UPDATE</c> (serializes with transfer/command writers).
+    /// </summary>
+    Task<DeviceOwnership?> GetOpenOwnershipForUpdateAsync(Guid deviceId, CancellationToken ct = default);
 
     Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default);
 

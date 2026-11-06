@@ -2,7 +2,7 @@ namespace Application.Interfaces.Services;
 
 /// <summary>
 /// Re-checks ALARM/FAULT recipient ownership before FCM send (FR-024 / T-06 prep for T-09).
-/// Bulk cancel of prior-owner notifications on transfer remains T-07.
+/// Transfer/unlink bulk cancel is performed inside <c>IDeviceOwnershipService</c> (T-07).
 /// </summary>
 public interface INotificationRecipientGuard
 {

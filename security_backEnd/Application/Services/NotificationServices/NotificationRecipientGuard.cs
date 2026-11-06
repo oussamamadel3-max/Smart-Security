@@ -7,7 +7,7 @@ namespace Application.Services.NotificationServices;
 
 /// <summary>
 /// Pre-send eligibility check for ALARM/FAULT notifications (T-06 prep; FCM worker is T-09).
-/// Does not implement ownership-transfer bulk cancel (T-07).
+/// Complements transfer-time bulk cancel in <c>DeviceOwnershipService</c> (T-07).
 /// </summary>
 public sealed class NotificationRecipientGuard : INotificationRecipientGuard
 {

@@ -34,6 +34,15 @@ public sealed class DeviceRepository : IDeviceRepository
     public Task<Device?> GetByIdAsync(Guid deviceId, CancellationToken ct = default)
         => _db.Devices.SingleOrDefaultAsync(d => d.Id == deviceId, ct);
 
+    public async Task<Device?> GetByIdForUpdateAsync(Guid deviceId, CancellationToken ct = default)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM devices WHERE id = {deviceId} FOR UPDATE",
+            ct);
+
+        return await _db.Devices.SingleOrDefaultAsync(d => d.Id == deviceId, ct);
+    }
+
     public Task<DeviceState?> GetStateAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceStates.SingleOrDefaultAsync(s => s.DeviceId == deviceId, ct);
 
@@ -54,6 +63,23 @@ public sealed class DeviceRepository : IDeviceRepository
         => _db.DeviceOwnerships.SingleOrDefaultAsync(
             o => o.DeviceId == deviceId && o.EndedAt == null,
             ct);
+
+    public async Task<DeviceOwnership?> GetOpenOwnershipForUpdateAsync(
+        Guid deviceId,
+        CancellationToken ct = default)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             SELECT 1 FROM device_ownerships
+             WHERE device_id = {deviceId} AND ended_at IS NULL
+             FOR UPDATE
+             """,
+            ct);
+
+        return await _db.DeviceOwnerships.SingleOrDefaultAsync(
+            o => o.DeviceId == deviceId && o.EndedAt == null,
+            ct);
+    }
 
     public Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceOwnerships.AnyAsync(o => o.DeviceId == deviceId && o.EndedAt == null, ct);

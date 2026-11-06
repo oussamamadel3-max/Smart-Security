@@ -1,4 +1,5 @@
 using Application.Interfaces.Repositories;
+using Domain.Constants;
 using Domain.Entities.Devices;
 using Domain.Entities.Events;
 using Domain.Entities.Notifications;
@@ -132,6 +133,114 @@ public sealed class AlarmEventRepository : IAlarmEventRepository
         => _db.Notifications.SingleOrDefaultAsync(
             n => n.RecipientUserId == recipientUserId && n.DeviceFaultId == deviceFaultId,
             ct);
+
+    public async Task<int> CancelPendingAlarmAndFaultNotificationsForOwnershipAsync(
+        Guid ownershipId,
+        Guid recipientUserId,
+        DateTimeOffset cancelledAt,
+        string cancellationReason,
+        CancellationToken ct = default)
+    {
+        var alarmCancelled = await (
+            from n in _db.Notifications
+            join a in _db.AlarmEvents on n.AlarmEventId equals a.Id
+            where n.RecipientUserId == recipientUserId
+                  && n.NotificationType == DbStatusCodes.NotificationType.Alarm
+                  && a.OwnershipId == ownershipId
+                  && (n.Status == DbStatusCodes.NotificationStatus.Queued
+                      || n.Status == DbStatusCodes.NotificationStatus.Sending)
+            select n
+        ).ExecuteUpdateAsync(
+            setters => setters
+                .SetProperty(n => n.Status, DbStatusCodes.NotificationStatus.Cancelled)
+                .SetProperty(n => n.CancelledAt, cancelledAt)
+                .SetProperty(n => n.CancellationReason, cancellationReason)
+                .SetProperty(n => n.NextAttemptAt, (DateTimeOffset?)null),
+            ct);
+
+        var faultCancelled = await (
+            from n in _db.Notifications
+            join f in _db.DeviceFaults on n.DeviceFaultId equals f.Id
+            where n.RecipientUserId == recipientUserId
+                  && n.NotificationType == DbStatusCodes.NotificationType.Fault
+                  && f.OwnershipId == ownershipId
+                  && (n.Status == DbStatusCodes.NotificationStatus.Queued
+                      || n.Status == DbStatusCodes.NotificationStatus.Sending)
+            select n
+        ).ExecuteUpdateAsync(
+            setters => setters
+                .SetProperty(n => n.Status, DbStatusCodes.NotificationStatus.Cancelled)
+                .SetProperty(n => n.CancelledAt, cancelledAt)
+                .SetProperty(n => n.CancellationReason, cancellationReason)
+                .SetProperty(n => n.NextAttemptAt, (DateTimeOffset?)null),
+            ct);
+
+        return alarmCancelled + faultCancelled;
+    }
+
+    public async Task<IReadOnlyList<AlarmEvent>> ListForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        CancellationToken ct = default)
+    {
+        return await _db.AlarmEvents
+            .AsNoTracking()
+            .Where(e => e.DeviceId == deviceId && e.OwnershipId == ownershipId)
+            .OrderByDescending(e => e.ReceivedAt)
+            .ToListAsync(ct);
+    }
+
+    public Task<AlarmEvent?> GetForOwnershipAsync(
+        Guid deviceId,
+        Guid ownershipId,
+        Guid alarmEventId,
+        CancellationToken ct = default)
+        => _db.AlarmEvents
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                e => e.Id == alarmEventId
+                     && e.DeviceId == deviceId
+                     && e.OwnershipId == ownershipId,
+                ct);
+
+    public async Task<IReadOnlyList<Notification>> ListForRecipientAsync(
+        Guid recipientUserId,
+        CancellationToken ct = default)
+    {
+        // ADMIN_ALERT: always for recipient.
+        // ALARM/FAULT: only rows whose source ownership period belongs to this recipient (FR-032).
+        var admin = await _db.Notifications
+            .AsNoTracking()
+            .Where(n => n.RecipientUserId == recipientUserId
+                        && n.NotificationType == DbStatusCodes.NotificationType.AdminAlert)
+            .ToListAsync(ct);
+
+        var alarms = await (
+            from n in _db.Notifications.AsNoTracking()
+            join a in _db.AlarmEvents.AsNoTracking() on n.AlarmEventId equals a.Id
+            join o in _db.DeviceOwnerships.AsNoTracking() on a.OwnershipId equals o.Id
+            where n.RecipientUserId == recipientUserId
+                  && n.NotificationType == DbStatusCodes.NotificationType.Alarm
+                  && o.OwnerUserId == recipientUserId
+            select n
+        ).ToListAsync(ct);
+
+        var faults = await (
+            from n in _db.Notifications.AsNoTracking()
+            join f in _db.DeviceFaults.AsNoTracking() on n.DeviceFaultId equals f.Id
+            join o in _db.DeviceOwnerships.AsNoTracking() on f.OwnershipId equals o.Id
+            where n.RecipientUserId == recipientUserId
+                  && n.NotificationType == DbStatusCodes.NotificationType.Fault
+                  && o.OwnerUserId == recipientUserId
+            select n
+        ).ToListAsync(ct);
+
+        return admin
+            .Concat(alarms)
+            .Concat(faults)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToList();
+    }
 
     public void Detach(object entity)
         => _db.Entry(entity).State = EntityState.Detached;
