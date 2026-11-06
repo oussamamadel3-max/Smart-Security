@@ -1,6 +1,6 @@
 # السياق العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-06 (إغلاق Backend T-04)  
+آخر تحديث: 2026-11-06 (إغلاق Backend T-09)  
 الغرض: صورة واحدة لحالة كل المشاريع وتبعياتها؛ التفاصيل داخل `*-context.md` لكل مجلد.  
 التقدّم الزمني والمؤشرات: [`system-progress.md`](./system-progress.md) · **توضيح التسميات** في أعلى ذلك الملف.
 
@@ -26,7 +26,7 @@
 
 | مجلد | الدور | سياق | تقدّم | مهمة جارية | عدّ |
 |-------|--------|-------|--------|------------|-----|
-| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-05** التالية (T-04 ✓؛ G1/Mosquitto الحي غير منجزين) | 4/13 |
+| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-05** التالية (T-04 ✓·T-09 ✓ Fake؛ G1/Mosquitto/FCM إنتاجي غير منجزين) | 5/13 |
 | `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | **T-01** قرارات G0 | 0/9 |
 | `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | **T-01** تأسيس المشروع | 0/8 |
 | `admin_web` | Flutter Web مالك + أدمن | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | **T-01** تأسيس Web | 0/8 |
@@ -39,7 +39,7 @@
 |--------|--------|-------------------|
 | **P0** | قرارات عتاد/عقود/بيئات | `security_esp` T-01 (G0) + `integration` T-01 |
 | **P1** | تجربة عتاد محلية | بعد G0 → `security_esp` T-02… |
-| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ · التالي باك `T-05` (بعد G1 للإغلاق الإنتاجي) و`ops` T-01؛ استقبال/نشر Mosquitto الحي ينتظر G1/ops |
+| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ وT-09 ✓ (Fake FCM) · التالي باك `T-05` (بعد G1 للإغلاق الإنتاجي) و`ops` T-01؛ استقبال/نشر Mosquitto الحي وFCM الإنتاجي ينتظران تفويضاً/G1/ops |
 | **P3** | شريحة متكاملة أولى | بعد G1: أوامر/حوادث + ESP MQTT + واجهة قائمة |
 | **P4…P7** | بقية SRS → واجهات → VPS → قبول G2 | حسب المهام في كل `*-context` |
 
@@ -87,9 +87,9 @@ ops T-02…T-06 (نشر/نسخ/ميداني)  +  integration T-05 (G2)
 
 ## لقطة حالة سريعة
 
-- Backend: T-01…T-04 مكتملتان (2026-11-06 أُغلق `BE-T-04` / T-04)؛ التالية **T-05** أوامر/Outbox (لم تُبدأ؛ إغلاق إنتاجي بعد G1). **استقبال MQTT الحي عبر Mosquitto واعتماد G1 غير منجزين** بعد T-04؛ AC-T-19/Broker ما زالا معلقين.
+- Backend: T-01…T-04 و**T-09** مكتملة رسمياً (2026-11-06 أُغلق `BE-T-09` خلف Fake FCM؛ Firebase الحي معطّل). T-06…T-08 تنفيذ اختباري بلا إغلاق رسمي. التالية المؤهلة **T-05** أوامر/Outbox (لم تُبدأ؛ إغلاق إنتاجي بعد G1). **استقبال MQTT الحي واعتماد G1 غير منجزين**؛ AC-T-19/Broker معلقان.
 - بقية المجلدات: تخطيط بدون تنفيذ تطبيقي بعد (ما لم يُحدَّث في سياقها).
-- التالي: باك **T-05** (بعد تفويض) · ESP **T-01** · integration **T-01** · ops **T-01** · تأسيس Flutter (**T-01** ويب/موبايل).
+- التالي: باك **T-05** (بعد تفويض) · ESP **T-01** · integration **T-01** · ops **T-01** · تأسيس Flutter (**T-01** ويب/موبايل). لا بدء تلقائي لـ BE-T-10.
 
 ## كيف تُحدَّث ملفات السياق والتقدّم
 

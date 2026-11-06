@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Application.Common.Auth;
 using Application.Dtos.AdminDtos;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -560,7 +561,7 @@ public sealed class DeviceOwnershipService : IDeviceOwnershipService
         if (!await _users.IsInRoleAsync(user, DbStatusCodes.RoleCodes.Owner))
             throw new NotFoundException("حساب المالك غير موجود.", "OWNER_NOT_FOUND");
 
-        if (!user.IsActive || user.DeletedAt is not null)
+        if (AccountAccessRules.MustRejectProtectedOperation(user.IsActive, user.DeletedAt))
             throw new ConflictException("حساب المالك غير نشط.", "OWNER_INACTIVE");
 
         return user;

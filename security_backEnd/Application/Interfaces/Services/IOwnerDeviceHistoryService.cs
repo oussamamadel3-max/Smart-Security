@@ -21,4 +21,12 @@ public interface IOwnerDeviceHistoryService
     Task<IReadOnlyList<OwnerNotificationListItemDto>> ListNotificationsAsync(
         Guid ownerUserId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Loads notification detail with a fresh ownership / recipient check (FCM-05).
+    /// </summary>
+    Task<OwnerNotificationDetailDto> GetNotificationDetailAsync(
+        Guid ownerUserId,
+        Guid notificationId,
+        CancellationToken ct = default);
 }

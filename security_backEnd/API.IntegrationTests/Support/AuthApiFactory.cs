@@ -49,6 +49,14 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Auth:Cookie:SameSite", "Lax");
         builder.UseSetting("Auth:CsrfCookieName", "esp32_csrf");
         builder.UseSetting("Auth:CsrfHeaderName", "X-CSRF-TOKEN");
+        // BE-T-09: Fake FCM + ephemeral token crypto key (never Firebase credentials).
+        builder.UseSetting("Fcm:Enabled", "false");
+        builder.UseSetting("Fcm:Provider", "Fake");
+        builder.UseSetting("Fcm:RetryDelaySeconds", "1");
+        builder.UseSetting("Fcm:MaxAttempts", "3");
+        builder.UseSetting(
+            "Fcm:TokenEncryptionKey",
+            Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)));
 
         if (_configureTestServices is not null)
             builder.ConfigureTestServices(_configureTestServices);

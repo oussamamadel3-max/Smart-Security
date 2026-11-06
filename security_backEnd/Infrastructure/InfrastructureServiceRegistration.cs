@@ -9,12 +9,14 @@ using Application.Services.AuthServices;
 using Application.Services.MqttServices;
 using Application.Services.NotificationServices;
 using Application.Services.OwnerServices;
+using Application.Services.PushTokenServices;
 using Domain.Constants;
 using Domain.Entities.Auth;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Security;
 using Infrastructure.Services;
+using Infrastructure.Services.Fcm;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -46,12 +48,16 @@ public static class InfrastructureServiceRegistration
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<MqttInboundOptions>(configuration.GetSection(MqttInboundOptions.SectionName));
         services.Configure<MqttOutboxOptions>(configuration.GetSection(MqttOutboxOptions.SectionName));
+        services.Configure<FcmOptions>(configuration.GetSection(FcmOptions.SectionName));
         var authOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
         if (string.IsNullOrWhiteSpace(authOptions.Jwt.SigningKey) || authOptions.Jwt.SigningKey.Length < 32)
         {
             throw new InvalidOperationException(
                 "Auth:Jwt:SigningKey is missing or shorter than 32 characters. Configure via User Secrets / environment.");
         }
+
+        var fcmOptions = configuration.GetSection(FcmOptions.SectionName).Get<FcmOptions>() ?? new FcmOptions();
+        RegisterFcmProvider(services, fcmOptions);
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(
@@ -125,6 +131,11 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDeviceInboundTelemetryService, DeviceInboundTelemetryService>();
         services.AddScoped<IAlarmEventIngestService, AlarmEventIngestService>();
         services.AddScoped<INotificationRecipientGuard, NotificationRecipientGuard>();
+        services.AddScoped<INotificationDispatchService, NotificationDispatchService>();
+        services.AddScoped<IPushTokenService, PushTokenService>();
+        services.AddScoped<IPushTokenCrypto, PushTokenCrypto>();
+        services.AddScoped<IPushTokenRepository, PushTokenRepository>();
+        services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<IMqttInboundDispatcher, MqttInboundDispatcher>();
         services.AddScoped<IOutboxDispatchService, OutboxDispatchService>();
         services.AddSingleton<IMqttOutboundPublisher, NoOpMqttOutboundPublisher>();
@@ -134,7 +145,50 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddHostedService<MqttInboundHostedService>();
         services.AddHostedService<MqttOutboxHostedService>();
+        services.AddHostedService<FcmNotificationHostedService>();
 
         return services;
+    }
+
+    private static void RegisterFcmProvider(IServiceCollection services, FcmOptions fcmOptions)
+    {
+        var provider = (fcmOptions.Provider ?? FcmOptions.ProviderFake).Trim();
+        if (string.Equals(provider, FcmOptions.ProviderFirebase, StringComparison.OrdinalIgnoreCase))
+        {
+            // Real send path — refuse startup when ADC cannot be resolved.
+            // Absence of GOOGLE_APPLICATION_CREDENTIALS must not affect Fake; it must block Firebase.
+            // Never log credential file paths or JSON contents.
+            if (!TryProbeApplicationDefaultCredentials())
+            {
+                throw new InvalidOperationException(
+                    "Fcm:Provider=Firebase requires Application Default Credentials " +
+                    "(set GOOGLE_APPLICATION_CREDENTIALS to a service-account file outside Git, " +
+                    "or configure ADC another supported way). " +
+                    "Keep Fcm:Provider=Fake for local/test runs without Firebase credentials.");
+            }
+
+            services.AddSingleton<IFcmProvider, FirebaseFcmProvider>();
+            return;
+        }
+
+        // Default and all automated tests: FakeFcmProvider (no network, no ADC required).
+        services.AddSingleton<FakeFcmProvider>();
+        services.AddSingleton<IFcmProvider>(sp => sp.GetRequiredService<FakeFcmProvider>());
+    }
+
+    /// <summary>
+    /// Probes ADC availability without logging secrets or file contents.
+    /// </summary>
+    private static bool TryProbeApplicationDefaultCredentials()
+    {
+        try
+        {
+            _ = Google.Apis.Auth.OAuth2.GoogleCredential.GetApplicationDefault();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -33,13 +33,13 @@
 
 | مشروع | ملف التقدّم | مكتمل / الكل | الجارية | النسبة |
 |--------|-------------|--------------|---------|--------|
-| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 4 / 13 | التالية T-05 (لم تُبدأ) | ~31% |
+| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | التالية T-05 (لم تُبدأ؛ T-09 ✓) | ~38% |
 | ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 | T-01 | 0% |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 0 / 8 | T-01 | 0% |
 | ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 0 / 8 | T-01 | 0% |
 | تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |
 | تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | T-01 | 0% |
-| **المجموع** | — | **4 / 50** | — | **8%** |
+| **المجموع** | — | **5 / 50** | — | **10%** |
 
 ## سجل عام (معالم فقط)
 
@@ -52,12 +52,13 @@
 | 2026-11-06 | `security_backEnd` | إغلاق بطاقة **BE-02/SS-P2-020** (ربط PENDING / إقرار الملكية)؛ T-03 تبقى جزئية (2/3)؛ التالية SS-P2-030. |
 | 2026-11-06 | `security_backEnd` | إغلاق **BE-02/SS-P2-030** وإغلاق **T-03** كاملة؛ التالية T-04 (لم تُبدأ). |
 | 2026-11-06 | `security_backEnd` | إغلاق **T-04 / BE-T-04** (وارد حالة + API مؤشرات)؛ Mosquitto الحي وG1 **غير منجزين**؛ التالية T-05 (لم تُبدأ). |
+| 2026-11-06 | `security_backEnd` | إغلاق **T-09 / BE-T-09** (FCM Fake + push_tokens)؛ Firebase الحي معطّل؛ T-06…T-08 بلا إغلاق رسمي؛ لا بدء تلقائي لـ T-10. |
 
 ## التالي على مستوى النظام
 
-1. العقود والعتاد أولاً حيث يلزم؛ Backend التالية **T-05** (إغلاقها الإنتاجي بعد G1)؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
-2. تأسيس Flutter: mobile/web **T-01**  
-3. لا أوامر/حوادث إنتاج قبل **G1**؛ استقبال MQTT الحي عبر Mosquitto ما زال غير منجز بعد T-04
+1. العقود والعتاد أولاً حيث يلزم؛ Backend التالية المؤهلة **T-05** (إغلاقها الإنتاجي بعد G1)؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
+2. تأسيس Flutter: mobile/web **T-01** (عميل FCM يستفيد من API رموز BE-T-09)  
+3. لا أوامر/حوادث إنتاج قبل **G1**؛ استقبال MQTT الحي عبر Mosquitto ما زال غير منجز؛ FCM إنتاجي غير مفعّل
 
 ## قواعد المزامنة
 
@@ -66,4 +67,4 @@
 3. حدّث `*-context.md` إن تغيّر المانع أو الهوية أو التبعية — لا تكرر السجل الزمني هناك.
 4. علّم `[x]` في `*-development-tasks.md` فقط بعد القبول وتعريف الإنجاز.
 
-**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 4/13 للباك بعد إغلاق T-04؛ T-05 لم تُبدأ؛ Mosquitto الحي وG1 غير منجزين.
+**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 5/13 للباك بعد إغلاق T-09؛ T-05 لم تُبدأ رسمياً كمسار أوامر؛ T-06…T-08 تنفيذ اختباري بلا `[x]`؛ Mosquitto الحي وG1 وFCM الإنتاجي غير منجزين.

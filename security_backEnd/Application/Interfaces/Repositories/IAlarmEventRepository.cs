@@ -96,6 +96,11 @@ public interface IAlarmEventRepository
         Guid recipientUserId,
         CancellationToken ct = default);
 
+    Task<Notification?> GetForRecipientAsync(
+        Guid recipientUserId,
+        Guid notificationId,
+        CancellationToken ct = default);
+
     void AddAdminAlert(AdminAlert alert);
 
     Task<AdminAlert?> GetAdminAlertByIdAsync(Guid adminAlertId, CancellationToken ct = default);

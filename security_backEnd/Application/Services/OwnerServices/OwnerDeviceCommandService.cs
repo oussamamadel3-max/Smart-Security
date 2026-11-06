@@ -56,7 +56,8 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
             throw new BadRequestException("مفتاح Idempotency مطلوب.", "IDEMPOTENCY_KEY_REQUIRED");
 
         var commandType = (request.Type ?? string.Empty).Trim().ToUpperInvariant();
-        if (!SupportedTypes.Contains(commandType))
+        if (!OwnerDeviceCommandAcceptanceRules.IsSupportedCommandType(commandType)
+            || !SupportedTypes.Contains(commandType))
             throw new BadRequestException("نوع الأمر غير مدعوم.", ExecuteCommandDraft.RejectCodes.UnsupportedCommandType);
 
         // Fast idempotent replay outside the write lock when possible.
@@ -101,7 +102,7 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
 
             // ACTIVE ownership may accept a command request immediately (FR-006 / BR-015).
             // Device-confirmed ownership sync is enforced at Outbox publish time, not here.
-            if (ownership.Status != DbStatusCodes.Ownership.Active)
+            if (!OwnerDeviceCommandAcceptanceRules.IsOwnershipControllable(ownership.Status))
             {
                 throw new ConflictException(
                     "التحكم غير متاح قبل تفعيل الملكية.",
@@ -286,43 +287,54 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
         switch (commandType)
         {
             case DbStatusCodes.CommandType.MuteAlarm:
-                if (targetAlarmEventUid is null || targetAlarmEventUid == Guid.Empty)
+            {
+                var reject = OwnerDeviceCommandAcceptanceRules.EvaluateMuteRule(
+                    targetAlarmEventUid,
+                    state.CurrentAlarmEventUid);
+                if (reject == ExecuteCommandDraft.RejectCodes.MuteTargetRequired)
                 {
                     throw new BadRequestException(
                         "معرف الحادثة الجارية مطلوب لكتم الإنذار.",
-                        ExecuteCommandDraft.RejectCodes.MuteTargetRequired);
+                        reject);
                 }
 
-                if (state.CurrentAlarmEventUid is null
-                    || state.CurrentAlarmEventUid != targetAlarmEventUid)
+                if (reject is not null)
                 {
                     throw new ConflictException(
                         "معرف الحادثة لا يطابق الحادثة الجارية على الجهاز.",
-                        ExecuteCommandDraft.RejectCodes.MuteTargetMismatch);
+                        reject);
                 }
 
                 break;
+            }
 
             case DbStatusCodes.CommandType.TestSiren:
-                if (state.SirenState == DbStatusCodes.Siren.Alarm
-                    || state.CurrentAlarmEventUid is not null)
+            {
+                var reject = OwnerDeviceCommandAcceptanceRules.EvaluateTestSirenRule(
+                    state.SirenState,
+                    state.CurrentAlarmEventUid);
+                if (reject is not null)
                 {
                     throw new ConflictException(
                         "يُرفض اختبار الصفارة أثناء إنذار جارٍ.",
-                        ExecuteCommandDraft.RejectCodes.TestDuringAlarm);
+                        reject);
                 }
 
                 break;
+            }
 
             case DbStatusCodes.CommandType.StopTest:
-                if (state.SirenState != DbStatusCodes.Siren.Test)
+            {
+                var reject = OwnerDeviceCommandAcceptanceRules.EvaluateStopTestRule(state.SirenState);
+                if (reject is not null)
                 {
                     throw new ConflictException(
                         "لا يوجد اختبار صفارة جارٍ لإيقافه.",
-                        ExecuteCommandDraft.RejectCodes.StopTestNotActive);
+                        reject);
                 }
 
                 break;
+            }
         }
     }
 
@@ -333,21 +345,20 @@ public sealed class OwnerDeviceCommandService : IOwnerDeviceCommandService
         string commandType,
         Guid? targetAlarmEventUid)
     {
-        if (existing.RequestedByUserId != ownerUserId)
+        if (!OwnerDeviceCommandAcceptanceRules.MatchesIdempotentReplay(
+                existing.RequestedByUserId,
+                ownerUserId,
+                existing.DeviceId,
+                deviceId,
+                existing.CommandType,
+                commandType,
+                existing.TargetAlarmEventUid,
+                targetAlarmEventUid))
         {
             throw new ConflictException(
-                "تعارض مفتاح Idempotency.",
-                ExecuteCommandDraft.RejectCodes.IdempotencyConflict);
-        }
-
-        if (existing.DeviceId != deviceId
-            || !string.Equals(existing.CommandType, commandType, StringComparison.Ordinal)
-            || existing.TargetAlarmEventUid != (commandType == DbStatusCodes.CommandType.MuteAlarm
-                ? targetAlarmEventUid
-                : null))
-        {
-            throw new ConflictException(
-                "أُعيد استخدام مفتاح Idempotency بطلب مختلف.",
+                existing.RequestedByUserId != ownerUserId
+                    ? "تعارض مفتاح Idempotency."
+                    : "أُعيد استخدام مفتاح Idempotency بطلب مختلف.",
                 ExecuteCommandDraft.RejectCodes.IdempotencyConflict);
         }
 

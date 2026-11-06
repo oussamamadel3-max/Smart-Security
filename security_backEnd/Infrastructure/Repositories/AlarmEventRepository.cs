@@ -203,6 +203,14 @@ public sealed class AlarmEventRepository : IAlarmEventRepository
                      && e.OwnershipId == ownershipId,
                 ct);
 
+    public Task<Notification?> GetForRecipientAsync(
+        Guid recipientUserId,
+        Guid notificationId,
+        CancellationToken ct = default)
+        => _db.Notifications.AsNoTracking().SingleOrDefaultAsync(
+            n => n.Id == notificationId && n.RecipientUserId == recipientUserId,
+            ct);
+
     public async Task<IReadOnlyList<Notification>> ListForRecipientAsync(
         Guid recipientUserId,
         CancellationToken ct = default)

@@ -1,4 +1,5 @@
-﻿using Application.Dtos.AuthDtos;
+﻿using Application.Common.Auth;
+using Application.Dtos.AuthDtos;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -243,7 +244,7 @@ public sealed class AuthService : IAuthService
 
     private static void EnsureAccountUsable(User user)
     {
-        if (!user.IsActive || user.DeletedAt is not null)
+        if (AccountAccessRules.MustRejectProtectedOperation(user.IsActive, user.DeletedAt))
             throw new UnauthenticatedUserException();
     }
 }

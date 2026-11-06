@@ -15,4 +15,9 @@ uploads/
 *.log
 TestResults/
 artifacts/
+# Firebase / GCP service-account JSON — never commit (use GOOGLE_APPLICATION_CREDENTIALS outside Git)
+*firebase-adminsdk*.json
+*-adminsdk-*.json
+**/serviceAccount*.json
+**/service-account*.json
 smart-security-80d2c-firebase-adminsdk-fbsvc-65b0242a5a.json
