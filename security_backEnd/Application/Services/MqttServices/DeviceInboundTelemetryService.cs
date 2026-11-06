@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Constants;
+using Domain.Entities.Commands;
 using Domain.Entities.Devices;
 using Domain.Exceptions;
 
@@ -11,6 +12,7 @@ namespace Application.Services.MqttServices;
 
 /// <summary>
 /// Validates draft inbound MQTT payloads and applies confirmed device state with row-lock sequencing.
+/// COMMAND_ACK also closes the matching command row (T-05); HTTP/PUBACK alone never means execution.
 /// </summary>
 public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryService
 {
@@ -36,16 +38,25 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
         DbStatusCodes.Diagnostic.Unknown
     };
 
+    private static readonly HashSet<string> AckStatuses = new(StringComparer.Ordinal)
+    {
+        DbStatusCodes.CommandStatus.Executed,
+        DbStatusCodes.CommandStatus.Rejected
+    };
+
     private readonly IDeviceRepository _devices;
+    private readonly IDeviceCommandRepository _commands;
     private readonly IUnitOfWork _uow;
     private readonly IAuditLogService _audit;
 
     public DeviceInboundTelemetryService(
         IDeviceRepository devices,
+        IDeviceCommandRepository commands,
         IUnitOfWork uow,
         IAuditLogService audit)
     {
         _devices = devices;
+        _commands = commands;
         _uow = uow;
         _audit = audit;
     }
@@ -163,9 +174,31 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
 
             if (sequence <= state.StateSequence)
             {
+                // Stale/duplicate sequence must not rewind device_states.
+                // A late COMMAND_ACK for an unresolved command may still close the command row
+                // when resultStateSequence is not newer than the stored state (FR-015 late ack).
+                var lateOnly = false;
+                if (parsed.MessageType == MqttInboundDraft.MessageTypes.CommandAck
+                    && parsed.CommandId is Guid lateCommandId)
+                {
+                    lateOnly = await TryCloseCommandFromAckAsync(
+                        deviceId: parsed.DeviceId,
+                        commandId: lateCommandId,
+                        ackStatus: parsed.AckStatus!,
+                        ownershipVersion: parsed.AckOwnershipVersion,
+                        resultStateSequence: sequence,
+                        rejectCode: parsed.AckRejectCode,
+                        stateSequenceApplied: false,
+                        now,
+                        ct);
+                }
+
                 await _uow.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
-                result.Outcome = MqttInboundDraft.IngestOutcomes.IgnoredStaleSequence;
+                result.Outcome = lateOnly
+                    ? MqttInboundDraft.IngestOutcomes.CommandClosedOnly
+                    : MqttInboundDraft.IngestOutcomes.IgnoredStaleSequence;
+                result.CommandClosed = lateOnly;
                 result.StoredSequence = state.StateSequence;
                 return result;
             }
@@ -173,12 +206,33 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
             ApplyConfirmedState(state, parsed, now);
             var ownershipActivated = await TryActivateOwnershipAsync(device, state, ct);
 
+            var commandClosed = false;
+            if (parsed.MessageType == MqttInboundDraft.MessageTypes.CommandAck
+                && parsed.CommandId is Guid commandId)
+            {
+                commandClosed = await TryCloseCommandFromAckAsync(
+                    deviceId: parsed.DeviceId,
+                    commandId: commandId,
+                    ackStatus: parsed.AckStatus!,
+                    ownershipVersion: parsed.AckOwnershipVersion,
+                    resultStateSequence: sequence,
+                    rejectCode: parsed.AckRejectCode,
+                    stateSequenceApplied: true,
+                    now,
+                    ct);
+            }
+            else if (parsed.MessageType == MqttInboundDraft.MessageTypes.State)
+            {
+                await ReconcileTimedOutCommandsAsync(parsed.DeviceId, sequence, now, ct);
+            }
+
             await _uow.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
 
             result.Outcome = MqttInboundDraft.IngestOutcomes.Applied;
             result.StateApplied = true;
             result.OwnershipActivated = ownershipActivated;
+            result.CommandClosed = commandClosed;
             result.StoredSequence = state.StateSequence;
             result.ObservedSequence = sequence;
             result.ArmState = state.ArmState;
@@ -348,10 +402,13 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
 
     private static ParsedInboundMessage ParseCommandAck(JsonElement root, Guid deviceId, string messageType)
     {
-        // T-04 applies actual state from ACK only; command row closure is T-05.
-        _ = RequireGuid(root, "commandId");
-        _ = RequireInt64(root, "ownershipVersion");
-        _ = RequireString(root, "status");
+        // D-09 principle: ACK carries full actual state + resultStateSequence + commandId.
+        // Exact G1 schema remains draft; field names follow development-plan §4.4.
+        var commandId = RequireGuid(root, "commandId");
+        var ownershipVersion = RequireInt64(root, "ownershipVersion");
+        var status = RequireString(root, "status");
+        if (!AckStatuses.Contains(status))
+            throw new BadRequestException("حالة تأكيد الأمر غير صالحة.", "INVALID_ACK_STATUS");
 
         var sequence = RequireInt64(root, "resultStateSequence");
         var arm = RequireEnum(root, "armState", ArmStates);
@@ -368,15 +425,118 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
             SirenState = siren,
             HealthState = health,
             ClockTrusted = clockTrusted,
-            ConfirmedOwnershipVersion = OptionalInt64(root, "confirmedOwnershipVersion"),
+            ConfirmedOwnershipVersion = OptionalInt64(root, "confirmedOwnershipVersion") ?? ownershipVersion,
             CurrentAlarmEventUid = OptionalGuid(root, "currentAlarmEventUid"),
             DeviceReportedAt = OptionalDateTimeOffset(root, "deviceReportedAt"),
             FirmwareVersion = OptionalString(root, "firmwareVersion"),
             AppliedSettingsVersion = OptionalInt64(root, "appliedSettingsVersion"),
             HealthCode = OptionalString(root, "healthCode"),
             PowerSource = OptionalString(root, "powerSource"),
-            BatteryPercent = OptionalBatteryPercent(root)
+            BatteryPercent = OptionalBatteryPercent(root),
+            CommandId = commandId,
+            AckStatus = status,
+            AckOwnershipVersion = ownershipVersion,
+            AckRejectCode = OptionalString(root, "rejectCode")
         };
+    }
+
+    private async Task<bool> TryCloseCommandFromAckAsync(
+        Guid deviceId,
+        Guid commandId,
+        string ackStatus,
+        long? ownershipVersion,
+        long resultStateSequence,
+        string? rejectCode,
+        bool stateSequenceApplied,
+        DateTimeOffset now,
+        CancellationToken ct)
+    {
+        var command = await _commands.GetByIdForUpdateAsync(commandId, ct);
+        if (command is null || command.DeviceId != deviceId)
+            return false;
+
+        // CANCELLED after ownership transfer must not be revived by a late ack.
+        if (command.Status == DbStatusCodes.CommandStatus.Cancelled)
+            return false;
+
+        if (command.Status is DbStatusCodes.CommandStatus.Executed
+            or DbStatusCodes.CommandStatus.Rejected)
+        {
+            // Duplicate delivery — already closed.
+            return false;
+        }
+
+        if (ownershipVersion is long ov && ov != command.OwnershipVersion)
+        {
+            // Still close with device outcome; record mismatch for audit trail via reject code if rejected.
+            rejectCode ??= "OWNERSHIP_VERSION_MISMATCH";
+        }
+
+        var from = command.Status;
+        var isLate = from == DbStatusCodes.CommandStatus.TimedOut;
+        command.Status = ackStatus;
+        command.AcknowledgedAt = now;
+        command.ResultStateSequence = resultStateSequence;
+        if (string.Equals(ackStatus, DbStatusCodes.CommandStatus.Rejected, StringComparison.Ordinal))
+            command.RejectCode = rejectCode ?? "DEVICE_REJECTED";
+        else if (!string.IsNullOrWhiteSpace(rejectCode) && command.RejectCode is null)
+            command.RejectCode = rejectCode;
+
+        if (isLate || command.ReconciledAt is null)
+            command.ReconciledAt = now;
+
+        _commands.AddStatusHistory(new CommandStatusHistory
+        {
+            CommandId = command.Id,
+            FromStatus = from,
+            ToStatus = ackStatus,
+            ReasonCode = isLate
+                ? ExecuteCommandDraft.HistoryReasons.LateAck
+                : ExecuteCommandDraft.HistoryReasons.DeviceAck,
+            ChangedAt = now,
+            IsLateAck = isLate
+        });
+
+        // stateSequenceApplied is informational for callers; device_states update happens separately.
+        _ = stateSequenceApplied;
+        return true;
+    }
+
+    private async Task ReconcileTimedOutCommandsAsync(
+        Guid deviceId,
+        long newerStateSequence,
+        DateTimeOffset now,
+        CancellationToken ct)
+    {
+        var open = await _commands.ListUnreconciledTimedOutAsync(deviceId, ct);
+        foreach (var item in open)
+        {
+            if (newerStateSequence <= item.ObservedStateSequence)
+                continue;
+
+            var command = await _commands.GetByIdForUpdateAsync(item.Id, ct);
+            if (command is null
+                || command.Status != DbStatusCodes.CommandStatus.TimedOut
+                || command.ReconciledAt is not null)
+            {
+                continue;
+            }
+
+            if (newerStateSequence <= command.ObservedStateSequence)
+                continue;
+
+            // Reconciliation unlocks conflicting commands; it does NOT claim EXECUTED.
+            command.ReconciledAt = now;
+            _commands.AddStatusHistory(new CommandStatusHistory
+            {
+                CommandId = command.Id,
+                FromStatus = DbStatusCodes.CommandStatus.TimedOut,
+                ToStatus = DbStatusCodes.CommandStatus.TimedOut,
+                ReasonCode = ExecuteCommandDraft.HistoryReasons.ReconciledByState,
+                ChangedAt = now,
+                IsLateAck = false
+            });
+        }
     }
 
     private static DeviceInboundIngestResultDto Reject(
@@ -516,5 +676,9 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
         public string? HealthCode { get; init; }
         public string? PowerSource { get; init; }
         public short? BatteryPercent { get; init; }
+        public Guid? CommandId { get; init; }
+        public string? AckStatus { get; init; }
+        public long? AckOwnershipVersion { get; init; }
+        public string? AckRejectCode { get; init; }
     }
 }

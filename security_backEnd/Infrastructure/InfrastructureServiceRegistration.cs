@@ -7,6 +7,7 @@ using Application.Services;
 using Application.Services.AdminServices;
 using Application.Services.AuthServices;
 using Application.Services.MqttServices;
+using Application.Services.NotificationServices;
 using Application.Services.OwnerServices;
 using Domain.Constants;
 using Domain.Entities.Auth;
@@ -44,6 +45,7 @@ public static class InfrastructureServiceRegistration
 
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<MqttInboundOptions>(configuration.GetSection(MqttInboundOptions.SectionName));
+        services.Configure<MqttOutboxOptions>(configuration.GetSection(MqttOutboxOptions.SectionName));
         var authOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
         if (string.IsNullOrWhiteSpace(authOptions.Jwt.SigningKey) || authOptions.Jwt.SigningKey.Length < 32)
         {
@@ -107,6 +109,8 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAuthSessionRepository, AuthSessionRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();
+        services.AddScoped<IDeviceCommandRepository, DeviceCommandRepository>();
+        services.AddScoped<IAlarmEventRepository, AlarmEventRepository>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -115,13 +119,19 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDeviceAdminService, DeviceAdminService>();
         services.AddScoped<IDeviceOwnershipService, DeviceOwnershipService>();
         services.AddScoped<IOwnerDeviceQueryService, OwnerDeviceQueryService>();
+        services.AddScoped<IOwnerDeviceCommandService, OwnerDeviceCommandService>();
         services.AddScoped<IDeviceInboundTelemetryService, DeviceInboundTelemetryService>();
+        services.AddScoped<IAlarmEventIngestService, AlarmEventIngestService>();
+        services.AddScoped<INotificationRecipientGuard, NotificationRecipientGuard>();
         services.AddScoped<IMqttInboundDispatcher, MqttInboundDispatcher>();
+        services.AddScoped<IOutboxDispatchService, OutboxDispatchService>();
+        services.AddSingleton<IMqttOutboundPublisher, NoOpMqttOutboundPublisher>();
         services.AddScoped<IDeviceCredentialHasher, DeviceCredentialHasher>();
         services.AddScoped<IDeviceBrokerAccessService, NoOpDeviceBrokerAccessService>();
         services.AddScoped<IOwnerLookup, OwnerLookup>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddHostedService<MqttInboundHostedService>();
+        services.AddHostedService<MqttOutboxHostedService>();
 
         return services;
     }

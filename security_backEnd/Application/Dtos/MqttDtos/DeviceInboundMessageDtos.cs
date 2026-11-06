@@ -38,9 +38,35 @@ public sealed class DeviceInboundIngestResultDto
     public bool StateApplied { get; set; }
     public bool LastSeenUpdated { get; set; }
     public bool OwnershipActivated { get; set; }
+    public bool CommandClosed { get; set; }
     public string? ArmState { get; set; }
     public string? SirenState { get; set; }
     public string? HealthState { get; set; }
     public bool ClockTrusted { get; set; }
     public DateTimeOffset? LastSeenAt { get; set; }
+}
+
+/// <summary>
+/// Result of ingesting draft ALARM_EVENT / EVENT_LOSS_REPORT / DEVICE_FAULT payloads (T-06).
+/// </summary>
+public sealed class AlarmEventIngestResultDto
+{
+    public string Outcome { get; set; } = string.Empty;
+    public string? RejectionCode { get; set; }
+    public string? RejectionMessage { get; set; }
+    public Guid DeviceId { get; set; }
+    public string? MessageType { get; set; }
+    public Guid? AlarmEventId { get; set; }
+    public Guid? EventUid { get; set; }
+    public Guid? NotificationId { get; set; }
+    public Guid? OutboxMessageId { get; set; }
+    public Guid? EventLossReportId { get; set; }
+    public Guid? DeviceFaultId { get; set; }
+    public bool EventCreated { get; set; }
+    public bool NotificationCreated { get; set; }
+    public bool EventPersistedQueued { get; set; }
+    public bool WasBuffered { get; set; }
+    public bool ClockTrusted { get; set; }
+    public DateTimeOffset? ReceivedAt { get; set; }
+    public DateTimeOffset? OccurredDeviceAt { get; set; }
 }
