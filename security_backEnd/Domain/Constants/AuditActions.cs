@@ -9,6 +9,7 @@ public static class AuditActions
     public const string DeviceRegistered = "DEVICE_REGISTERED";
     public const string DeviceLinked = "DEVICE_LINKED";
     public const string OwnershipActivated = "OWNERSHIP_ACTIVATED";
+    public const string DeviceArchived = "DEVICE_ARCHIVED";
 
     public static class TargetTypes
     {

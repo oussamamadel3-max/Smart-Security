@@ -114,6 +114,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDeviceOwnershipService, DeviceOwnershipService>();
         services.AddScoped<IOwnerDeviceQueryService, OwnerDeviceQueryService>();
         services.AddScoped<IDeviceCredentialHasher, DeviceCredentialHasher>();
+        services.AddScoped<IDeviceBrokerAccessService, NoOpDeviceBrokerAccessService>();
         services.AddScoped<IOwnerLookup, OwnerLookup>();
         services.AddScoped<IAuditLogService, AuditLogService>();
 

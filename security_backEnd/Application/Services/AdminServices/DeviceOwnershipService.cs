@@ -173,6 +173,9 @@ public sealed class DeviceOwnershipService : IDeviceOwnershipService
             var device = await _devices.GetByIdAsync(deviceId, ct)
                 ?? throw new NotFoundException("الجهاز غير موجود.", "DEVICE_NOT_FOUND");
 
+            if (device.LifecycleStatus == DbStatusCodes.DeviceLifecycle.Retired)
+                throw new ConflictException("لا يمكن إقرار ملكية لجهاز مؤرشف.", "DEVICE_RETIRED");
+
             var state = await _devices.GetStateAsync(deviceId, ct)
                 ?? throw new ConflictException("حالة الجهاز غير مهيأة.", "DEVICE_STATE_MISSING");
 

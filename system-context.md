@@ -26,7 +26,7 @@
 
 | مجلد | الدور | سياق | تقدّم | مهمة جارية | عدّ |
 |-------|--------|-------|--------|------------|-----|
-| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-03** جزئية — التالية `SS-P2-030` | 2/13 |
+| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-04** التالية (T-03 ✓) | 3/13 |
 | `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | **T-01** قرارات G0 | 0/9 |
 | `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | **T-01** تأسيس المشروع | 0/8 |
 | `admin_web` | Flutter Web مالك + أدمن | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | **T-01** تأسيس Web | 0/8 |
@@ -39,7 +39,7 @@
 |--------|--------|-------------------|
 | **P0** | قرارات عتاد/عقود/بيئات | `security_esp` T-01 (G0) + `integration` T-01 |
 | **P1** | تجربة عتاد محلية | بعد G0 → `security_esp` T-02… |
-| **P2** | DB + MQTT محلي | باك T-01/T-02 ✓ · `SS-P2-010`/`SS-P2-020` ✓ · التالي باك `SS-P2-030` و`ops` T-01؛ نشر OWNERSHIP_SYNC الإنتاجي ينتظر G1/عامل MQTT |
+| **P2** | DB + MQTT محلي | باك T-01…T-03 ✓ · التالي باك `T-04` و`ops` T-01؛ نشر OWNERSHIP_SYNC/Broker الإنتاجي ينتظر G1/Mosquitto |
 | **P3** | شريحة متكاملة أولى | بعد G1: أوامر/حوادث + ESP MQTT + واجهة قائمة |
 | **P4…P7** | بقية SRS → واجهات → VPS → قبول G2 | حسب المهام في كل `*-context` |
 
@@ -87,9 +87,9 @@ ops T-02…T-06 (نشر/نسخ/ميداني)  +  integration T-05 (G2)
 
 ## لقطة حالة سريعة
 
-- Backend: T-01 وT-02 مكتملتان؛ داخل T-03 أُغلق `SS-P2-010` (2026-11-05) و`SS-P2-020` (2026-11-06: PENDING→ACTIVE + عرض محدود)؛ بقي `SS-P2-030` أرشفة الجهاز.
+- Backend: T-01…T-03 مكتملتان (2026-11-06 أُغلق `SS-P2-030` وأُغلقت T-03)؛ التالية **T-04** استقبال MQTT/عرض الحالة (لم تُبدأ). محوّل Mosquitto الحقيقي/AC-T-19 ما زال معلقاً.
 - بقية المجلدات: تخطيط بدون تنفيذ تطبيقي بعد (ما لم يُحدَّث في سياقها).
-- التالي: باك **SS-P2-030** · ESP **T-01** · integration **T-01** · ops **T-01** · تأسيس Flutter (**T-01** ويب/موبايل).
+- التالي: باك **T-04** · ESP **T-01** · integration **T-01** · ops **T-01** · تأسيس Flutter (**T-01** ويب/موبايل).
 
 ## كيف تُحدَّث ملفات السياق والتقدّم
 

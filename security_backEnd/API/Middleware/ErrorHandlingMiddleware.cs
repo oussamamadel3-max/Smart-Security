@@ -38,6 +38,7 @@ public sealed class ErrorHandlingMiddleware
             ConflictException c => (StatusCodes.Status409Conflict, c.ErrorCode, c.Message),
             NotFoundException n => (StatusCodes.Status404NotFound, n.ErrorCode, n.Message),
             BadRequestException b => (StatusCodes.Status400BadRequest, b.ErrorCode, b.Message),
+            ServiceUnavailableException s => (StatusCodes.Status503ServiceUnavailable, s.ErrorCode, s.Message),
             BusinessException biz => (StatusCodes.Status400BadRequest, biz.ErrorCode, biz.Message),
             _ => (StatusCodes.Status500InternalServerError, "INTERNAL_ERROR", "حدث خطأ غير متوقع.")
         };

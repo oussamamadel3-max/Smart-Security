@@ -52,6 +52,17 @@ public sealed class DevicesController : ControllerBase
         return ApiResponse.Success("تم إنشاء الربط المعلق.", dto, status: StatusCodes.Status201Created);
     }
 
+    /// <summary>
+    /// Archives a device: RETIRED + end ownership + revoke credentials/broker access (FR-007).
+    /// </summary>
+    [HttpPost("{deviceId:guid}/archive")]
+    public async Task<IResult> Archive(Guid deviceId, CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Devices.Manage);
+        var dto = await _devices.ArchiveAsync(deviceId, RequireUserId(), ct);
+        return ApiResponse.Success("تم أرشفة الجهاز وإبطال وصوله.", dto);
+    }
+
     private Guid RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");

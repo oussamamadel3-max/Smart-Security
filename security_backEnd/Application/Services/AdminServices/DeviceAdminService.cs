@@ -5,6 +5,7 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Constants;
 using Domain.Entities.Devices;
+using Domain.Entities.Operations;
 using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,17 +17,20 @@ public sealed class DeviceAdminService : IDeviceAdminService
     private readonly IUnitOfWork _uow;
     private readonly IAuditLogService _audit;
     private readonly IDeviceCredentialHasher _credentialHasher;
+    private readonly IDeviceBrokerAccessService _brokerAccess;
 
     public DeviceAdminService(
         IDeviceRepository devices,
         IUnitOfWork uow,
         IAuditLogService audit,
-        IDeviceCredentialHasher credentialHasher)
+        IDeviceCredentialHasher credentialHasher,
+        IDeviceBrokerAccessService brokerAccess)
     {
         _devices = devices;
         _uow = uow;
         _audit = audit;
         _credentialHasher = credentialHasher;
+        _brokerAccess = brokerAccess;
     }
 
     public async Task<RegisteredDeviceResponseDto> RegisterAsync(
@@ -154,6 +158,165 @@ public sealed class DeviceAdminService : IDeviceAdminService
             await tx.RollbackAsync(ct);
             throw;
         }
+    }
+
+    public async Task<ArchivedDeviceResponseDto> ArchiveAsync(
+        Guid deviceId,
+        Guid actorUserId,
+        CancellationToken ct = default)
+    {
+        await using var tx = await _uow.BeginTransactionAsync(ct);
+        try
+        {
+            var device = await _devices.GetByIdAsync(deviceId, ct)
+                ?? throw new NotFoundException("الجهاز غير موجود.", "DEVICE_NOT_FOUND");
+
+            if (device.LifecycleStatus == DbStatusCodes.DeviceLifecycle.Retired)
+                throw new ConflictException("الجهاز مؤرشف مسبقاً.", "DEVICE_ALREADY_RETIRED");
+
+            var now = DateTimeOffset.UtcNow;
+            var openOwnership = await _devices.GetOpenOwnershipAsync(deviceId, ct);
+            var ownershipEnded = false;
+            string? closedOwnershipStatus = null;
+            Guid? closedOwnershipId = null;
+            var ownershipSyncQueued = false;
+
+            if (openOwnership is not null)
+            {
+                var closedStatus = openOwnership.Status == DbStatusCodes.Ownership.Pending
+                    ? DbStatusCodes.Ownership.Cancelled
+                    : DbStatusCodes.Ownership.Ended;
+
+                openOwnership.Status = closedStatus;
+                openOwnership.EndedAt = now;
+                openOwnership.EndedByUserId = actorUserId;
+
+                device.CurrentOwnershipVersion += 1;
+                ownershipEnded = true;
+                closedOwnershipStatus = closedStatus;
+                closedOwnershipId = openOwnership.Id;
+
+                // New aggregate id: ux_outbox_messages_type_aggregate already holds the link-time row for this ownership.
+                var unlinkAggregateId = Guid.NewGuid();
+                var messageId = Guid.NewGuid();
+                var payload = BuildOwnershipUnlinkPayload(
+                    deviceId,
+                    messageId,
+                    device.CurrentOwnershipVersion);
+
+                _devices.AddOutboxMessage(new OutboxMessage
+                {
+                    Id = Guid.NewGuid(),
+                    AggregateType = OwnershipSyncDraft.OutboxAggregateType,
+                    AggregateId = unlinkAggregateId,
+                    MessageType = OwnershipSyncDraft.OutboxPublishMessageType,
+                    Payload = payload,
+                    CreatedAt = now,
+                    AvailableAt = now,
+                    ProcessedAt = null,
+                    AttemptCount = 0,
+                    LastErrorCode = null
+                });
+                ownershipSyncQueued = true;
+            }
+
+            var credentials = await _devices.ListCredentialsAsync(deviceId, ct);
+            var credentialsRevoked = 0;
+            foreach (var credential in credentials)
+            {
+                if (credential.RevokedAt is not null)
+                    continue;
+                credential.RevokedAt = now;
+                credentialsRevoked++;
+            }
+
+            device.LifecycleStatus = DbStatusCodes.DeviceLifecycle.Retired;
+            device.RetiredAt = now;
+            device.UpdatedAt = now;
+
+            await _audit.WriteAsync(
+                actorUserId,
+                AuditActions.DeviceArchived,
+                AuditActions.TargetTypes.Device,
+                deviceId,
+                DbStatusCodes.AuditResult.Success,
+                new
+                {
+                    hardwareUid = device.HardwareUid,
+                    displayName = device.DisplayName,
+                    lifecycleStatus = device.LifecycleStatus,
+                    retiredAt = now,
+                    ownershipEnded,
+                    closedOwnershipStatus,
+                    closedOwnershipId,
+                    ownershipVersion = device.CurrentOwnershipVersion,
+                    ownershipSyncQueued,
+                    credentialsRevoked,
+                    brokerAccessRevokeRequired = true
+                },
+                deviceId,
+                ct);
+
+            await _uow.SaveChangesAsync(ct);
+
+            // FR-007: broker ACL/session revoke must succeed before archive is declared complete.
+            try
+            {
+                await _brokerAccess.RevokeAccessAsync(device.Id, device.HardwareUid, ct);
+            }
+            catch (ServiceUnavailableException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw new ServiceUnavailableException(
+                    "تعذر إبطال وصول الجهاز لدى وسيط MQTT.",
+                    "DEVICE_BROKER_REVOKE_FAILED");
+            }
+
+            await tx.CommitAsync(ct);
+
+            return new ArchivedDeviceResponseDto
+            {
+                Id = device.Id,
+                HardwareUid = device.HardwareUid,
+                DisplayName = device.DisplayName,
+                LifecycleStatus = device.LifecycleStatus,
+                RetiredAt = now,
+                CurrentOwnershipVersion = device.CurrentOwnershipVersion,
+                OwnershipEnded = ownershipEnded,
+                ClosedOwnershipStatus = closedOwnershipStatus,
+                ClosedOwnershipId = closedOwnershipId,
+                OwnershipSyncQueued = ownershipSyncQueued,
+                CredentialsRevoked = credentialsRevoked,
+                HasActiveCredential = false,
+                BrokerAccessRevoked = true
+            };
+        }
+        catch
+        {
+            await tx.RollbackAsync(ct);
+            throw;
+        }
+    }
+
+    private static string BuildOwnershipUnlinkPayload(
+        Guid deviceId,
+        Guid messageId,
+        long ownershipVersion)
+    {
+        var payload = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = OwnershipSyncDraft.SchemaVersion,
+            ["deviceId"] = deviceId,
+            ["messageId"] = messageId,
+            ["messageType"] = OwnershipSyncDraft.MqttMessageType,
+            ["ownershipVersion"] = ownershipVersion,
+            ["isLinked"] = false
+        };
+
+        return JsonSerializer.Serialize(payload);
     }
 
     private CredentialParts BuildCredentialParts(RegisterDeviceCredentialDto credential)

@@ -8,6 +8,7 @@ using Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,11 +25,13 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
 
     private readonly string _connectionString;
     private readonly string _signingKey;
+    private readonly Action<IServiceCollection>? _configureTestServices;
 
-    public AuthApiFactory()
+    public AuthApiFactory(Action<IServiceCollection>? configureTestServices = null)
     {
         _connectionString = TestDbFactory.ResolveConnectionString("esp32_security_auth_http_test");
         _signingKey = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        _configureTestServices = configureTestServices;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -46,6 +49,9 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Auth:Cookie:SameSite", "Lax");
         builder.UseSetting("Auth:CsrfCookieName", "esp32_csrf");
         builder.UseSetting("Auth:CsrfHeaderName", "X-CSRF-TOKEN");
+
+        if (_configureTestServices is not null)
+            builder.ConfigureTestServices(_configureTestServices);
     }
 
     public async Task InitializeDatabaseAsync()

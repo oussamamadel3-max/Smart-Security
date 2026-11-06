@@ -45,6 +45,16 @@ public sealed class DeviceRepository : IDeviceRepository
     public Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceOwnerships.AnyAsync(o => o.DeviceId == deviceId && o.EndedAt == null, ct);
 
+    public async Task<IReadOnlyList<DeviceCredential>> ListCredentialsAsync(
+        Guid deviceId,
+        CancellationToken ct = default)
+    {
+        return await _db.DeviceCredentials
+            .Where(c => c.DeviceId == deviceId)
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync(ct);
+    }
+
     public void AddOwnership(DeviceOwnership ownership)
         => _db.DeviceOwnerships.Add(ownership);
 
@@ -61,6 +71,7 @@ public sealed class DeviceRepository : IDeviceRepository
             join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
             where ownership.OwnerUserId == ownerUserId
                   && ownership.EndedAt == null
+                  && device.LifecycleStatus != DbStatusCodes.DeviceLifecycle.Retired
                   && (ownership.Status == DbStatusCodes.Ownership.Pending
                       || ownership.Status == DbStatusCodes.Ownership.Active)
             orderby ownership.StartedAt descending

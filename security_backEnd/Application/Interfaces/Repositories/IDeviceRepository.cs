@@ -21,6 +21,8 @@ public interface IDeviceRepository
 
     Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default);
 
+    Task<IReadOnlyList<DeviceCredential>> ListCredentialsAsync(Guid deviceId, CancellationToken ct = default);
+
     void AddOwnership(DeviceOwnership ownership);
 
     void AddOutboxMessage(OutboxMessage message);

@@ -33,13 +33,13 @@
 
 | مشروع | ملف التقدّم | مكتمل / الكل | الجارية | النسبة |
 |--------|-------------|--------------|---------|--------|
-| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 2 / 13 | T-03 جزئية → SS-P2-030 | ~15% |
+| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 3 / 13 | التالية T-04 (لم تُبدأ) | ~23% |
 | ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 | T-01 | 0% |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 0 / 8 | T-01 | 0% |
 | ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 0 / 8 | T-01 | 0% |
 | تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |
 | تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | T-01 | 0% |
-| **المجموع** | — | **2 / 50** | — | **4%** |
+| **المجموع** | — | **3 / 50** | — | **6%** |
 
 ## سجل عام (معالم فقط)
 
@@ -50,10 +50,11 @@
 | 2026-11-04 | `security_backEnd` | إقرار إغلاق T-02 توثيقياً وفق تقرير Cursor بنتائج 60/60 اختباراً وبناء نظيف؛ T-03 التالية ولم يبدأ تنفيذها. |
 | 2026-11-05 | `security_backEnd` | إغلاق بطاقة **BE-02/SS-P2-010** (تسجيل جهاز ذرّي)؛ T-03 تبقى جزئية؛ التالية SS-P2-020. |
 | 2026-11-06 | `security_backEnd` | إغلاق بطاقة **BE-02/SS-P2-020** (ربط PENDING / إقرار الملكية)؛ T-03 تبقى جزئية (2/3)؛ التالية SS-P2-030. |
+| 2026-11-06 | `security_backEnd` | إغلاق **BE-02/SS-P2-030** وإغلاق **T-03** كاملة؛ التالية T-04 (لم تُبدأ). |
 
 ## التالي على مستوى النظام
 
-1. العقود والعتاد أولاً حيث يلزم؛ Backend عند **SS-P2-030** داخل T-03؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
+1. العقود والعتاد أولاً حيث يلزم؛ Backend عند **T-04**؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
 2. تأسيس Flutter: mobile/web **T-01**  
 3. لا أوامر/حوادث إنتاج قبل **G1**
 
@@ -64,4 +65,4 @@
 3. حدّث `*-context.md` إن تغيّر المانع أو الهوية أو التبعية — لا تكرر السجل الزمني هناك.
 4. علّم `[x]` في `*-development-tasks.md` فقط بعد القبول وتعريف الإنجاز.
 
-**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx يبقى 2/13 للباك؛ اكتمال بطاقة داخل T-03 لا يرفع العدّ حتى تُغلق T-03 كاملة.
+**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 3/13 للباك بعد إغلاق T-03؛ T-04 لم تُبدأ.
