@@ -16,4 +16,12 @@ public interface IDeviceAdminService
         Guid deviceId,
         Guid actorUserId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Admin overview of devices with owners, computed connectivity, and last known state (FR-008).
+    /// Does not grant ARM/DISARM/MUTE/TEST.
+    /// </summary>
+    Task<IReadOnlyList<AdminDeviceOverviewDto>> ListOverviewAsync(CancellationToken ct = default);
+
+    Task<AdminDeviceOverviewDto> GetOverviewAsync(Guid deviceId, CancellationToken ct = default);
 }

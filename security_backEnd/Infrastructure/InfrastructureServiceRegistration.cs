@@ -117,6 +117,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IPermissionGate, PermissionGate>();
         services.AddScoped<IOwnerAdminService, OwnerAdminService>();
         services.AddScoped<IDeviceAdminService, DeviceAdminService>();
+        services.AddScoped<IAdminAlertService, AdminAlertService>();
         services.AddScoped<IDeviceOwnershipService, DeviceOwnershipService>();
         services.AddScoped<IOwnerDeviceQueryService, OwnerDeviceQueryService>();
         services.AddScoped<IOwnerDeviceCommandService, OwnerDeviceCommandService>();

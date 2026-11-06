@@ -30,6 +30,26 @@ public sealed class DevicesController : ControllerBase
         _gate = gate;
     }
 
+    /// <summary>
+    /// Admin device overview: owners, computed connectivity, last known confirmed state (FR-008).
+    /// Read-only — no ARM/DISARM/MUTE/TEST.
+    /// </summary>
+    [HttpGet]
+    public async Task<IResult> ListOverview(CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Devices.View);
+        var items = await _devices.ListOverviewAsync(ct);
+        return ApiResponse.Success("عرض الأجهزة الإداري.", items);
+    }
+
+    [HttpGet("{deviceId:guid}")]
+    public async Task<IResult> GetOverview(Guid deviceId, CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Devices.View);
+        var item = await _devices.GetOverviewAsync(deviceId, ct);
+        return ApiResponse.Success("تفاصيل الجهاز الإدارية.", item);
+    }
+
     [HttpPost]
     public async Task<IResult> Register([FromBody] RegisterDeviceRequestDto request, CancellationToken ct)
     {

@@ -147,4 +147,42 @@ public sealed class DeviceRepository : IDeviceRepository
 
         return row;
     }
+
+    public async Task<IReadOnlyList<AdminDeviceRow>> ListAdminDevicesAsync(CancellationToken ct = default)
+    {
+        var rows = await (
+            from device in _db.Devices.AsNoTracking()
+            join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
+            join settings in _db.DeviceSettings.AsNoTracking() on device.Id equals settings.DeviceId
+            join ownership in _db.DeviceOwnerships.AsNoTracking().Where(o => o.EndedAt == null)
+                on device.Id equals ownership.DeviceId into ownershipJoin
+            from ownership in ownershipJoin.DefaultIfEmpty()
+            join owner in _db.Users.AsNoTracking()
+                on ownership.OwnerUserId equals owner.Id into ownerJoin
+            from owner in ownerJoin.DefaultIfEmpty()
+            orderby device.CreatedAt descending
+            select new AdminDeviceRow(device, state, settings, ownership, owner)
+        ).ToListAsync(ct);
+
+        return rows;
+    }
+
+    public async Task<AdminDeviceRow?> GetAdminDeviceAsync(Guid deviceId, CancellationToken ct = default)
+    {
+        var row = await (
+            from device in _db.Devices.AsNoTracking()
+            join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
+            join settings in _db.DeviceSettings.AsNoTracking() on device.Id equals settings.DeviceId
+            where device.Id == deviceId
+            join ownership in _db.DeviceOwnerships.AsNoTracking().Where(o => o.EndedAt == null)
+                on device.Id equals ownership.DeviceId into ownershipJoin
+            from ownership in ownershipJoin.DefaultIfEmpty()
+            join owner in _db.Users.AsNoTracking()
+                on ownership.OwnerUserId equals owner.Id into ownerJoin
+            from owner in ownerJoin.DefaultIfEmpty()
+            select new AdminDeviceRow(device, state, settings, ownership, owner)
+        ).SingleOrDefaultAsync(ct);
+
+        return row;
+    }
 }

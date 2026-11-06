@@ -1,3 +1,4 @@
+using Domain.Entities.Auth;
 using Domain.Entities.Devices;
 using Domain.Entities.Operations;
 
@@ -55,6 +56,13 @@ public interface IDeviceRepository
         Guid ownerUserId,
         Guid deviceId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Admin overview rows: device + state + settings + optional open ownership/owner.
+    /// </summary>
+    Task<IReadOnlyList<AdminDeviceRow>> ListAdminDevicesAsync(CancellationToken ct = default);
+
+    Task<AdminDeviceRow?> GetAdminDeviceAsync(Guid deviceId, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -65,3 +73,13 @@ public sealed record OwnerDeviceRow(
     DeviceOwnership Ownership,
     DeviceState State,
     DeviceSettings Settings);
+
+/// <summary>
+/// Admin device projection. Ownership/owner may be null when unlinked.
+/// </summary>
+public sealed record AdminDeviceRow(
+    Device Device,
+    DeviceState State,
+    DeviceSettings Settings,
+    DeviceOwnership? Ownership,
+    User? Owner);

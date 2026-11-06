@@ -16,6 +16,7 @@ public static class AuditActions
     public const string AlarmEventPersisted = "ALARM_EVENT_PERSISTED";
     public const string EventLossReportPersisted = "EVENT_LOSS_REPORT_PERSISTED";
     public const string DeviceFaultPersisted = "DEVICE_FAULT_PERSISTED";
+    public const string AdminAlertCreated = "ADMIN_ALERT_CREATED";
 
     public static class TargetTypes
     {
@@ -26,6 +27,7 @@ public static class AuditActions
         public const string AlarmEvent = "ALARM_EVENT";
         public const string EventLossReport = "EVENT_LOSS_REPORT";
         public const string DeviceFault = "DEVICE_FAULT";
+        public const string AdminAlert = "ADMIN_ALERT";
     }
 }
 

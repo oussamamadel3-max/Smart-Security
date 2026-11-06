@@ -160,6 +160,21 @@ public sealed class OwnerAdminService : IOwnerAdminService
         }
     }
 
+    public async Task<IReadOnlyList<AdminOwnerListItemDto>> ListOwnersAsync(CancellationToken ct = default)
+    {
+        var owners = await _users.GetUsersInRoleAsync(DbStatusCodes.RoleCodes.Owner);
+        return owners
+            .OrderByDescending(u => u.CreatedAt)
+            .Select(ToAdminListItem)
+            .ToList();
+    }
+
+    public async Task<AdminOwnerListItemDto> GetOwnerAsync(Guid ownerId, CancellationToken ct = default)
+    {
+        var user = await RequireOwnerAsync(ownerId);
+        return ToAdminListItem(user);
+    }
+
     public async Task ArchiveAsync(Guid ownerId, Guid actorUserId, CancellationToken ct = default)
     {
         await using var tx = await _uow.BeginTransactionAsync(ct);
@@ -225,5 +240,17 @@ public sealed class OwnerAdminService : IOwnerAdminService
         IsActive = user.IsActive,
         DeletedAt = user.DeletedAt,
         CreatedAt = user.CreatedAt
+    };
+
+    private static AdminOwnerListItemDto ToAdminListItem(User user) => new()
+    {
+        Id = user.Id,
+        UserName = user.UserName,
+        FullName = user.FullName,
+        Email = user.Email,
+        IsActive = user.IsActive,
+        DeletedAt = user.DeletedAt,
+        CreatedAt = user.CreatedAt,
+        UpdatedAt = user.UpdatedAt
     };
 }

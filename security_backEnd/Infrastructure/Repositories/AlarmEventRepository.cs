@@ -242,6 +242,80 @@ public sealed class AlarmEventRepository : IAlarmEventRepository
             .ToList();
     }
 
+    public void AddAdminAlert(AdminAlert alert)
+        => _db.AdminAlerts.Add(alert);
+
+    public Task<AdminAlert?> GetAdminAlertByIdAsync(Guid adminAlertId, CancellationToken ct = default)
+        => _db.AdminAlerts.AsNoTracking().SingleOrDefaultAsync(a => a.Id == adminAlertId, ct);
+
+    public Task<Notification?> FindAdminAlertNotificationAsync(
+        Guid recipientUserId,
+        Guid adminAlertId,
+        CancellationToken ct = default)
+        => _db.Notifications.AsNoTracking().SingleOrDefaultAsync(
+            n => n.RecipientUserId == recipientUserId && n.AdminAlertId == adminAlertId,
+            ct);
+
+    public async Task<(IReadOnlyList<(AdminAlert Alert, Notification? Notification)> Items, long TotalCount)> QueryAdminAlertsAsync(
+        Guid? recipientUserId,
+        Guid? senderUserId,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        var query = _db.AdminAlerts.AsNoTracking().AsQueryable();
+        if (recipientUserId is Guid recipient)
+            query = query.Where(a => a.RecipientUserId == recipient);
+        if (senderUserId is Guid sender)
+            query = query.Where(a => a.SenderUserId == sender);
+
+        var total = await query.LongCountAsync(ct);
+        var alerts = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+
+        if (alerts.Count == 0)
+            return (Array.Empty<(AdminAlert, Notification?)>(), total);
+
+        var alertIds = alerts.Select(a => a.Id).ToList();
+        var notifications = await _db.Notifications.AsNoTracking()
+            .Where(n => n.AdminAlertId != null && alertIds.Contains(n.AdminAlertId.Value))
+            .ToListAsync(ct);
+        var byAlert = notifications
+            .Where(n => n.AdminAlertId.HasValue)
+            .GroupBy(n => n.AdminAlertId!.Value)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.CreatedAt).First());
+
+        var items = alerts
+            .Select(a => (a, byAlert.TryGetValue(a.Id, out var n) ? n : null))
+            .ToList();
+        return (items, total);
+    }
+
+    public async Task<(IReadOnlyList<DeviceFault> Items, long TotalCount)> QueryDeviceFaultsAsync(
+        Guid? deviceId,
+        string? status,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        var query = _db.DeviceFaults.AsNoTracking().AsQueryable();
+        if (deviceId is Guid id)
+            query = query.Where(f => f.DeviceId == id);
+        if (!string.IsNullOrWhiteSpace(status))
+            query = query.Where(f => f.Status == status);
+
+        var total = await query.LongCountAsync(ct);
+        var items = await query
+            .OrderByDescending(f => f.ReceivedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+        return (items, total);
+    }
+
     public void Detach(object entity)
         => _db.Entry(entity).State = EntityState.Detached;
 

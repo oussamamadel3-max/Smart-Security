@@ -96,6 +96,29 @@ public interface IAlarmEventRepository
         Guid recipientUserId,
         CancellationToken ct = default);
 
+    void AddAdminAlert(AdminAlert alert);
+
+    Task<AdminAlert?> GetAdminAlertByIdAsync(Guid adminAlertId, CancellationToken ct = default);
+
+    Task<Notification?> FindAdminAlertNotificationAsync(
+        Guid recipientUserId,
+        Guid adminAlertId,
+        CancellationToken ct = default);
+
+    Task<(IReadOnlyList<(AdminAlert Alert, Notification? Notification)> Items, long TotalCount)> QueryAdminAlertsAsync(
+        Guid? recipientUserId,
+        Guid? senderUserId,
+        int skip,
+        int take,
+        CancellationToken ct = default);
+
+    Task<(IReadOnlyList<DeviceFault> Items, long TotalCount)> QueryDeviceFaultsAsync(
+        Guid? deviceId,
+        string? status,
+        int skip,
+        int take,
+        CancellationToken ct = default);
+
     /// <summary>
     /// Clears tracked inserts after a unique-constraint race so the ambient transaction can continue.
     /// </summary>

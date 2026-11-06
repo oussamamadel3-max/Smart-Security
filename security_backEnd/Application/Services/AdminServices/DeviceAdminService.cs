@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Application.Common.Devices;
 using Application.Dtos.AdminDtos;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -397,6 +398,72 @@ public sealed class DeviceAdminService : IDeviceAdminService
         if (trimmed.Length is 0 || trimmed.Length > maxLength)
             throw new BadRequestException(message, code);
         return trimmed;
+    }
+
+    public async Task<IReadOnlyList<AdminDeviceOverviewDto>> ListOverviewAsync(CancellationToken ct = default)
+    {
+        var rows = await _devices.ListAdminDevicesAsync(ct);
+        var now = DateTimeOffset.UtcNow;
+        return rows.Select(r => MapOverview(r, now)).ToList();
+    }
+
+    public async Task<AdminDeviceOverviewDto> GetOverviewAsync(Guid deviceId, CancellationToken ct = default)
+    {
+        var row = await _devices.GetAdminDeviceAsync(deviceId, ct)
+            ?? throw new NotFoundException("الجهاز غير موجود.", "DEVICE_NOT_FOUND");
+        return MapOverview(row, DateTimeOffset.UtcNow);
+    }
+
+    private static AdminDeviceOverviewDto MapOverview(AdminDeviceRow row, DateTimeOffset utcNow)
+    {
+        var ownership = row.Ownership;
+        var awaitingAck = ownership is not null
+            && row.State.ConfirmedOwnershipVersion < ownership.Version;
+
+        return new AdminDeviceOverviewDto
+        {
+            DeviceId = row.Device.Id,
+            HardwareUid = row.Device.HardwareUid,
+            DisplayName = row.Device.DisplayName,
+            LifecycleStatus = row.Device.LifecycleStatus,
+            CurrentOwnershipVersion = row.Device.CurrentOwnershipVersion,
+            OwnershipId = ownership?.Id,
+            OwnershipStatus = ownership?.Status,
+            OwnerUserId = ownership?.OwnerUserId,
+            OwnerUserName = row.Owner?.UserName,
+            OwnerFullName = row.Owner?.FullName,
+            OwnershipVersion = ownership?.Version,
+            ConfirmedOwnershipVersion = row.State.ConfirmedOwnershipVersion,
+            AwaitingOwnershipAck = awaitingAck,
+            Indicators = MapIndicators(row, utcNow)
+        };
+    }
+
+    private static AdminDeviceIndicatorsDto MapIndicators(AdminDeviceRow row, DateTimeOffset utcNow)
+    {
+        // Connection computed only; arm/siren/health remain last device-confirmed values when OFFLINE.
+        // Never invent HEALTHY — registration defaults to UNKNOWN until a real diagnostic arrives.
+        var connection = DeviceConnectivity.ComputeStatus(
+            row.State.LastSeenAt,
+            row.Settings.HeartbeatTimeoutSeconds,
+            utcNow);
+
+        return new AdminDeviceIndicatorsDto
+        {
+            ConnectionStatus = connection,
+            ArmState = row.State.ArmState,
+            SirenState = row.State.SirenState,
+            HealthState = row.State.HealthState,
+            HealthCode = row.State.HealthCode,
+            LastSeenAt = row.State.LastSeenAt,
+            LastStateAt = row.State.LastStateAt,
+            StateSequence = row.State.StateSequence,
+            ClockTrusted = row.State.ClockTrusted,
+            CurrentAlarmEventUid = row.State.CurrentAlarmEventUid,
+            PowerSource = row.State.PowerSource,
+            BatteryPercent = row.State.BatteryPercent,
+            HeartbeatTimeoutSeconds = row.Settings.HeartbeatTimeoutSeconds
+        };
     }
 
     private static bool IsUniqueHardwareUidViolation(DbUpdateException ex)

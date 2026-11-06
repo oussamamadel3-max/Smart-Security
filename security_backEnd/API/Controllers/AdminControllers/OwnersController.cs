@@ -25,6 +25,22 @@ public sealed class OwnersController : ControllerBase
         _gate = gate;
     }
 
+    [HttpGet]
+    public async Task<IResult> List(CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Users.View);
+        var items = await _owners.ListOwnersAsync(ct);
+        return ApiResponse.Success("قائمة المالكين.", items);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IResult> Get(Guid id, CancellationToken ct)
+    {
+        await _gate.EnsureAll(SystemPermissions.Users.View);
+        var item = await _owners.GetOwnerAsync(id, ct);
+        return ApiResponse.Success("تفاصيل المالك.", item);
+    }
+
     [HttpPost]
     public async Task<IResult> Create([FromBody] CreateOwnerRequestDto request, CancellationToken ct)
     {
