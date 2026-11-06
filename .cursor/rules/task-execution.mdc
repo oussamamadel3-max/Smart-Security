@@ -1,6 +1,9 @@
 ---
+
 description: Context-driven execution, faithful index.html-to-Flutter UI implementation, and controlled task closure across the Smart Security System monorepo.
+
 alwaysApply: true
+
 ---
 
 # Smart Security System — Context-Driven Task Execution
@@ -27,11 +30,17 @@ Use full task IDs (for example, `MOB-T-01`), not bare `T-01`, because every proj
 Read in this order:
 
 1. Root `AGENTS.md`.
+
 2. Root `system-context.md` and `system-progress.md`.
+
 3. `docs/EXECUTION_SEQUENCE.md` and relevant SRS / DB design / implementation specifications.
+
 4. The selected project's `{prefix}-context.md`, `{prefix}-development-plan.md`, `{prefix}-development-tasks.md`, `{prefix}-current.md`, `{prefix}-progress.md`.
+
 5. `integration/integration-definition-of-done.md` and relevant accepted API/MQTT contracts and acceptance cases.
+
 6. Actual source code, tests, migrations, and Git working-tree state.
+
 7. For any UI-related task, find and inspect the approved `index.html` design and its referenced assets before changing Flutter code (see Section 3A).
 
 Never use a planning claim as proof that a feature is implemented. If a cited file is missing, report it; do not invent it. When a Word master and Markdown derivative disagree, treat the authoritative Word master as the source of requirements and flag the mismatch instead of silently changing the requirement.
@@ -43,9 +52,13 @@ Locate the exact task block in `{prefix}-development-tasks.md`. Identify its req
 Before implementation:
 
 - Verify dependencies and stage gates `G0`/`G1`/`G2` where applicable; distinguish drafts from approved contracts.
+
 - Check whether work was already implemented; avoid duplication.
+
 - Inspect `git status` / `git diff` and preserve pre-existing changes.
+
 - Identify cross-project contract changes requiring explicit approval.
+
 - Resolve nonmaterial implementation details within the approved scope; stop and report **only real blockers or unapproved changes to safety, security, schema, or shared contracts**.
 
 Explicitly distinguish `READY`, `BLOCKED`, and `PARTIALLY READY`. Do not fabricate an approval, test result, hardware measurement, API endpoint, secret, or production value.
@@ -53,14 +66,23 @@ Explicitly distinguish `READY`, `BLOCKED`, and `PARTIALLY READY`. Do not fabrica
 ## 3. Implement exactly the selected task
 
 - Respect Clean Architecture and existing project conventions; minimize unrelated refactoring.
+
 - Keep business logic and authorization on the server; Flutter must not use MQTT for ordinary controls.
+
 - Never equate HTTP success or MQTT PUBACK with device execution. Only device-confirmed actual state is authoritative. `COMMAND_ACK` includes actual state plus `resultStateSequence`; the final transport contract still requires G1 approval.
+
 - Initial device linking is `PENDING`; a transfer opens a new `ACTIVE` server-side ownership immediately. A connected new owner may submit a command request, but **publishing/executing it waits for device acknowledgment of the new ownership version**.
+
 - Reject unsafe/stale/expired or conflicting commands according to the approved contract; `TIMED_OUT` is an unknown execution outcome until reconciliation.
+
 - Do not expose or log credentials, access/refresh tokens, Wi-Fi passwords, or signing keys.
+
 - If adding EF Core entity properties representing DB columns, add an accurate XML documentation comment explaining each field.
+
 - Do not alter SRS, decisions, shared contracts, or other projects without the relevant approval.
+
 - Never run migrations or destructive tests against production, staging, or shared databases without explicit authorization. Prefer isolated test databases.
+
 - Do not `git add`, commit, push, reset, or modify branches without explicit authorization.
 
 ## 3A. Mandatory UI workflow — only when the selected task includes a screen or UI change
@@ -70,69 +92,123 @@ This section applies when implementing or editing Flutter Web (`admin_web/`) or 
 ### Discover the actual design source
 
 1. Find the user-approved **`index.html`** in the repository. Inspect its exact path, HTML structure, inline/external CSS, JavaScript, referenced images, SVGs, fonts, icon libraries, and responsive rules. If the file is missing, locate likely candidates and report the missing design rather than inventing a substitute. If there are multiple `index.html` files, identify which corresponds to the requested project/screen; ask only when the intended source cannot be established.
+
 2. Identify the target screen/section from `index.html`, its navigation, UI states and layout. Build a mapping from the approved design's sections/screens to the selected `WEB-T-*` or `MOB-T-*` task. Do not assume every section of one `index.html` must be implemented in the current task.
+
 3. Treat `index.html` and its actual assets as the **visual reference**, while SRS, the task and approved API/auth contracts govern **functional behaviour**. If functionality in the HTML prototype contradicts approved security or business rules, keep the approved behaviour and report the discrepancy.
+
 4. If `index.html` uses demo data, fake logins, browser storage, mock endpoints or purely visual interactions, **do not port those as production behaviour**. Document them and wire only real supported API contracts; otherwise show an explicit unavailable/integration-pending state within scope.
 
 ### Implement in the project's existing Flutter app
 
 - Translate the approved HTML/CSS design into idiomatic **Flutter widgets**, theme tokens and reusable components. Do not embed or run the entire HTML document using WebView / iframe merely to claim a Flutter implementation; only use such embedding if the task explicitly authorizes it.
+
 - Preserve the approved visual composition as closely as practical: Arabic RTL, text direction, typography, color values, spacing, sizing, alignment, corner radii, borders, shadows, icons, images, hover/focus/pressed states and navigation. Use the actual assets when licensed/available and register them correctly in `pubspec.yaml` where applicable.
+
 - Account for Flutter rendering differences from HTML/CSS. Translate CSS breakpoints into Flutter responsive layouts for the specified Web/Mobile viewport sizes. Do not force a desktop HTML layout onto phone screens; use an approved mobile reference if present. If none is provided, make only minimal, clearly documented responsive adaptations without inventing a new design language.
+
 - Preserve existing application architecture, routing, state management and accessibility conventions; do not introduce a second parallel architecture or unrelated screen redesign.
+
 - Wire UI to real **HTTPS Backend API** contracts when they exist. Respect role/ownership boundaries and the implemented auth architecture (Web: memory access token and secure HttpOnly refresh cookie; Mobile: secure token storage, as applicable); implement loading, empty, failed, unauthorized, pending and timeout states relevant to the screen.
+
 - Device `ARM`/`DISARM`, alarm mute and similar controls must show a pending request independently from the **device-confirmed** actual state; do not optimistically claim execution from HTTP 202. Preserve initial `PENDING` link vs `ACTIVE` ownership after transfer and command publication hold until ownership synchronization.
 
 ### Verify visual fidelity separately from functional correctness
 
 1. Run `flutter analyze`, applicable tests and build for the UI target where possible.
+
 2. Render the implemented screen at **the same viewport size** as the approved `index.html` reference and capture screenshots of both (when a working browser/rendering environment is available).
+
 3. Compare actual layout, colors, font metrics, RTL placement, spacing, assets, scrolling and interactive states; correct material differences, then repeat the comparison. Inspect any relevant browser-console or Flutter rendering/overflow errors.
+
 4. Test supported responsive sizes and functional states. Use golden/widget tests where practical, but do not imply a golden test proves API integration or permissions.
+
 5. In the Arabic report, give **two separate assessments**: `Visual Fidelity` (match / mismatches / unverified) and `Functional Acceptance` (verified / partial / blocked). Identify missing assets, absent approved mobile layouts and any screenshot comparison that could not be performed. **Never claim pixel-perfect parity without verified evidence.**
 
 The usual pre-closure/closure rule still applies: do not check UI task boxes or update final progress before `APPROVE TASK CLOSURE: <TASK_ID>`.
 
-## 4. Verify with evidence
+**## 3B. Mandatory EF Core concurrency and consistency safeguards — when database state is modified
+
+Apply these rules to **every task that reads and writes shared database state**, especially MQTT consumers, background workers, command processing, ownership changes, authentication, and any concurrent API operations. Do not restrict these safeguards to a single task.
+
+1. **Identify the invariant first.** Inspect existing entities, DB constraints, indexes, provider, transaction boundaries, concurrency tokens, and the accepted SRS/contracts. Specify which updates must be ordered, unique, monotonic, or atomic. Do not invent state-machine transitions or protocol rules.
+2. **Do not use read-then-write alone as a concurrency guarantee.** Reading an entity, checking a version/sequence in application memory, and later calling `SaveChangesAsync` can overwrite newer data. Use a database-enforced guard appropriate to the invariant: conditional atomic update (`ExecuteUpdateAsync` with all relevant predicates), optimistic concurrency with a checked concurrency token and bounded retry, a suitable transaction/locking strategy, or a unique constraint plus conflict handling.
+3. **Check affected rows and failure semantics.** Treat zero affected rows from a guarded update as a stale/conflicting/nonexistent update to classify, not as a successful state change. Handle `DbUpdateConcurrencyException` and database unique-constraint violations explicitly when applicable. Never turn a conflict into a silent overwrite.
+4. **Respect EF Core tracking.** `ExecuteUpdateAsync` bypasses the change tracker and executes immediately; avoid subsequently saving stale tracked entities over the same columns. Synchronize/reload tracked state or isolate the operation. A `DbContext` is not thread-safe: never share it across concurrent MQTT messages, jobs, or requests; use properly scoped contexts.
+5. **Protect first-write races.** If a row might not exist, make its creation safe under concurrent first messages using the approved unique key/constraint and conflict handling; a conditional `UPDATE` alone does not address simultaneous inserts.
+6. **Use transactions when multiple dependent writes must agree.** Distinguish independent heartbeat/last-seen updates from accepted authoritative state updates according to approved semantics; never let a stale message mutate protected state indirectly. Do not assume a transaction alone makes a nonconditional sequence check safe.
+7. **Honor protocol ordering and identity.** For MQTT state, enforce the approved device identity, schema, `stateSequence`, reset/epoch and `clockTrusted` semantics; only device-confirmed actual state can change authoritative device state. An ACK/PUBACK or an HTTP success is not evidence of execution. Do not infer `is_online` from an unapproved stored boolean when the contract requires computing it from `last_seen_at` and timeout.
+8. **Avoid unnecessary schema changes.** Reuse existing concurrency controls before introducing columns, constraints, or migrations. Any unapproved schema/shared-contract change must be reported and approved under Section 2. Document each new entity DB-column property with accurate XML comments.
+
+**Required concurrency evidence:** where the task changes contended state, test concurrent requests/messages and intentionally out-of-order events (including duplicate sequences and concurrent first creation where applicable). Assert the **persisted final database state**, not merely the service response. Run these checks against the actual production database **provider** in an isolated disposable test database when possible; never run destructive tests against live/shared environments. EF Core InMemory, mocks, or SQLite substituted for PostgreSQL do not prove PostgreSQL concurrency behavior. If the required provider is unavailable, mark the database-specific behavior `NOT VERIFIED` and disclose the missing evidence.
+
+## 4. Verify with evidence**
 
 Run the applicable build, lint/analyze, unit tests, integration tests, and acceptance scenarios where the environment permits. For every relevant checklist item classify:
 
 - `VERIFIED`: implemented and supported by named tests / observable evidence.
+
 - `PARTIAL`: only partly implemented or tested.
+
 - `BLOCKED`: dependent on an unresolved approval or prerequisite.
+
 - `NOT VERIFIED`: evidence could not be obtained.
 
 Record exact paths/symbols and actual test counts. A passing build does not prove requirements, a passing mock test does not prove real PostgreSQL/hardware, and an unrun test is never a pass. Do not claim `G0`, `G1`, or `G2` closed unless the required sign-offs and evidence exist.
 
-## 5. Pre-closure report and permitted progress updates
+**## 4A. Actual test execution and honest acceptance evidence
+
+- **Run, do not merely write, tests.** Execute the relevant build, lint/analyze, unit, integration, and acceptance commands available for the selected task. For UI tasks, also follow the separate visual and functional verification in Section 3A. For Backend/EF Core/MQTT, use isolated real-provider / broker integration tests where feasible, including failure, authorization, identity, stale-message, and concurrency paths.
+- **Report observed outcomes exactly.** For each command record the command, environment/provider, exit status, passed/failed/skipped counts when emitted, and whether it actually exercised the acceptance criterion. Do not fabricate test runs, screenshots, database/provider behavior, or integration success.
+- **Separate evidence levels.** Unit/mocked results, provider-backed integration results, device/hardware tests, and end-to-end acceptance tests are different. A build pass, a unit test pass, or HTTP 202 cannot substitute for verified device execution or actual state persistence.
+- **If execution is blocked**, state the concrete reason (for example Docker/Broker unavailable), list the unrun tests, mark their criteria `NOT VERIFIED` or `BLOCKED` as appropriate, and provide reproducible commands for later execution. Do not mark them passed.
+- **Do not silently broaden the work.** Fix defects needed for this task within its scope; report unrelated existing failures separately. Do not modify test expectations merely to make the suite green.
+- **Acceptance remains evidence-based and approval-gated.** Even if every test passes, the agent may only report `READY TO CLOSE`. It must not mark the task complete, check its boxes, advance progress pointers, or start another task without the exact user's closure approval under Section 6.
+
+## 5. Pre-closure report and permitted progress updates**
 
 After implementing the task, report in **Arabic** (keep technical identifiers in English):
 
 1. Task ID and scope; dependencies and gate state.
+
 2. Actual changes by file.
+
 3. Checklist-to-evidence matrix (`VERIFIED` / `PARTIAL` / `BLOCKED` / `NOT VERIFIED`).
+
 4. Actual build and test commands and outcomes (passed, failed, skipped); for UI tasks include the `index.html` source path, visual comparison evidence and any remaining design differences.
+
 5. Remaining risks and decisions.
+
 6. Verdict: `READY TO CLOSE` or `NOT READY TO CLOSE`.
+
 7. **Learning takeaway:** one concrete concept demonstrated in the implementation, why the approach works, when to apply it, and a practical check.
 
 You may update `{prefix}-current.md` with factual in-progress status if needed, but **do not check off tasks, change final counts, or advance the task pointer** before explicit closure approval.
 
 ## 6. Close and synchronize documentation only after approval
 
-Require an explicit user instruction such as:
+Require an **explicit user instruction for the exact task**, in the form:
 
-`APPROVE TASK CLOSURE: MOB-T-01`
+`APPROVE TASK CLOSURE: <FULL_TASK_ID>`
+
+For example: `APPROVE TASK CLOSURE: MOB-T-01`. Statements such as "continue", "tests passed", "looks good", or a request to execute the task **do not** authorize closure. This requirement applies to Backend, ESP, Mobile, Web, Integration, and Ops tasks alike.
 
 Then, for that task **only**:
 
 1. Revalidate the relevant evidence and all acceptance criteria.
+
 2. Mark `[x]` only for proved checklist items in `{prefix}-development-tasks.md`; close the task only when all required criteria pass.
+
 3. Update `{prefix}-progress.md` with truthful completed / pending counts, percentages, dated evidence, and outstanding blockers.
+
 4. Update `{prefix}-current.md` to the next dependency-eligible task or to a blocked/waiting state. **Do not start the next task.**
+
 5. Update `{prefix}-context.md` only if the project's overall state, dependency, or approved decision changed.
+
 6. Recompute `system-progress.md` from the six projects' task states, not from an estimated percentage.
+
 7. Update `system-context.md` only for materially changed cross-project facts or decisions.
+
 8. Leave `{prefix}-development-plan.md`, SRS, DB specification, and shared integration contracts unchanged unless a separately approved requirement change demands updating them.
 
 Verify that task status, current pointer, progress totals, and cross-project totals agree. Include a summary of documentation changes and unresolved caveats. Never imply a migration was deployed or hardware/staging was tested unless it actually was.

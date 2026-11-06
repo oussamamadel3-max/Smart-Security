@@ -182,6 +182,11 @@ public sealed class DeviceOwnershipHttpTests : IAsyncLifetime
         Assert.False(row.GetProperty("awaitingOwnershipAck").GetBoolean());
         Assert.True(row.GetProperty("canControl").GetBoolean());
         Assert.False(row.TryGetProperty("armState", out _));
+        Assert.True(row.TryGetProperty("indicators", out var indicators));
+        Assert.Equal(JsonValueKind.Object, indicators.ValueKind);
+        Assert.Equal(DbStatusCodes.Arm.Unknown, indicators.GetProperty("armState").GetString());
+        Assert.Equal(DbStatusCodes.Diagnostic.Unknown, indicators.GetProperty("healthState").GetString());
+        Assert.Equal(MqttInboundDraft.ConnectionStatus.Offline, indicators.GetProperty("connectionStatus").GetString());
     }
 
     [Fact]

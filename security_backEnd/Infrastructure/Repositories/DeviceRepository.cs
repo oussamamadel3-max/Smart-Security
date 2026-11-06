@@ -37,6 +37,19 @@ public sealed class DeviceRepository : IDeviceRepository
     public Task<DeviceState?> GetStateAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceStates.SingleOrDefaultAsync(s => s.DeviceId == deviceId, ct);
 
+    public async Task<DeviceState?> GetStateForUpdateAsync(Guid deviceId, CancellationToken ct = default)
+    {
+        // Acquire a row-level lock before EF tracks the entity so concurrent STATE/ACK writers serialize.
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM device_states WHERE device_id = {deviceId} FOR UPDATE",
+            ct);
+
+        return await _db.DeviceStates.SingleOrDefaultAsync(s => s.DeviceId == deviceId, ct);
+    }
+
+    public Task<DeviceSettings?> GetSettingsAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.DeviceSettings.SingleOrDefaultAsync(s => s.DeviceId == deviceId, ct);
+
     public Task<DeviceOwnership?> GetOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceOwnerships.SingleOrDefaultAsync(
             o => o.DeviceId == deviceId && o.EndedAt == null,
@@ -44,6 +57,11 @@ public sealed class DeviceRepository : IDeviceRepository
 
     public Task<bool> HasOpenOwnershipAsync(Guid deviceId, CancellationToken ct = default)
         => _db.DeviceOwnerships.AnyAsync(o => o.DeviceId == deviceId && o.EndedAt == null, ct);
+
+    public Task<bool> HasActiveCredentialAsync(Guid deviceId, CancellationToken ct = default)
+        => _db.DeviceCredentials.AnyAsync(
+            c => c.DeviceId == deviceId && c.RevokedAt == null,
+            ct);
 
     public async Task<IReadOnlyList<DeviceCredential>> ListCredentialsAsync(
         Guid deviceId,
@@ -69,15 +87,38 @@ public sealed class DeviceRepository : IDeviceRepository
             from ownership in _db.DeviceOwnerships.AsNoTracking()
             join device in _db.Devices.AsNoTracking() on ownership.DeviceId equals device.Id
             join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
+            join settings in _db.DeviceSettings.AsNoTracking() on device.Id equals settings.DeviceId
             where ownership.OwnerUserId == ownerUserId
                   && ownership.EndedAt == null
                   && device.LifecycleStatus != DbStatusCodes.DeviceLifecycle.Retired
                   && (ownership.Status == DbStatusCodes.Ownership.Pending
                       || ownership.Status == DbStatusCodes.Ownership.Active)
             orderby ownership.StartedAt descending
-            select new OwnerDeviceRow(device, ownership, state)
+            select new OwnerDeviceRow(device, ownership, state, settings)
         ).ToListAsync(ct);
 
         return rows;
+    }
+
+    public async Task<OwnerDeviceRow?> GetOpenOwnershipDeviceForOwnerAsync(
+        Guid ownerUserId,
+        Guid deviceId,
+        CancellationToken ct = default)
+    {
+        var row = await (
+            from ownership in _db.DeviceOwnerships.AsNoTracking()
+            join device in _db.Devices.AsNoTracking() on ownership.DeviceId equals device.Id
+            join state in _db.DeviceStates.AsNoTracking() on device.Id equals state.DeviceId
+            join settings in _db.DeviceSettings.AsNoTracking() on device.Id equals settings.DeviceId
+            where ownership.OwnerUserId == ownerUserId
+                  && ownership.DeviceId == deviceId
+                  && ownership.EndedAt == null
+                  && device.LifecycleStatus != DbStatusCodes.DeviceLifecycle.Retired
+                  && (ownership.Status == DbStatusCodes.Ownership.Pending
+                      || ownership.Status == DbStatusCodes.Ownership.Active)
+            select new OwnerDeviceRow(device, ownership, state, settings)
+        ).SingleOrDefaultAsync(ct);
+
+        return row;
     }
 }

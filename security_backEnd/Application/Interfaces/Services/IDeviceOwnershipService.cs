@@ -4,7 +4,7 @@ namespace Application.Interfaces.Services;
 
 /// <summary>
 /// Initial PENDING link and ownership-version acknowledgment (FR-004 / FR-035).
-/// Confirmation is invoked by the future MQTT STATE path; tests call it via DI.
+/// Confirmation is also applied by the MQTT STATE ingest path; tests may call it via DI.
 /// </summary>
 public interface IDeviceOwnershipService
 {

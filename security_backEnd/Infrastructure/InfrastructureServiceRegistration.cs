@@ -6,6 +6,7 @@ using Application.Options;
 using Application.Services;
 using Application.Services.AdminServices;
 using Application.Services.AuthServices;
+using Application.Services.MqttServices;
 using Application.Services.OwnerServices;
 using Domain.Constants;
 using Domain.Entities.Auth;
@@ -42,6 +43,7 @@ public static class InfrastructureServiceRegistration
         }
 
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
+        services.Configure<MqttInboundOptions>(configuration.GetSection(MqttInboundOptions.SectionName));
         var authOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
         if (string.IsNullOrWhiteSpace(authOptions.Jwt.SigningKey) || authOptions.Jwt.SigningKey.Length < 32)
         {
@@ -113,10 +115,13 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDeviceAdminService, DeviceAdminService>();
         services.AddScoped<IDeviceOwnershipService, DeviceOwnershipService>();
         services.AddScoped<IOwnerDeviceQueryService, OwnerDeviceQueryService>();
+        services.AddScoped<IDeviceInboundTelemetryService, DeviceInboundTelemetryService>();
+        services.AddScoped<IMqttInboundDispatcher, MqttInboundDispatcher>();
         services.AddScoped<IDeviceCredentialHasher, DeviceCredentialHasher>();
         services.AddScoped<IDeviceBrokerAccessService, NoOpDeviceBrokerAccessService>();
         services.AddScoped<IOwnerLookup, OwnerLookup>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddHostedService<MqttInboundHostedService>();
 
         return services;
     }

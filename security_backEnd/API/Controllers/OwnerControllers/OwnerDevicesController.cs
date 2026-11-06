@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers.OwnerControllers;
 
 /// <summary>
-/// Owner device list with limited PENDING visibility (FR-035). No command endpoints here.
+/// Owner device list/detail. PENDING visibility stays limited (FR-035).
+/// ACTIVE rows expose independent connection/arm/siren/health indicators (FR-009).
 /// </summary>
 [ApiController]
 [Authorize(Roles = DbStatusCodes.RoleCodes.Owner)]
@@ -30,6 +31,13 @@ public sealed class OwnerDevicesController : ControllerBase
     {
         var items = await _devices.ListMineAsync(RequireUserId(), ct);
         return ApiResponse.Success("قائمة الأجهزة.", items);
+    }
+
+    [HttpGet("{deviceId:guid}")]
+    public async Task<IResult> GetMine(Guid deviceId, CancellationToken ct)
+    {
+        var item = await _devices.GetMineAsync(RequireUserId(), deviceId, ct);
+        return ApiResponse.Success("تفاصيل الجهاز.", item);
     }
 
     private Guid RequireUserId()
