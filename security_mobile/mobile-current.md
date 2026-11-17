@@ -1,44 +1,28 @@
 # المهمة الحالية — الموبايل
 
-status: pending
-task: تأسيس مشروع Flutter والبيئات (Android / iOS / RTL / flavors)
-srs: أساس واجهة المالك — يمهّد FR-001 وما بعده؛ بلا FR تشغيلي مغلق وحده
-parent: T-01 / mobile project bootstrap
-branch: (لم تُنشأ بعد)
+status: awaiting_implementation_approval
+task: الجلسة وعميل HTTP والنماذج (MOB-T-02) — تحليل فقط
+srs: FR-001، BR-001، NFR-002، NFR-003
+parent: T-02
+branch: (محلي)
 worktree: C:/Users/Osama/Desktop/SmartSecurity/security_mobile
 
 ## السياق
 
-- مجلد `security_mobile` فارغ من كود التطبيق؛ ملفات التخطيط فقط.
-- الباك إند في `security_backEnd` منفصل؛ الموبايل لا يتصل بـ MQTT ولا يستبدل الإنذار المحلي.
-- إعداد Wi-Fi المحلي (`FR-036`) والأوامر المؤكدة تأتي في مهام لاحقة.
-- Backend T-02 أنجز مسارات JWT/Refresh/Logout، لكن الموبايل لم يُنفذ بعد؛ لا تنسخ أسرار JWT أو حساب خدمة Firebase إلى مشروع Flutter.
+- `MOB-T-01` و`WEB-T-01` أُغلقتا في 2026-11-17.
+- هذه الورقة تصف الخطة المعروضة للموافقة. **التنفيذ لم يبدأ.**
+- لا WEB-T-02، ولا تعديل Backend/ESP/عقود، ولا اعتماد G0/G1.
 
-## المطلوب
+## المطلوب عند الموافقة
 
-1. إنشاء مشروع Flutter يدعم Android وiOS داخل `security_mobile`.
-2. اتجاه عربي RTL، توجيه أولي، هيكل `core` / `features` مناسب للمالك.
-3. بيئات dev / staging / prod (أو ما يعادلها) بلا خلط عناوين API أو إعدادات Firebase؛ لا أسرار خادم/مفاتيح خاصة أو اعتمادات إنتاج في Git. إعدادات Firebase العامة الخاصة بالعميل ليست بديلاً عن إدارة أسرار الخادم.
-4. إعداد توقيع/تثبيت داخلي كافٍ لتجربة على جهاز حقيقي لاحقاً.
-5. `flutter analyze` نظيف للهيكل الابتدائي؛ التطبيق يقلع على محاكٍ أو جهاز.
+1. عميل Auth داخل `security_mobile` على مسارات Backend المنفّذة: `POST /api/auth/login` و`refresh` و`logout` و`logout-all` و`GET /api/auth/me`.
+2. `refreshDelivery=body`. Access JWT في الذاكرة. Refresh في التخزين الآمن للنظام. single-flight عند 401 المتزامن.
+3. تمييز `AUTH_UNAUTHENTICATED` (401) عن `AUTH_FORBIDDEN` (403). الحساب المعطّل/المؤرشف يرفضه الخادم اليوم كـ 401 `AUTH_UNAUTHENTICATED` بلا رمز HTTP مستقل.
+4. استبدال `SessionBootstrapNotifier` الهيكلي بجلسة حقيقية. لا AuthInterceptor داخل الحزمة المشتركة.
 
-## غير مطلوب في هذه المهمة
+## تحقق T-01 الذي أُغلق
 
-- شاشات دخول أو أجهزة أو أوامر.
-- FCM أو مسار Wi-Fi المحلي.
-- لوحة أدمن.
-
-## القبول
-
-- المشروع يُبنى ويقلع.
-- تبديل البيئة لا يشير إلى اعتمادات بيئة أخرى بالخطأ.
-- لا مفاتيح خاصة أو أسرار خدمة Firebase/FCM أو الخادم داخل المستودع؛ تُراجع إعدادات Firebase Client العامة حسب البيئة وتُقيّد عند الإمكان.
-- البطاقات ذات الصلة في `mobile-development-tasks.md` تحت T-01 تُعلَّم عند الإغلاق.
-
-## تم
-
-_(فارغ — المهمة لم تبدأ)_
-
-## التحقق
-
-_(بعد التنفيذ: `flutter analyze` / بناء debug ونتائج الإقلاع)_
+- حذف `security_mobile/app_core` و`admin_web/app_core` بعد التأكد من عدم وجود `package:app_core` في التطبيقين.
+- 2026-11-17: الحزمة analyze نظيف وtest **12/12**؛ الموبايل analyze نظيف وtest **1/1**؛ الويب analyze نظيف وtest **1/1**.
+- APK: `build/app/outputs/flutter-apk/app-dev-debug.apk` (dev / android-arm64) من البناء السابق.
+- تشغيل الجهاز/المحاكي وiOS: مؤجّلان بموافقة المالك — `NOT VERIFIED`.
