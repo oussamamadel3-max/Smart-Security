@@ -1,0 +1,29 @@
+﻿---
+description: Size limits, reuse, and hygiene thresholds used when generating or refactoring Dart code.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# General best practices
+
+Numeric thresholds (refactor against these, not vibes):
+
+- Method body: soft limit ~25 lines. Split if it does more than one thing.
+- God Object: more than ~7 injected dependencies, crosses a layer boundary, or cannot be described in one sentence without "and".
+- Widgets: prefer `StatelessWidget`. Extract from `build` when it mixes layout + parsing + I/O.
+
+```dart
+// BAD — God Object
+class CoursesController {
+  CoursesController(this.api, this.db, this.router, this.analytics,
+      this.secureStorage, this.mapper, this.logger, this.locale);
+}
+
+// GOOD — split across UseCase + ViewModel + Mapper
+```
+
+- Inspect and reuse `lib/core/` and existing feature code before adding types.
+- No unused files, no `TODO` placeholders in new code, no commented-out blocks.
+- Forms: one field → a controller is enough. Three or more related fields or cross-field validation → the project's `reactive_forms` group (see `LoginFormGroup`). Do not invent a third form pattern.
+- Destructive actions (delete) require the same confirmation UI already used in the app (`MyDialog` confirm). Do not skip confirmation.
+- Public behavior changes need tests. Untested refactors start with characterization tests first.

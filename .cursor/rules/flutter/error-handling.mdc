@@ -1,0 +1,33 @@
+﻿---
+description: Result, Failure, ErrorMapper, and FailureHandler pipeline. Apply when touching errors, API, repositories, or UI error display.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Error handling
+
+Pipeline (do not bypass):
+
+```text
+ApiException → ErrorMapper → Failure → Result<T> → FailureHandler → ErrorState → UI
+```
+
+- Data/Domain return `Result<T>` (`Success` / `Failure_`). Do not throw across layer boundaries.
+- Map every new exception surface through `ErrorMapper`. No one-off `try/catch` in a presentation controller that swallows `DioException`.
+- UI never switches on status codes. UI consumes `ErrorState` from `FailureHandler.handle`.
+- Display via existing widgets: snackbar → `MySnackbar`, dialog → `MyDialog`, inline → `MyInlineError`, full screen / empty → `MyEmptyState` / `ErrorStateHost`.
+
+```dart
+// BAD
+catch (e) { showDialog(context, e.toString()); }
+
+// GOOD
+case Failure_(failure: final failure):
+  state = AsyncValue.data(current.copyWith(
+    error: FailureHandler.handle(failure, onRetry: load),
+  ));
+```
+
+Retry wording must match HTTP method (`network-architecture.mdc`): GET may retry via `executeWithRetry()`; POST/DELETE never auto-retry without an idempotency key.
+
+Unauthorized: do not `context.go(AppRoutes.login)` from a controller catch. Update the session owner; `authGuardRedirect` navigates.

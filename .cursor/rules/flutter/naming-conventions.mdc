@@ -1,0 +1,29 @@
+﻿---
+description: File, class, Failure, widget, and localization naming for this Flutter app.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Naming
+
+Shared suffixes: `Entity`, `Dto`, `Mapper`, `Api`, `RemoteDataSource`, `LocalDataSource`, `Repository`, `RepositoryImpl`, `UseCase`, `Page`, `State`.
+
+Stack suffix (Riverpod only — see `state-management.mdc`):
+
+- `ViewModel` (the class **is** the `Notifier` / `AsyncNotifier`)
+
+```dart
+// BAD
+class HttpFailure {}
+class MyCourseCard extends StatelessWidget {} // feature widget
+
+// GOOD
+class CoursesViewModel extends AsyncNotifier<CoursesState> {}
+```
+
+- The eleven Failure types in `lib/core/errors/failures/failure.dart` are the only ones. Spell `HttpErrorFailure`, never `HttpFailure`. Do not add a new subtype.
+- Prefix `my_` / `My` is only for the four shared design-system widgets: `MyDialog`, `MySnackbar`, `MyEmptyState`, `MyInlineError`. Feature widgets use the feature name.
+- Never ship two controllers for one screen (`ViewModel` + `Notifier`).
+- Session owner: `authSessionProvider`. Do not invent `authStateProvider` or `AuthCubit`.
+- User-facing strings: add the same key to `lib/core/translations/l10n/app_en.arb` and `app_ar.arb`. Read via `context.tr`. Locale switching uses the stack's locale owner (`localeProvider` or `LocaleCubit`). Never `AppLocalizations.of(context)` and never hardcode UI copy.
+- Routes live in `AppRoutes`. Endpoints live in `AppEndpoints`.

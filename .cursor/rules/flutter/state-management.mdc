@@ -1,0 +1,26 @@
+﻿---
+description: Riverpod-only state management for this framework and smart_security_app_core.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# State management — Riverpod only
+
+This framework and `packages/smart_security_app_core` use **Riverpod only**. Do not add `flutter_bloc`, `Cubit`, or `Bloc`.
+
+## Stack
+
+- Locked in `.cursor/docs/flutter/stack.md`: `riverpod`
+- Follow `state-management-riverpod.mdc` for presentation controllers
+- Shared session: `authSessionProvider` — do not invent `authStateProvider` or `AuthCubit`
+- Locale: `localeProvider` — strings via `context.tr`
+
+## Presentation
+
+- Screen controller is a `ViewModel` that **is** the `Notifier` / `AsyncNotifier`. Never ViewModel + Notifier as two classes.
+- One-shot read with no later mutation → `FutureProvider` is OK.
+- Submit, pagination, retry, refresh → `AsyncNotifier` / `Notifier`. Pagination is always AsyncNotifier.
+- Watch with `ref.watch` / `select`. Release `CancelToken` in `ref.onDispose()`.
+- Immutable state holds Entity + `ErrorState` only.
+- One primary visual state: Loading → Error → Empty → Content → Refreshing.
+- Presentation controller calls UseCases, never Api/DTO/DataSource.

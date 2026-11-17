@@ -1,0 +1,32 @@
+﻿---
+description: Dio, ApiClient, retry, CancelToken, and certificate pinning rules for HTTP code.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Network
+
+- All HTTP goes through `ApiClient` + the shared `Dio` from `DioClientSetup`. Do not construct a feature-local `Dio()`.
+- Endpoints: `AppEndpoints` only. Feature Api classes call `get/post/put/delete` and parse JSON. No mapping, no business rules.
+- Return `Result<T>`. `ApiClient` already wraps failures via `ErrorMapper`.
+
+Retry (`executeWithRetry()` on the shared client/repository helper — add it once in `core/network/` if missing, never per-call):
+
+| Method | Auto-retry |
+|---|---|
+| GET | yes, via `executeWithRetry()` |
+| PUT | only if the server contract is confirmed idempotent |
+| POST / DELETE | never, unless an idempotency key is explicit |
+
+```dart
+// BAD — POST retried in a loop
+for (var i = 0; i < 3; i++) { await api.createCourse(body); }
+
+// GOOD
+await executeWithRetry(() => api.getCourses());
+await api.createCourse(body); // once
+```
+
+CancelToken is required for upload, download, pagination, and search-as-you-type. Release on controller dispose: Riverpod `ref.onDispose()`, BLoC `close()`. Stale in-flight results must not land in state.
+
+Government/military hosts: certificate pinning in `lib/core/network/` is a blocker, not a follow-up. No pinning → the Data layer is not done.

@@ -1,0 +1,27 @@
+﻿---
+description: Riverpod presentation rules — ViewModel is the Notifier. Apply when the project stack is Riverpod.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Riverpod
+
+- Screen controller is a `ViewModel` that **is** the `Notifier` / `AsyncNotifier`. Never ViewModel + Notifier as two classes.
+- One-shot read, no later mutation → `FutureProvider` is OK.
+- Submit, pagination page N+1, retry, pull-to-refresh → `AsyncNotifier` / `Notifier`. Pagination is always AsyncNotifier.
+- Session owner: `authSessionProvider` (`AuthSessionController`). Do not invent `authStateProvider`.
+- Locale switching: `localeProvider`. Strings: `context.tr`.
+- Watch with `ref.watch` / `select`. Dispose CancelTokens in `ref.onDispose()`.
+- Folders: `presentation/viewmodels/`, `presentation/providers/`.
+
+```dart
+// BAD
+class LoginViewModel {}
+class LoginNotifier extends AsyncNotifier<LoginState> {}
+
+// GOOD
+class LoginViewModel extends AsyncNotifier<LoginState> {
+  @override
+  LoginState build() => const LoginState();
+}
+```

@@ -1,0 +1,54 @@
+﻿---
+description: BLoC presentation rules — Cubit (default) or Bloc is the screen controller. Apply when the project stack is BLoC.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# BLoC
+
+## Cubit vs Bloc
+
+- Default: **Cubit** (methods = intents). Use **Bloc** only when events need names, replay, or transformers (search debounce, droppable submit).
+- The Cubit/Bloc **is** the controller. Never `LoginViewModel` + `LoginCubit`.
+
+## State
+
+- Immutable (`freezed` or `Equatable`). `emit` a **new** instance. Never mutate a field then re-emit the same object.
+- Hold Entity + `ErrorState` + flags. No DTO, Dio, Context.
+- Do not `emit` after `close()`. Guard async gaps with `if (isClosed) return;`.
+
+```dart
+// BAD
+state.items.add(item); emit(state);
+
+// GOOD
+emit(state.copyWith(items: [...state.items, item]));
+```
+
+## Events (Bloc only)
+
+- Names: `CoursesLoadRequested`, `CoursesSearchChanged` — not `LoadEvent`.
+- Events must not carry `BuildContext`, `BuildContext.tr`, or a Repository.
+- Transformers (`bloc_concurrency`): search-as-you-type → `debounce` + `restartable`; submit/create → `droppable`; pagination page-in-flight → `droppable` or cancel via CancelToken.
+
+## Provide and rebuild
+
+- Screen Cubit: `BlocProvider(create: ...)` on the **route** (owns lifetime). App session: one `AuthCubit` above the router.
+- `BlocProvider.value` only to pass an existing instance down. Do not `create` a second Auth Cubit.
+- UI: `BlocSelector` / `BlocBuilder` to **build**. `BlocListener` for one-shot snackbar/dialog/navigation. `BlocConsumer` only when both are required.
+- Callbacks (`onPressed`): `context.read<LoginCubit>().submit()` — not `watch`.
+- Use `buildWhen` / `listenWhen` when the widget should ignore unrelated fields.
+
+## Lifecycle
+
+- Inject UseCases via constructor. No `BlocProvider.of` inside the Cubit constructor.
+- CancelTokens cancelled in `close()` and when a filter supersedes an in-flight page.
+- `RepositoryProvider` may expose a Domain contract already built in `core`. Pages still talk only to the Cubit.
+
+## Tests
+
+Use `bloc_test`. Seed prior state, `act` one intent, `expect` immutable states in order — including the failure `ErrorState` path.
+
+## Debug
+
+`BlocObserver` in debug only. Never log tokens, passwords, GPS, or national IDs.

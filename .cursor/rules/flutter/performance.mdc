@@ -1,0 +1,27 @@
+﻿---
+description: Measure-then-fix performance targets for Flutter UI, isolates, lists, and startup.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Performance
+
+Measure with DevTools before changing code. Match the tool to the symptom:
+
+| Symptom | Tool |
+|---|---|
+| Jank / dropped frames | Performance view (build + raster of that interaction) |
+| Heap growth / leak | Memory view, navigate in/out of the screen |
+| Slow cold start | time-to-interactive; work before first frame |
+| App size | `flutter build --analyze-size` |
+
+Targets: 60 FPS (no frame over ~16 ms on the main isolate). Cold start under ~2 s.
+
+Fixes already prescribed — do not invent a parallel pattern:
+
+- Extra rebuilds → `const`, `select()`, smaller widgets
+- Sync work > ~16 ms → `compute()` / `Isolate.spawn()`
+- Images → `cached_network_image`, `cacheWidth` / `cacheHeight`
+- Large lists → pagination / windowing (`ListView.builder`), not dumping the full collection into a `Column`
+
+A change with no better after-measurement is not an optimization — revert it.

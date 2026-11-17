@@ -1,0 +1,27 @@
+﻿---
+description: Repository contract and implementation rules — single source of truth for data.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Repository
+
+- Contract lives in Domain: entities + `Result<T>` only. No Dio, DTO, Isar, or Flutter.
+- Implementation lives in Data: coordinates remote/local sources, maps DTO → Entity, returns `Result<T>`.
+- Repository is the single source of truth. UI and the presentation controller never read a cache or API beside it.
+- Optimistic create/update: persist local → update UI → remote → roll back to the **exact** prior state on failure (not "refresh from server").
+- Offline write queues (when in scope) persist in Isar inside the repository, survive process death, and resolve conflicts in the repository — never in the presentation controller.
+
+```dart
+// BAD — contract leaks DTO
+abstract class CoursesRepository {
+  Future<CourseDto> get(String id);
+}
+
+// GOOD
+abstract class CoursesRepository {
+  Future<Result<CourseEntity>> getById(String id);
+}
+```
+
+UseCase: one operation, `call(...)`, returns `Result<T>`, depends only on the repository contract. No Flutter.

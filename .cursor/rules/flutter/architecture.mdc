@@ -1,0 +1,41 @@
+﻿---
+description: Clean Architecture layering, feature folders, and dependency direction for this Flutter app.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Architecture
+
+Feature layout (only create folders that the feature needs):
+
+```text
+lib/features/<feature>/
+  domain/entities|repositories|usecases
+  data/models|mappers|datasources|repositories
+  presentation/pages|widgets|forms
+  presentation/viewmodels|providers     # Riverpod
+  presentation/cubits|blocs            # BLoC
+lib/core/   # network, errors, router, theme, storage, session, widgets
+```
+
+Dependency direction: Presentation → Domain ← Data. Domain never imports Flutter, Dio, JSON, Isar, or `data/`.
+
+| Layer | Owns | Must not |
+|---|---|---|
+| Domain | Entity, repository contract, UseCase | DTO, Dio, Widgets, BuildContext |
+| Data | DTO, Mapper, Api, DataSource, repository impl | Widgets, BuildContext, business rules |
+| Presentation | Page, controller (ViewModel **or** Cubit/Bloc), Widget, Form | Repository impl, Api, DTO |
+
+```dart
+// BAD — page talks to data
+remoteDataSource.fetch();
+
+// GOOD — page talks to the presentation controller; controller talks to UseCase
+await controller.load();
+```
+
+- One feature does not import another feature's `data/` or widgets. Share via `lib/core/` or Domain contracts.
+- DTO never leaves Data. Outside Data, use Entity.
+- The presentation controller never calls Api/DataSource. If UseCases exist, it does not call the repository directly.
+- Reuse `lib/core/` (ApiClient, ErrorMapper, FailureHandler, GoRouter, SessionStorage). Do not duplicate it inside a feature.
+- State stack is Riverpod **or** BLoC (`state-management.mdc`). Never both.

@@ -1,0 +1,23 @@
+﻿---
+description: Tokens, session, pinning, logging, and data-classification controls for this GIS app.
+globs: security_mobile/**/*.dart,admin_web/**/*.dart,security_mobile/**/pubspec.yaml,admin_web/**/pubspec.yaml,security_mobile/**/pubspec.lock,admin_web/**/pubspec.lock
+alwaysApply: false
+---
+
+# Security
+
+- Access token, refresh token, and session payload go through `flutter_secure_storage` (`SessionStorage` / `SecureStorageService`) only. Never `SharedPreferences`, never source constants.
+
+```dart
+// BAD
+prefs.setString('access_token', token);
+
+// GOOD
+await sessionStorage.saveTokens(accessToken: token, refreshToken: refresh);
+```
+
+- `AuthInterceptor` attaches Bearer, refreshes on 401 (once, loop-capped), and on refresh failure calls `onSessionExpired`. It must not `context.go()`, throw for the UI to catch, or navigate. `authGuardRedirect` is the only auth-driven navigation (login / splash / `SessionExpiredPage`).
+- Logout clears **every** credential, not only the access token, and resets the **session owner** (`authSessionProvider` on Riverpod, `AuthCubit`/`AuthBloc` on BLoC).
+- Do not log passwords, tokens, GPS, national IDs, or license payloads — including debug. Release builds: no pretty HTTP logger, obfuscation (`--obfuscate`) when preparing a release.
+- Government/military endpoints require certificate pinning in `lib/core/network/` before the feature is done.
+- Screens that show classified, licensed, or PII data: screenshot/screen-recording prevention. Session auto-lock, when required, must re-enter the same session-owner flow — not a second lock screen. Compromised-device checks, when required, are treated as unauthenticated on protected routes via the same guard.

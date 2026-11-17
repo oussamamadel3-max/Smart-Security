@@ -1,9 +1,6 @@
----
-
+﻿---
 description: Context-driven execution, faithful index.html-to-Flutter UI implementation, and controlled task closure across the Smart Security System monorepo.
-
 alwaysApply: true
-
 ---
 
 # Smart Security System — Context-Driven Task Execution
