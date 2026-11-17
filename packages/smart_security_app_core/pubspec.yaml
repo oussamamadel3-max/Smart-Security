@@ -1,0 +1,33 @@
+name: smart_security_app_core
+description: Shared Flutter core for Smart Security — theme, errors, HTTP client, l10n, and widgets.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  dio: ^5.8.0
+  shared_preferences: ^2.5.3
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  google_fonts: ^6.2.1
+  pretty_dio_logger: ^1.4.0
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
+
+flutter:
+  generate: true
+  uses-material-design: true
