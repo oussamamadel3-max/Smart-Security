@@ -302,8 +302,10 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
         state.SirenState = parsed.SirenState!;
         state.HealthState = parsed.HealthState!;
         state.CurrentAlarmEventUid = parsed.CurrentAlarmEventUid;
-        state.ClockTrusted = parsed.ClockTrusted;
+        if (parsed.ClockTrustedSpecified)
+            state.ClockTrusted = parsed.ClockTrusted;
 
+        // Absent confirmedOwnershipVersion is not a positive ownership acknowledgement.
         if (parsed.ConfirmedOwnershipVersion is long confirmed
             && confirmed > state.ConfirmedOwnershipVersion)
         {
@@ -365,6 +367,7 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
             DeviceId = deviceId,
             MessageType = messageType,
             ClockTrusted = clockTrusted,
+            ClockTrustedSpecified = true,
             Sequence = null
         };
     }
@@ -389,6 +392,7 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
             SirenState = siren,
             HealthState = health,
             ClockTrusted = clockTrusted,
+            ClockTrustedSpecified = true,
             ConfirmedOwnershipVersion = confirmedOwnership,
             CurrentAlarmEventUid = OptionalGuid(root, "currentAlarmEventUid"),
             DeviceReportedAt = OptionalDateTimeOffset(root, "deviceReportedAt"),
@@ -414,7 +418,9 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
         var arm = RequireEnum(root, "armState", ArmStates);
         var siren = RequireEnum(root, "sirenState", SirenStates);
         var health = RequireEnum(root, "healthState", HealthStates);
-        var clockTrusted = OptionalBoolean(root, "clockTrusted") ?? false;
+        var clockTrustedSpecified = root.TryGetProperty("clockTrusted", out var clockEl)
+            && clockEl.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined;
+        var clockTrusted = clockTrustedSpecified && (OptionalBoolean(root, "clockTrusted") ?? false);
 
         return new ParsedInboundMessage
         {
@@ -425,7 +431,8 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
             SirenState = siren,
             HealthState = health,
             ClockTrusted = clockTrusted,
-            ConfirmedOwnershipVersion = OptionalInt64(root, "confirmedOwnershipVersion") ?? ownershipVersion,
+            ClockTrustedSpecified = clockTrustedSpecified,
+            ConfirmedOwnershipVersion = OptionalInt64(root, "confirmedOwnershipVersion"),
             CurrentAlarmEventUid = OptionalGuid(root, "currentAlarmEventUid"),
             DeviceReportedAt = OptionalDateTimeOffset(root, "deviceReportedAt"),
             FirmwareVersion = OptionalString(root, "firmwareVersion"),
@@ -668,6 +675,7 @@ public sealed class DeviceInboundTelemetryService : IDeviceInboundTelemetryServi
         public string? SirenState { get; init; }
         public string? HealthState { get; init; }
         public bool ClockTrusted { get; init; }
+        public bool ClockTrustedSpecified { get; init; }
         public long? ConfirmedOwnershipVersion { get; init; }
         public Guid? CurrentAlarmEventUid { get; init; }
         public DateTimeOffset? DeviceReportedAt { get; init; }

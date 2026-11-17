@@ -15,6 +15,16 @@ public static class AlarmEventDraft
         public const string DeviceFault = "DEVICE_FAULT";
     }
 
+    /// <summary>
+    /// Lifecycle of one <c>eventUid</c>. Missing on the wire means <see cref="Active"/>.
+    /// <see cref="Ended"/> is the sensor returning to rest, not <c>MUTE_ALARM</c>.
+    /// </summary>
+    public static class AlarmPhase
+    {
+        public const string Active = "ACTIVE";
+        public const string Ended = "ENDED";
+    }
+
     public static class Topics
     {
         public const string EventsPattern = "devices/{deviceId}/events";

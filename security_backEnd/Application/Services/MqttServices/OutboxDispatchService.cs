@@ -197,10 +197,25 @@ public sealed class OutboxDispatchService : IOutboxDispatchService
         try
         {
             var topic = EventPersistedDraft.Topics.Commands(deviceId);
-            await _publisher.PublishAsync(topic, outbox.Payload, ct);
+            await _publisher.PublishAsync(topic, EventPersistedPayload.Wire(outbox.Payload), ct);
             // MQTT PUBACK ≠ proof the device dropped its local copy; only marks transport done.
-            outbox.ProcessedAt = now;
-            outbox.LastErrorCode = null;
+            // One stored row can still owe a second phase. That phase stays unprocessed.
+            var remaining = EventPersistedPayload.ReadQueue(outbox.Payload);
+            if (remaining.Count > 0)
+                remaining.RemoveAt(0);
+            if (remaining.Count == 0)
+            {
+                outbox.ProcessedAt = now;
+                outbox.LastErrorCode = null;
+            }
+            else
+            {
+                outbox.Payload = EventPersistedPayload.Build(deviceId, eventUid, remaining[0], remaining);
+                outbox.ProcessedAt = null;
+                outbox.AttemptCount = 0;
+                outbox.AvailableAt = now;
+                outbox.LastErrorCode = null;
+            }
         }
         catch (Exception ex)
         {

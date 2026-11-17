@@ -5,6 +5,7 @@ using System.Text.Json;
 using API.IntegrationTests.Support;
 using Application.Dtos.MqttDtos;
 using Application.Interfaces.Services;
+using Application.Services.MqttServices;
 using Domain.Constants;
 using Domain.Entities.Devices;
 using Infrastructure.Persistence;
@@ -556,18 +557,270 @@ public sealed class AlarmEventIngestTests : IAsyncLifetime
         Assert.Equal(3, loss.LostCount);
     }
 
+    [Fact]
+    public async Task Alarm_Phases_Do_Not_Reopen_And_Ack_Each_Transition()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-01", "مرحلة");
+        var eventUid = Guid.NewGuid();
+
+        var start = await IngestAlarmAsync(deviceId, eventUid, 1, false, true, DateTimeOffset.Parse("2026-11-16T10:00:00Z"));
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.Applied, start.Outcome);
+        var startAgain = await IngestAlarmAsync(deviceId, eventUid, 1, true, true, DateTimeOffset.Parse("2026-11-16T10:00:00Z"));
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, startAgain.Outcome);
+
+        var ended = await IngestAlarmAsync(
+            deviceId, eventUid, 1, false, true, DateTimeOffset.Parse("2026-11-16T10:05:00Z"), AlarmEventDraft.AlarmPhase.Ended);
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, ended.Outcome);
+        Assert.False(ended.NotificationCreated);
+
+        var staleStart = await IngestAlarmAsync(deviceId, eventUid, 1, true, true, DateTimeOffset.Parse("2026-11-16T10:00:00Z"));
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, staleStart.Outcome);
+        Assert.False(staleStart.NotificationCreated);
+
+        var endedAgain = await IngestAlarmAsync(
+            deviceId, eventUid, 1, false, true, DateTimeOffset.Parse("2026-11-16T12:00:00Z"), AlarmEventDraft.AlarmPhase.Ended);
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, endedAgain.Outcome);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var alarm = await db.AlarmEvents.SingleAsync(a => a.DeviceId == deviceId && a.EventUid == eventUid);
+        Assert.Equal(DbStatusCodes.AlarmEvent.Ended, alarm.Status);
+        Assert.NotNull(alarm.EndedReceivedAt);
+        Assert.Equal(DateTimeOffset.Parse("2026-11-16T10:05:00Z"), alarm.EndedDeviceAt);
+        Assert.Equal(1, await db.Notifications.CountAsync(n => n.AlarmEventId == alarm.Id));
+
+        var outbox = await db.OutboxMessages.SingleAsync(m => m.AggregateId == alarm.Id);
+        var queued = EventPersistedPayload.ReadQueue(outbox.Payload);
+        Assert.Contains(AlarmEventDraft.AlarmPhase.Active, queued);
+        Assert.Contains(AlarmEventDraft.AlarmPhase.Ended, queued);
+
+        var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+        await dispatch.DispatchPendingEventPersistedAsync();
+        await dispatch.DispatchPendingEventPersistedAsync();
+        Assert.Equal(2, _publisher.Messages.Count);
+        var phases = _publisher.Messages
+            .Select(m => JsonDocument.Parse(m.PayloadJson).RootElement.GetProperty("alarmPhase").GetString())
+            .ToArray();
+        Assert.Equal(AlarmEventDraft.AlarmPhase.Active, phases[0]);
+        Assert.Equal(AlarmEventDraft.AlarmPhase.Ended, phases[1]);
+        Assert.False(JsonDocument.Parse(_publisher.Messages[0].PayloadJson).RootElement.TryGetProperty("queuedPhases", out _));
+    }
+
+    [Fact]
+    public async Task End_Before_Start_Is_Stored_And_Later_Start_Does_Not_Reopen()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-02", "نهاية أولاً");
+        var eventUid = Guid.NewGuid();
+
+        var ended = await IngestAlarmAsync(
+            deviceId, eventUid, 1, true, false, DateTimeOffset.Parse("2026-11-16T11:00:00Z"), AlarmEventDraft.AlarmPhase.Ended);
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.Applied, ended.Outcome);
+        Assert.False(ended.NotificationCreated);
+
+        var lateStart = await IngestAlarmAsync(deviceId, eventUid, 1, true, true, DateTimeOffset.Parse("2026-11-16T10:00:00Z"));
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, lateStart.Outcome);
+        Assert.False(lateStart.NotificationCreated);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var alarm = await db.AlarmEvents.SingleAsync(a => a.EventUid == eventUid);
+        Assert.Equal(DbStatusCodes.AlarmEvent.Ended, alarm.Status);
+        Assert.Null(alarm.EndedDeviceAt);
+        Assert.Null(alarm.OccurredDeviceAt);
+        Assert.Equal(0, await db.Notifications.CountAsync(n => n.AlarmEventId == alarm.Id));
+        var outbox = await db.OutboxMessages.SingleAsync(m => m.AggregateId == alarm.Id);
+        var queued = EventPersistedPayload.ReadQueue(outbox.Payload);
+        Assert.Equal(AlarmEventDraft.AlarmPhase.Ended, queued[0]);
+        Assert.Contains(AlarmEventDraft.AlarmPhase.Active, queued);
+    }
+
+    [Fact]
+    public async Task Legacy_Ack_Without_Phase_Does_Not_Erase_The_Ended_Row()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-03", "إقرار قديم");
+        var eventUid = Guid.NewGuid();
+        var start = await IngestAlarmAsync(deviceId, eventUid, 1, false, false, null);
+        var ended = await IngestAlarmAsync(deviceId, eventUid, 1, false, false, null, AlarmEventDraft.AlarmPhase.Ended);
+
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var outbox = await db.OutboxMessages.SingleAsync(m => m.Id == start.OutboxMessageId);
+            outbox.Payload = JsonSerializer.Serialize(new
+            {
+                schemaVersion = 1,
+                deviceId,
+                messageId = Guid.NewGuid(),
+                messageType = EventPersistedDraft.MqttMessageType,
+                eventUid,
+                stored = true
+            });
+            outbox.ProcessedAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync();
+        }
+
+        var again = await IngestAlarmAsync(deviceId, eventUid, 1, true, false, null);
+        Assert.Equal(ended.AlarmEventId, again.AlarmEventId);
+
+        await using var verify = _factory.Services.CreateAsyncScope();
+        var saved = verify.ServiceProvider.GetRequiredService<AppDbContext>();
+        var alarm = await saved.AlarmEvents.SingleAsync(a => a.Id == start.AlarmEventId);
+        Assert.Equal(DbStatusCodes.AlarmEvent.Ended, alarm.Status);
+        Assert.NotNull(alarm.EndedReceivedAt);
+        var refreshed = await saved.OutboxMessages.SingleAsync(m => m.AggregateId == alarm.Id);
+        Assert.Contains(AlarmEventDraft.AlarmPhase.Ended, EventPersistedPayload.ReadQueue(refreshed.Payload));
+    }
+
+    [Fact]
+    public async Task Disabled_Publisher_Does_Not_Mark_EventPersisted_Processed()
+    {
+        _publisher.IsLivePublishEnabled = false;
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-noop-01", "بدون نشر");
+        var ingest = await IngestAlarmAsync(deviceId, Guid.NewGuid(), 1, false, false, null);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+        await dispatch.DispatchPendingEventPersistedAsync();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var outbox = await db.OutboxMessages.SingleAsync(m => m.Id == ingest.OutboxMessageId);
+        Assert.Null(outbox.ProcessedAt);
+        Assert.Equal(EventPersistedDraft.RejectCodes.PublishDisabled, outbox.LastErrorCode);
+        Assert.Empty(_publisher.Messages);
+    }
+
+    [Fact]
+    public async Task Ended_During_Active_Publish_Keeps_Ended_Phase_On_Outbox()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-race", "تزامن مراحل");
+        var eventUid = Guid.NewGuid();
+        var start = await IngestAlarmAsync(deviceId, eventUid, 1, false, false, null);
+
+        _publisher.BlockNextPublish();
+        var dispatchTask = Task.Run(async () =>
+        {
+            await using var scope = _factory.Services.CreateAsyncScope();
+            var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+            return await dispatch.DispatchPendingEventPersistedAsync();
+        });
+
+        using var enterCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await _publisher.WaitUntilPublishEnteredAsync(enterCts.Token);
+
+        var endedTask = IngestAlarmAsync(
+            deviceId, eventUid, 1, false, true, DateTimeOffset.Parse("2026-11-17T12:00:00Z"),
+            AlarmEventDraft.AlarmPhase.Ended);
+        await Task.Delay(200);
+        Assert.False(endedTask.IsCompleted);
+
+        _publisher.ReleaseBlockedPublish();
+        Assert.True(await dispatchTask >= 1);
+        var ended = await endedTask;
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.DuplicateConfirmed, ended.Outcome);
+        Assert.False(ended.NotificationCreated);
+
+        await using var verify = _factory.Services.CreateAsyncScope();
+        var db = verify.ServiceProvider.GetRequiredService<AppDbContext>();
+        var alarm = await db.AlarmEvents.SingleAsync(a => a.EventUid == eventUid);
+        Assert.Equal(DbStatusCodes.AlarmEvent.Ended, alarm.Status);
+        Assert.Equal(1, await db.Notifications.CountAsync(n => n.AlarmEventId == alarm.Id));
+        var outbox = await db.OutboxMessages.SingleAsync(m => m.Id == start.OutboxMessageId);
+        Assert.Null(outbox.ProcessedAt);
+        Assert.Contains(AlarmEventDraft.AlarmPhase.Ended, EventPersistedPayload.ReadQueue(outbox.Payload));
+
+        var dispatch = verify.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+        await dispatch.DispatchPendingEventPersistedAsync();
+        Assert.Equal(2, _publisher.Messages.Count);
+        Assert.Equal(
+            AlarmEventDraft.AlarmPhase.Ended,
+            JsonDocument.Parse(_publisher.Messages[1].PayloadJson).RootElement.GetProperty("alarmPhase").GetString());
+    }
+
+    [Fact]
+    public async Task Failed_Ended_Publish_Does_Not_Drop_Remaining_Phase()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-retry", "فشل نهاية");
+        var eventUid = Guid.NewGuid();
+        await IngestAlarmAsync(deviceId, eventUid, 1, false, false, null);
+        var ended = await IngestAlarmAsync(
+            deviceId, eventUid, 1, false, false, null, AlarmEventDraft.AlarmPhase.Ended);
+
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+            await dispatch.DispatchPendingEventPersistedAsync();
+        }
+
+        Assert.Single(_publisher.Messages);
+        Assert.Equal(
+            AlarmEventDraft.AlarmPhase.Active,
+            JsonDocument.Parse(_publisher.Messages[0].PayloadJson).RootElement.GetProperty("alarmPhase").GetString());
+
+        _publisher.FailNext(1);
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+            await dispatch.DispatchPendingEventPersistedAsync();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var outbox = await db.OutboxMessages.SingleAsync(m => m.Id == ended.OutboxMessageId);
+            Assert.Null(outbox.ProcessedAt);
+            Assert.Equal(EventPersistedDraft.RejectCodes.PublishFailed, outbox.LastErrorCode);
+            Assert.Equal(
+                [AlarmEventDraft.AlarmPhase.Ended],
+                EventPersistedPayload.ReadQueue(outbox.Payload));
+            outbox.AvailableAt = DateTimeOffset.UtcNow.AddSeconds(-1);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var dispatch = scope.ServiceProvider.GetRequiredService<IOutboxDispatchService>();
+            await dispatch.DispatchPendingEventPersistedAsync();
+        }
+
+        Assert.Equal(2, _publisher.Messages.Count);
+        Assert.Equal(
+            AlarmEventDraft.AlarmPhase.Ended,
+            JsonDocument.Parse(_publisher.Messages[1].PayloadJson).RootElement.GetProperty("alarmPhase").GetString());
+        await using var verify = _factory.Services.CreateAsyncScope();
+        var done = await verify.ServiceProvider.GetRequiredService<AppDbContext>()
+            .OutboxMessages.SingleAsync(m => m.Id == ended.OutboxMessageId);
+        Assert.NotNull(done.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task Invalid_Alarm_Phase_Is_Rejected()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterActivateAsync(adminClient, "hw-alarm-phase-bad", "مرحلة مرفوضة");
+        var rejected = await IngestAlarmAsync(
+            deviceId, Guid.NewGuid(), 1, false, false, null, "MUTED");
+        Assert.Equal(AlarmEventDraft.IngestOutcomes.Rejected, rejected.Outcome);
+        Assert.Equal("INVALID_ALARM_PHASE", rejected.RejectionCode);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(0, await db.AlarmEvents.CountAsync(e => e.DeviceId == deviceId));
+    }
+
     private async Task<AlarmEventIngestResultDto> IngestAlarmAsync(
         Guid deviceId,
         Guid eventUid,
         long ownershipVersion,
         bool wasBuffered,
         bool clockTrusted,
-        DateTimeOffset? occurredDeviceAt)
+        DateTimeOffset? occurredDeviceAt,
+        string? alarmPhase = null)
         => await IngestRawAsync(
             deviceId,
             deviceId,
             AlarmEventDraft.Topics.Events(deviceId),
-            BuildAlarmPayload(deviceId, eventUid, ownershipVersion, wasBuffered, clockTrusted, occurredDeviceAt));
+            BuildAlarmPayload(deviceId, eventUid, ownershipVersion, wasBuffered, clockTrusted, occurredDeviceAt, alarmPhase));
 
     private async Task<AlarmEventIngestResultDto> IngestLossAsync(
         Guid deviceId,
@@ -640,21 +893,27 @@ public sealed class AlarmEventIngestTests : IAsyncLifetime
         long ownershipVersion,
         bool wasBuffered,
         bool clockTrusted,
-        DateTimeOffset? occurredDeviceAt)
-        => JsonSerializer.Serialize(new
+        DateTimeOffset? occurredDeviceAt,
+        string? alarmPhase = null)
+    {
+        var payload = new Dictionary<string, object?>
         {
-            schemaVersion = 1,
-            deviceId,
-            messageId = Guid.NewGuid(),
-            messageType = AlarmEventDraft.MessageTypes.AlarmEvent,
-            bootId = "boot-alarm",
-            eventUid,
-            ownershipVersion,
-            sensorKey = "vibration-1",
-            wasBuffered,
-            clockTrusted,
-            occurredDeviceAt
-        });
+            ["schemaVersion"] = 1,
+            ["deviceId"] = deviceId,
+            ["messageId"] = Guid.NewGuid(),
+            ["messageType"] = AlarmEventDraft.MessageTypes.AlarmEvent,
+            ["bootId"] = "boot-alarm",
+            ["eventUid"] = eventUid,
+            ["ownershipVersion"] = ownershipVersion,
+            ["sensorKey"] = "vibration-1",
+            ["wasBuffered"] = wasBuffered,
+            ["clockTrusted"] = clockTrusted,
+            ["occurredDeviceAt"] = occurredDeviceAt
+        };
+        if (alarmPhase is not null)
+            payload["alarmPhase"] = alarmPhase;
+        return JsonSerializer.Serialize(payload);
+    }
 
     private async Task<Guid> RegisterActivateAsync(HttpClient adminClient, string hardwareUid, string displayName)
     {

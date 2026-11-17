@@ -1,9 +1,8 @@
 namespace Domain.Constants;
 
 /// <summary>
-/// Product-approved device setting timers from D-03 decisions that are already fixed.
-/// Event buffer capacity and command TTL remain explicitly supplied per registration
-/// until measured production defaults are adopted.
+/// Initial development and test timers. They are not a measured production capacity or command TTL.
+/// Event buffer capacity and command TTL remain explicitly supplied per registration.
 /// </summary>
 public static class ApprovedDeviceSettings
 {

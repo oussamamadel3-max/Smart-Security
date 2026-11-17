@@ -34,6 +34,7 @@ public sealed class OwnerDeviceCommandsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     public async Task<IResult> Create(
         Guid deviceId,
         [FromBody] CreateOwnerDeviceCommandRequestDto request,

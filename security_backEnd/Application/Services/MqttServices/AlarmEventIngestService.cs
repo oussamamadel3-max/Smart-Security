@@ -193,6 +193,8 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
 
         // clockTrusted=false: never treat device wall-clock as a confirmed occurrence time (FR-023).
         DateTimeOffset? occurredDeviceAt = parsed.ClockTrusted ? parsed.OccurredDeviceAt : null;
+        var phase = parsed.AlarmPhase;
+        var endedFirst = phase == AlarmEventDraft.AlarmPhase.Ended;
 
         var alarm = new AlarmEvent
         {
@@ -203,9 +205,11 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
             OwnershipVersion = parsed.OwnershipVersion,
             SensorId = sensorId,
             SensorKeySnapshot = parsed.SensorKey ?? string.Empty,
-            Status = DbStatusCodes.AlarmEvent.Active,
-            OccurredDeviceAt = occurredDeviceAt,
+            Status = endedFirst ? DbStatusCodes.AlarmEvent.Ended : DbStatusCodes.AlarmEvent.Active,
+            OccurredDeviceAt = endedFirst ? null : occurredDeviceAt,
             ReceivedAt = now,
+            EndedDeviceAt = endedFirst ? occurredDeviceAt : null,
+            EndedReceivedAt = endedFirst ? now : null,
             ClockTrusted = parsed.ClockTrusted,
             WasBuffered = parsed.WasBuffered,
             SignalSummary = parsed.SignalSummary
@@ -214,7 +218,8 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
 
         Guid? notificationId = null;
         var notificationCreated = false;
-        if (ownership is not null
+        if (!endedFirst
+            && ownership is not null
             && ownership.Status == DbStatusCodes.Ownership.Active
             && ownership.EndedAt is null)
         {
@@ -234,7 +239,7 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
             notificationCreated = true;
         }
 
-        var outbox = await EnsureEventPersistedOutboxAsync(alarm, now, ct);
+        var outbox = await EnsureEventPersistedOutboxAsync(alarm, phase, now, ct);
 
         await _audit.WriteAsync(
             actorUserId: null,
@@ -282,9 +287,11 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
         DateTimeOffset now,
         CancellationToken ct)
     {
+        ApplyPhaseTransition(existing, parsed, now);
+
         // ux_outbox_messages_type_aggregate: re-queue the same durable row so EVENT_PERSISTED is
         // re-sent after Commit without a second outbox insert (FR-021 duplicate confirm).
-        var outbox = await EnsureEventPersistedOutboxAsync(existing, now, ct);
+        var outbox = await EnsureEventPersistedOutboxAsync(existing, parsed.AlarmPhase, now, ct);
 
         await _audit.WriteAsync(
             actorUserId: null,
@@ -326,12 +333,25 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
     }
 
     /// <summary>
-    /// Ensures a durable <c>PUBLISH_EVENT_PERSISTED</c> row exists for the alarm.
-    /// Holds <c>FOR UPDATE</c> on the unique (message_type, aggregate_id) row so ingest serializes
-    /// with <see cref="OutboxDispatchService"/> claim/publish (no lost reopen, no second notification).
+    /// <see cref="AlarmEventDraft.AlarmPhase.Ended"/> closes the row. A later
+    /// <see cref="AlarmEventDraft.AlarmPhase.Active"/> does not reopen it.
+    /// Mute is not represented here.
     /// </summary>
+    private static void ApplyPhaseTransition(AlarmEvent existing, ParsedEventMessage parsed, DateTimeOffset now)
+    {
+        if (parsed.AlarmPhase != AlarmEventDraft.AlarmPhase.Ended)
+            return;
+        if (existing.Status == DbStatusCodes.AlarmEvent.Ended)
+            return;
+
+        existing.Status = DbStatusCodes.AlarmEvent.Ended;
+        existing.EndedReceivedAt = now;
+        existing.EndedDeviceAt = parsed.ClockTrusted ? parsed.OccurredDeviceAt : null;
+    }
+
     private async Task<OutboxMessage> EnsureEventPersistedOutboxAsync(
         AlarmEvent alarm,
+        string phase,
         DateTimeOffset now,
         CancellationToken ct)
     {
@@ -340,10 +360,30 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
             alarm.Id,
             ct);
 
-        var payload = BuildEventPersistedPayload(alarm);
         if (existingOutbox is not null)
         {
-            existingOutbox.Payload = payload;
+            var explicitAck = EventPersistedPayload.TryReadExplicitPhase(existingOutbox.Payload, out var explicitPhase);
+            var queue = EventPersistedPayload.ReadQueue(existingOutbox.Payload);
+            if (existingOutbox.ProcessedAt is not null && queue.Count > 0)
+                queue.RemoveAt(0);
+            // An old EVENT_PERSISTED without alarmPhase confirms only the start. It must not drop ENDED.
+            if (alarm.Status == DbStatusCodes.AlarmEvent.Ended
+                && !queue.Contains(AlarmEventDraft.AlarmPhase.Ended)
+                && !(explicitAck && explicitPhase == AlarmEventDraft.AlarmPhase.Ended && existingOutbox.ProcessedAt is not null))
+            {
+                queue.Add(AlarmEventDraft.AlarmPhase.Ended);
+            }
+
+            if (!queue.Contains(phase))
+                queue.Add(phase);
+            if (queue.Count == 0)
+                queue.Add(phase);
+
+            existingOutbox.Payload = EventPersistedPayload.Build(
+                alarm.DeviceId,
+                alarm.EventUid,
+                queue[0],
+                queue);
 
             if (existingOutbox.ProcessedAt is not null)
             {
@@ -372,7 +412,7 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
             AggregateType = EventPersistedDraft.OutboxAggregateType,
             AggregateId = alarm.Id,
             MessageType = EventPersistedDraft.OutboxPublishMessageType,
-            Payload = payload,
+            Payload = EventPersistedPayload.Build(alarm.DeviceId, alarm.EventUid, phase, [phase]),
             CreatedAt = now,
             AvailableAt = now,
             AttemptCount = 0
@@ -662,17 +702,6 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
         }
     }
 
-    private static string BuildEventPersistedPayload(AlarmEvent alarm)
-        => JsonSerializer.Serialize(new Dictionary<string, object?>
-        {
-            ["schemaVersion"] = EventPersistedDraft.SchemaVersion,
-            ["deviceId"] = alarm.DeviceId,
-            ["messageId"] = Guid.NewGuid(),
-            ["messageType"] = EventPersistedDraft.MqttMessageType,
-            ["eventUid"] = alarm.EventUid,
-            ["stored"] = true
-        });
-
     private static ParsedEventMessage ParseAndValidate(string payloadJson)
     {
         using var doc = JsonDocument.Parse(payloadJson);
@@ -720,8 +749,21 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
             WasBuffered = wasBuffered,
             ClockTrusted = clockTrusted,
             OccurredDeviceAt = occurred,
-            SignalSummary = OptionalJsonObjectString(root, "signalSummary")
+            SignalSummary = OptionalJsonObjectString(root, "signalSummary"),
+            AlarmPhase = ParseAlarmPhase(root)
         };
+    }
+
+    /// <summary>
+    /// Absent <c>alarmPhase</c> stays <see cref="AlarmEventDraft.AlarmPhase.Active"/> so older devices remain valid.
+    /// </summary>
+    private static string ParseAlarmPhase(JsonElement root)
+    {
+        if (!root.TryGetProperty("alarmPhase", out var el) || el.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            return AlarmEventDraft.AlarmPhase.Active;
+        if (el.ValueKind != JsonValueKind.String || !EventPersistedPayload.IsPhase(el.GetString()))
+            throw new BadRequestException("مرحلة الحادثة غير صالحة.", "INVALID_ALARM_PHASE");
+        return el.GetString()!;
     }
 
     private static ParsedEventMessage ParseEventLoss(JsonElement root, Guid deviceId, string messageType)
@@ -920,5 +962,6 @@ public sealed class AlarmEventIngestService : IAlarmEventIngestService
         public string? FaultCode { get; init; }
         public string? FaultStatus { get; init; }
         public string? FaultDetails { get; init; }
+        public string AlarmPhase { get; init; } = AlarmEventDraft.AlarmPhase.Active;
     }
 }

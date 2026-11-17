@@ -245,6 +245,48 @@ public sealed class DeviceInboundTelemetryTests : IAsyncLifetime
         var state = await db.DeviceStates.SingleAsync(s => s.DeviceId == deviceId);
         Assert.Equal(11, state.StateSequence);
         Assert.Equal(DbStatusCodes.Arm.Disarmed, state.ArmState);
+        Assert.Equal(0, state.ConfirmedOwnershipVersion);
+        Assert.False(state.ClockTrusted);
+    }
+
+    [Fact]
+    public async Task CommandAck_Without_Optional_Fields_Does_Not_Prove_Ownership_Or_Clock()
+    {
+        using var adminClient = await CreateAuthorizedClientAsync(AuthApiFactory.AdminUserName);
+        var deviceId = await RegisterDeviceAsync(adminClient, "hw-uid-mqtt-ack-optional", "حقول اختيارية");
+        await IngestStateAsync(deviceId, stateSequence: 2, arm: DbStatusCodes.Arm.Armed, confirmedOwnershipVersion: 0, clockTrusted: true);
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var ingest = scope.ServiceProvider.GetRequiredService<IDeviceInboundTelemetryService>();
+        var result = await ingest.IngestAsync(new DeviceInboundEnvelope
+        {
+            TopicDeviceId = deviceId,
+            AuthenticatedDeviceId = deviceId,
+            Topic = MqttInboundDraft.Topics.Acks(deviceId),
+            PayloadJson = JsonSerializer.Serialize(new
+            {
+                schemaVersion = 1,
+                deviceId,
+                messageId = Guid.NewGuid(),
+                messageType = MqttInboundDraft.MessageTypes.CommandAck,
+                bootId = "boot-ack-optional",
+                commandId = Guid.NewGuid(),
+                ownershipVersion = 4,
+                status = DbStatusCodes.CommandStatus.Executed,
+                resultStateSequence = 3,
+                armState = DbStatusCodes.Arm.Disarmed,
+                sirenState = DbStatusCodes.Siren.Off,
+                healthState = DbStatusCodes.Diagnostic.Unknown,
+                currentAlarmEventUid = (Guid?)null
+            })
+        });
+        Assert.Equal(MqttInboundDraft.IngestOutcomes.Applied, result.Outcome);
+
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var state = await db.DeviceStates.SingleAsync(s => s.DeviceId == deviceId);
+        Assert.Equal(0, state.ConfirmedOwnershipVersion);
+        Assert.True(state.ClockTrusted);
+        Assert.Equal(3, state.StateSequence);
     }
 
     [Fact]
@@ -306,7 +348,8 @@ public sealed class DeviceInboundTelemetryTests : IAsyncLifetime
         long stateSequence,
         string arm,
         long confirmedOwnershipVersion,
-        string health = DbStatusCodes.Diagnostic.Unknown)
+        string health = DbStatusCodes.Diagnostic.Unknown,
+        bool clockTrusted = false)
     {
         await using var scope = _factory.Services.CreateAsyncScope();
         var ingest = scope.ServiceProvider.GetRequiredService<IDeviceInboundTelemetryService>();
@@ -315,7 +358,7 @@ public sealed class DeviceInboundTelemetryTests : IAsyncLifetime
             TopicDeviceId = deviceId,
             AuthenticatedDeviceId = deviceId,
             Topic = MqttInboundDraft.Topics.State(deviceId),
-            PayloadJson = BuildStatePayload(deviceId, stateSequence, arm, confirmedOwnershipVersion, health)
+            PayloadJson = BuildStatePayload(deviceId, stateSequence, arm, confirmedOwnershipVersion, health, clockTrusted)
         });
     }
 
@@ -324,7 +367,8 @@ public sealed class DeviceInboundTelemetryTests : IAsyncLifetime
         long stateSequence,
         string arm,
         long confirmedOwnershipVersion,
-        string health = DbStatusCodes.Diagnostic.Unknown)
+        string health = DbStatusCodes.Diagnostic.Unknown,
+        bool clockTrusted = false)
         => JsonSerializer.Serialize(new
         {
             schemaVersion = 1,
@@ -338,7 +382,7 @@ public sealed class DeviceInboundTelemetryTests : IAsyncLifetime
             sirenState = DbStatusCodes.Siren.Off,
             healthState = health,
             currentAlarmEventUid = (Guid?)null,
-            clockTrusted = false
+            clockTrusted
         });
 
     private static async Task LinkAsync(HttpClient adminClient, Guid deviceId)

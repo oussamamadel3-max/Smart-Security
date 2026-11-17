@@ -24,6 +24,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure;
@@ -48,6 +50,7 @@ public static class InfrastructureServiceRegistration
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<MqttInboundOptions>(configuration.GetSection(MqttInboundOptions.SectionName));
         services.Configure<MqttOutboxOptions>(configuration.GetSection(MqttOutboxOptions.SectionName));
+        services.Configure<MqttLivePublishOptions>(configuration.GetSection(MqttLivePublishOptions.SectionName));
         services.Configure<FcmOptions>(configuration.GetSection(FcmOptions.SectionName));
         var authOptions = configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
         if (string.IsNullOrWhiteSpace(authOptions.Jwt.SigningKey) || authOptions.Jwt.SigningKey.Length < 32)
@@ -138,7 +141,16 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<IMqttInboundDispatcher, MqttInboundDispatcher>();
         services.AddScoped<IOutboxDispatchService, OutboxDispatchService>();
-        services.AddSingleton<IMqttOutboundPublisher, NoOpMqttOutboundPublisher>();
+        services.AddSingleton<IMqttOutboundPublisher>(sp =>
+        {
+            var live = sp.GetRequiredService<IOptions<MqttLivePublishOptions>>().Value;
+            if (!live.LivePublishEnabled)
+                return new NoOpMqttOutboundPublisher(sp.GetRequiredService<ILogger<NoOpMqttOutboundPublisher>>());
+
+            return new MqttNetLivePublisher(
+                sp.GetRequiredService<IOptions<MqttLivePublishOptions>>(),
+                sp.GetRequiredService<ILogger<MqttNetLivePublisher>>());
+        });
         services.AddScoped<IDeviceCredentialHasher, DeviceCredentialHasher>();
         services.AddScoped<IDeviceBrokerAccessService, NoOpDeviceBrokerAccessService>();
         services.AddScoped<IOwnerLookup, OwnerLookup>();

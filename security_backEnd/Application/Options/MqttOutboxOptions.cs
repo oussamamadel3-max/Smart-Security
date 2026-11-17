@@ -33,3 +33,42 @@ public sealed class MqttOutboxOptions
     /// </summary>
     public int MaxAttempts { get; set; } = 10;
 }
+
+/// <summary>
+/// Live broker publish for the outbox. Stays off unless an environment explicitly opts in.
+/// Passwords are read from configuration or environment variables and must not be committed.
+/// </summary>
+public sealed class MqttLivePublishOptions
+{
+    public const string SectionName = "Mqtt:Outbound";
+
+    /// <summary>
+    /// When false, DI registers <c>NoOpMqttOutboundPublisher</c> and no broker connection is opened.
+    /// </summary>
+    public bool LivePublishEnabled { get; set; }
+
+    public string Host { get; set; } = "localhost";
+
+    public int Port { get; set; } = 1883;
+
+    public string ClientId { get; set; } = "smart-security-backend-outbound";
+
+    /// <summary>Server MQTT username. Never commit a secret.</summary>
+    public string? Username { get; set; }
+
+    /// <summary>Server MQTT password. Never commit a secret.</summary>
+    public string? Password { get; set; }
+
+    public int KeepAliveSeconds { get; set; } = 15;
+
+    /// <summary>
+    /// When true, publish uses TLS and validates the server certificate against <see cref="CaCertificatePath"/>.
+    /// Stays false unless an environment opts in.
+    /// </summary>
+    public bool UseTls { get; set; }
+
+    /// <summary>
+    /// PEM file of the trusted CA. Required when <see cref="UseTls"/> is true. Never a private key.
+    /// </summary>
+    public string? CaCertificatePath { get; set; }
+}

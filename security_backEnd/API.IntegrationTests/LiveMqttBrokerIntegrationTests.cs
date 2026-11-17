@@ -79,11 +79,11 @@ public sealed class LiveMqttBrokerIntegrationTests : IAsyncLifetime
         var deviceId = await RegisterActivateAndOnlineAsync(adminClient, "hw-live-mqtt-01", "MQTT حي");
         var topic = ExecuteCommandDraft.Topics.Commands(deviceId);
 
-        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource<MQTTnet.MqttApplicationMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var subscriber = new MqttClientFactory().CreateMqttClient();
         subscriber.ApplicationMessageReceivedAsync += e =>
         {
-            received.TrySetResult(e.ApplicationMessage.ConvertPayloadToString());
+            received.TrySetResult(e.ApplicationMessage);
             return Task.CompletedTask;
         };
 
@@ -111,7 +111,10 @@ public sealed class LiveMqttBrokerIntegrationTests : IAsyncLifetime
 
         var completed = await Task.WhenAny(received.Task, Task.Delay(TimeSpan.FromSeconds(10)));
         Assert.Same(received.Task, completed);
-        using var doc = JsonDocument.Parse(await received.Task);
+        var message = await received.Task;
+        Assert.False(message.Retain);
+        Assert.Equal(MqttQualityOfServiceLevel.AtLeastOnce, message.QualityOfServiceLevel);
+        using var doc = JsonDocument.Parse(message.ConvertPayloadToString());
         Assert.Equal(ExecuteCommandDraft.MqttMessageType, doc.RootElement.GetProperty("messageType").GetString());
         Assert.Equal(commandId, doc.RootElement.GetProperty("commandId").GetGuid());
 

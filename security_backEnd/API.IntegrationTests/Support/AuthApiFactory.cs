@@ -26,12 +26,18 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
     private readonly string _connectionString;
     private readonly string _signingKey;
     private readonly Action<IServiceCollection>? _configureTestServices;
+    private readonly IReadOnlyDictionary<string, string?>? _settings;
 
-    public AuthApiFactory(Action<IServiceCollection>? configureTestServices = null)
+    public AuthApiFactory(
+        Action<IServiceCollection>? configureTestServices = null,
+        IReadOnlyDictionary<string, string?>? settings = null,
+        string? connectionString = null)
     {
-        _connectionString = TestDbFactory.ResolveConnectionString("esp32_security_auth_http_test");
+        _connectionString = connectionString
+            ?? TestDbFactory.ResolveConnectionString("esp32_security_auth_http_test");
         _signingKey = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         _configureTestServices = configureTestServices;
+        _settings = settings;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -57,6 +63,12 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseSetting(
             "Fcm:TokenEncryptionKey",
             Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)));
+
+        if (_settings is not null)
+        {
+            foreach (var pair in _settings)
+                builder.UseSetting(pair.Key, pair.Value);
+        }
 
         if (_configureTestServices is not null)
             builder.ConfigureTestServices(_configureTestServices);
