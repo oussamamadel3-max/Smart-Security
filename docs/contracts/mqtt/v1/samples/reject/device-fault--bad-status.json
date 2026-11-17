@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "deviceId": "11111111-1111-4111-8111-111111111111",
+  "messageId": "99999999-9999-4999-8999-999999999993",
+  "messageType": "DEVICE_FAULT",
+  "bootId": "boot-example",
+  "faultUid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "ownershipVersion": 2,
+  "faultCode": "SIREN_DRIVER",
+  "status": "BROKEN",
+  "clockTrusted": false
+}

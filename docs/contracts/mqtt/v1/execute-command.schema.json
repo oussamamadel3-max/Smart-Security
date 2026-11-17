@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/execute-command.schema.json",
+  "title": "EXECUTE_COMMAND",
+  "description": "Draft shape emitted by OwnerDeviceCommandService.BuildExecuteCommandPayload. Not a G1-adopted production contract. Server message: no bootId.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "commandId",
+    "commandSequence",
+    "ownershipVersion",
+    "type",
+    "expiresAt"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "EXECUTE_COMMAND" },
+    "commandId": { "$ref": "#/$defs/uuid" },
+    "commandSequence": { "type": "integer" },
+    "ownershipVersion": { "type": "integer" },
+    "type": {
+      "type": "string",
+      "enum": ["ARM", "DISARM", "MUTE_ALARM", "TEST_SIREN", "STOP_TEST"]
+    },
+    "expiresAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "Format produced by the builder: yyyy-MM-ddTHH:mm:ssZ. Fractional seconds are not emitted."
+    },
+    "targetAlarmEventUid": { "$ref": "#/$defs/uuid" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "type": { "const": "MUTE_ALARM" } },
+        "required": ["type"]
+      },
+      "then": { "required": ["targetAlarmEventUid"] }
+    }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

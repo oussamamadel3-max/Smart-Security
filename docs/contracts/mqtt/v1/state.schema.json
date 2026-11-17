@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/state.schema.json",
+  "title": "STATE",
+  "description": "Fields DeviceInboundTelemetryService.ParseState requires. stateSequence below 0 is rejected by ingest. Monotonic no-rewind is enforced in the service, not by this schema. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "bootId",
+    "stateSequence",
+    "confirmedOwnershipVersion",
+    "armState",
+    "sirenState",
+    "healthState",
+    "clockTrusted"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "STATE" },
+    "bootId": { "type": "string", "minLength": 1 },
+    "stateSequence": { "type": "integer", "minimum": 0 },
+    "confirmedOwnershipVersion": { "type": "integer", "minimum": 0 },
+    "armState": { "type": "string", "enum": ["ARMED", "DISARMED", "UNKNOWN"] },
+    "sirenState": { "type": "string", "enum": ["OFF", "ALARM", "TEST", "UNKNOWN"] },
+    "healthState": { "type": "string", "enum": ["HEALTHY", "FAULT", "UNKNOWN"] },
+    "currentAlarmEventUid": {
+      "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "clockTrusted": { "type": "boolean" },
+    "deviceReportedAt": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "firmwareVersion": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+    "appliedSettingsVersion": { "type": "integer" },
+    "healthCode": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+    "powerSource": {
+      "anyOf": [
+        { "type": "string", "enum": ["MAINS", "BATTERY", "UNKNOWN"] },
+        { "type": "null" }
+      ]
+    },
+    "batteryPercent": { "type": "integer", "minimum": 0, "maximum": 100 }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

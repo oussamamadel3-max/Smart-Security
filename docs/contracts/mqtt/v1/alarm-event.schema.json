@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/alarm-event.schema.json",
+  "title": "ALARM_EVENT",
+  "description": "Same eventUid for the whole incident. alarmPhase ACTIVE or ENDED; omitted means ACTIVE. ENDED is the sensor returning to rest, not MUTE_ALARM. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "bootId",
+    "eventUid",
+    "ownershipVersion",
+    "sensorKey",
+    "wasBuffered",
+    "clockTrusted"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "ALARM_EVENT" },
+    "bootId": { "type": "string", "minLength": 1 },
+    "eventUid": { "$ref": "#/$defs/uuid" },
+    "ownershipVersion": { "type": "integer", "minimum": 0 },
+    "sensorKey": { "type": "string", "minLength": 1 },
+    "wasBuffered": { "type": "boolean" },
+    "clockTrusted": { "type": "boolean" },
+    "alarmPhase": { "type": "string", "enum": ["ACTIVE", "ENDED"] },
+    "occurredDeviceAt": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "signalSummary": { "anyOf": [{ "type": "object" }, { "type": "null" }] }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

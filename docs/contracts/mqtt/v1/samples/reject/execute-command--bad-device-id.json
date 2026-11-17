@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "deviceId": "not-a-uuid",
+  "messageId": "22222222-2222-4222-8222-222222222222",
+  "messageType": "EXECUTE_COMMAND",
+  "commandId": "22222222-2222-4222-8222-222222222222",
+  "commandSequence": 7,
+  "ownershipVersion": 2,
+  "type": "ARM",
+  "expiresAt": "2026-10-25T12:00:00Z"
+}

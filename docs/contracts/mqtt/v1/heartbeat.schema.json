@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/heartbeat.schema.json",
+  "title": "HEARTBEAT",
+  "description": "DeviceInboundTelemetryService.ParseHeartbeat. Does not carry arm/siren/health. QoS 0 is a transport rule, not a JSON field. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "bootId",
+    "clockTrusted"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "HEARTBEAT" },
+    "bootId": { "type": "string", "minLength": 1 },
+    "clockTrusted": { "type": "boolean" }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

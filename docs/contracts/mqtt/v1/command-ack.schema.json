@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/command-ack.schema.json",
+  "title": "COMMAND_ACK",
+  "description": "confirmedOwnershipVersion and clockTrusted stay optional in schemaVersion 1. Absence is not a positive ownership or clock acknowledgement. New firmware must send both. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "bootId",
+    "commandId",
+    "ownershipVersion",
+    "status",
+    "resultStateSequence",
+    "armState",
+    "sirenState",
+    "healthState"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "COMMAND_ACK" },
+    "bootId": { "type": "string", "minLength": 1 },
+    "commandId": { "$ref": "#/$defs/uuid" },
+    "ownershipVersion": { "type": "integer" },
+    "status": { "type": "string", "enum": ["EXECUTED", "REJECTED"] },
+    "resultStateSequence": { "type": "integer", "minimum": 0 },
+    "armState": { "type": "string", "enum": ["ARMED", "DISARMED", "UNKNOWN"] },
+    "sirenState": { "type": "string", "enum": ["OFF", "ALARM", "TEST", "UNKNOWN"] },
+    "healthState": { "type": "string", "enum": ["HEALTHY", "FAULT", "UNKNOWN"] },
+    "currentAlarmEventUid": {
+      "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }]
+    },
+    "confirmedOwnershipVersion": { "type": "integer", "minimum": 0 },
+    "clockTrusted": { "type": "boolean" },
+    "deviceReportedAt": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "firmwareVersion": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+    "appliedSettingsVersion": { "type": "integer" },
+    "healthCode": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+    "powerSource": {
+      "anyOf": [
+        { "type": "string", "enum": ["MAINS", "BATTERY", "UNKNOWN"] },
+        { "type": "null" }
+      ]
+    },
+    "batteryPercent": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "rejectCode": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

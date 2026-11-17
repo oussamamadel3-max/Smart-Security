@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/ownership-sync.schema.json",
+  "title": "OWNERSHIP_SYNC",
+  "description": "Payload built by DeviceOwnershipService.BuildOwnershipSyncPayload. No owner identity and no confirmedOwnershipVersion on this message; the device reports confirmation on STATE. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "ownershipVersion",
+    "isLinked"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "OWNERSHIP_SYNC" },
+    "ownershipVersion": { "type": "integer" },
+    "isLinked": { "type": "boolean" }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "deviceId": "11111111-1111-4111-8111-111111111111",
+  "messageId": "99999999-9999-4999-8999-999999999991",
+  "messageType": "EVENT_LOSS_REPORT",
+  "bootId": "boot-example",
+  "reportUid": "99999999-9999-4999-8999-999999999992",
+  "ownershipVersion": 2,
+  "reason": "BUFFER_FULL",
+  "lostCount": 3,
+  "clockTrusted": false
+}

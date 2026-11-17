@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/device-fault.schema.json",
+  "title": "DEVICE_FAULT",
+  "description": "AlarmEventIngestService.ParseDeviceFault. status defaults to ACTIVE when omitted. faultCode is an open string in the parser, not a frozen catalog. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "bootId",
+    "faultUid",
+    "ownershipVersion",
+    "faultCode"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "DEVICE_FAULT" },
+    "bootId": { "type": "string", "minLength": 1 },
+    "faultUid": { "$ref": "#/$defs/uuid" },
+    "ownershipVersion": { "type": "integer", "minimum": 0 },
+    "faultCode": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["ACTIVE", "RESOLVED"] },
+    "sensorKey": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+    "clockTrusted": { "type": "boolean" },
+    "deviceOccurredAt": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "details": { "anyOf": [{ "type": "object" }, { "type": "null" }] }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

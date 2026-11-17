@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-security.local/contracts/mqtt/v1/event-persisted.schema.json",
+  "title": "EVENT_PERSISTED",
+  "description": "Wire payload from EventPersistedPayload.Wire after the DB transaction commits. stored is always true. alarmPhase is ACTIVE or ENDED; a legacy payload without the field acknowledges ACTIVE only. The server-only queuedPhases array is stripped before publish and is not part of this contract. No bootId. Not a G1-adopted production contract.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "deviceId",
+    "messageId",
+    "messageType",
+    "eventUid",
+    "stored"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "deviceId": { "$ref": "#/$defs/uuid" },
+    "messageId": { "$ref": "#/$defs/uuid" },
+    "messageType": { "type": "string", "const": "EVENT_PERSISTED" },
+    "eventUid": { "$ref": "#/$defs/uuid" },
+    "stored": { "type": "boolean", "const": true },
+    "alarmPhase": { "type": "string", "enum": ["ACTIVE", "ENDED"] }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}
