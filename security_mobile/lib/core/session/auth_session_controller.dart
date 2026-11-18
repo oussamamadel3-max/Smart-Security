@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../core/domain/device_status_codes.dart';
 import '../../features/auth/domain/entities/auth_session_tokens.dart';
 import '../../features/auth/domain/entities/auth_user_entity.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';

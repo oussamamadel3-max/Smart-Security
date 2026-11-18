@@ -1,6 +1,5 @@
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../../../core/domain/device_status_codes.dart';
 import '../entities/device_command_entity.dart';
 
 abstract class DeviceCommandsRepository {

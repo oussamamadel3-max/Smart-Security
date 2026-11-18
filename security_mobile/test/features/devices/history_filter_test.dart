@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:security_mobile/core/domain/device_status_codes.dart';
 import 'package:security_mobile/features/devices/domain/entities/alarm_event_entity.dart';
 import 'package:security_mobile/features/devices/domain/entities/device_command_entity.dart';
 import 'package:security_mobile/features/devices/presentation/viewmodels/device_history_view_models.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 void main() {
   final events = [

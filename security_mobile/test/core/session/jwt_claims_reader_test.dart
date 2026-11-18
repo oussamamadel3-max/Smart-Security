@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:security_mobile/core/domain/device_status_codes.dart';
 import 'package:security_mobile/core/session/jwt_claims_reader.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 String _jwt(Map<String, dynamic> payload) {
   String enc(Object value) =>

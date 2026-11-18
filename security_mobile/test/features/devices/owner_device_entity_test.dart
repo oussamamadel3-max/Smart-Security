@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:security_mobile/core/domain/device_status_codes.dart';
 import 'package:security_mobile/features/devices/domain/entities/device_indicators_entity.dart';
 import 'package:security_mobile/features/devices/domain/entities/owner_device_entity.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 void main() {
   test('PENDING link stays limited without equating offline to disarm', () {

@@ -1,4 +1,4 @@
-import '../../../../core/domain/device_status_codes.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 import '../../domain/entities/device_indicators_entity.dart';
 import '../../domain/entities/owner_device_entity.dart';
 import '../models/owner_device_dto.dart';

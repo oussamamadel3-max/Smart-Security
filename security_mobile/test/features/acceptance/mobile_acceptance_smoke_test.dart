@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:security_mobile/core/domain/device_status_codes.dart';
 import 'package:security_mobile/core/router/app_routes.dart';
 import 'package:security_mobile/core/router/auth_guard.dart';
 import 'package:security_mobile/core/session/auth_session_state.dart';
@@ -7,6 +6,7 @@ import 'package:security_mobile/features/devices/domain/entities/device_command_
 import 'package:security_mobile/features/devices/domain/entities/owner_device_entity.dart';
 import 'package:security_mobile/features/notifications/domain/usecases/open_notification_usecase.dart';
 import 'package:security_mobile/features/wifi_provisioning/domain/local_provisioning_client.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 /// Compact acceptance smoke covering critical MOB-T-08 client invariants.
 void main() {

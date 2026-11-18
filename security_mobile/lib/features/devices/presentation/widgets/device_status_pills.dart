@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../../../core/domain/device_status_codes.dart';
 import '../../domain/entities/device_indicators_entity.dart';
 import '../../domain/entities/owner_device_entity.dart';
 

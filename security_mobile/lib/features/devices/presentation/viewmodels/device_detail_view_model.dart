@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../../../core/domain/device_status_codes.dart';
 import '../../../../core/session/auth_session_controller.dart';
 import '../../domain/command_poll_policy.dart';
 import '../../domain/entities/device_command_entity.dart';

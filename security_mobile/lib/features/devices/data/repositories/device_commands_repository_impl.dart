@@ -1,6 +1,5 @@
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../../../core/domain/device_status_codes.dart';
 import '../../domain/entities/device_command_entity.dart';
 import '../../domain/repositories/device_commands_repository.dart';
 import '../datasources/device_commands_remote_datasource.dart';
@@ -49,12 +48,14 @@ class DeviceCommandsRepositoryImpl implements DeviceCommandsRepository {
   }
 
   @override
-  Future<Result<List<DeviceCommandEntity>>> listByDevice(String deviceId) async {
+  Future<Result<List<DeviceCommandEntity>>> listByDevice(
+    String deviceId,
+  ) async {
     final result = await executeWithRetry(() => _remote.listByDevice(deviceId));
     return switch (result) {
       Success(:final data) => Success(
-          data.map(DeviceCommandMapper.toEntity).toList(growable: false),
-        ),
+        data.map(DeviceCommandMapper.toEntity).toList(growable: false),
+      ),
       Failure_(:final failure) => Failure_(failure),
     };
   }

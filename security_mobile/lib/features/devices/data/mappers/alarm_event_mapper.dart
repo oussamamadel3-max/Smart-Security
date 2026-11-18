@@ -1,4 +1,4 @@
-import '../../../../core/domain/device_status_codes.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 import '../../domain/entities/alarm_event_entity.dart';
 import '../models/alarm_event_dto.dart';
 

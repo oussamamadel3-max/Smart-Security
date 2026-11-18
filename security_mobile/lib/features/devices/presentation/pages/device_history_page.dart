@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
-import '../../../../core/domain/device_status_codes.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/alarm_event_entity.dart';
 import '../../domain/entities/device_command_entity.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:security_mobile/core/domain/device_status_codes.dart';
 import 'package:security_mobile/features/devices/domain/command_poll_policy.dart';
 import 'package:security_mobile/features/devices/domain/entities/device_command_entity.dart';
+import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 DeviceCommandEntity _cmd({
   required CommandStatus status,
