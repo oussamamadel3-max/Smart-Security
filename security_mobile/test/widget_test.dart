@@ -5,12 +5,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 import 'package:security_mobile/app.dart';
+import 'package:security_mobile/core/network/auth_dependency_providers.dart';
+import 'package:security_mobile/core/session/refresh_token_store.dart';
+
+class _EmptyRefreshStore implements RefreshTokenStore {
+  @override
+  Future<void> clear() async {}
+
+  @override
+  Future<String?> read() async => null;
+
+  @override
+  Future<void> write(String token) async {}
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  testWidgets('mobile shell boots with shared theme and Arabic brand',
+  testWidgets('mobile shell shows login brand after splash restore',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -22,13 +35,16 @@ void main() {
             const AppCoreConfig(baseUrl: 'http://localhost'),
           ),
           sharedPreferencesProvider.overrideWithValue(prefs),
+          refreshTokenStoreProvider.overrideWithValue(_EmptyRefreshStore()),
         ],
         child: const HisnMobileApp(),
       ),
     );
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
 
     expect(find.textContaining('حِصن'), findsWidgets);
+    expect(find.textContaining('مرحباً بعودتك'), findsOneWidget);
   });
 }

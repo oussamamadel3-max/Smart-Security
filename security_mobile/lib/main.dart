@@ -5,6 +5,7 @@ import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 import 'app.dart';
 import 'core/config/app_environment.dart';
+import 'core/network/mobile_network_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,7 @@ Future<void> main() async {
           AppCoreConfig(baseUrl: env.apiBaseUrl),
         ),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        dioProvider.overrideWith((ref) => ref.watch(mobileDioProvider)),
       ],
       child: const HisnMobileApp(),
     ),

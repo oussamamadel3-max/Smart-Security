@@ -16,6 +16,8 @@ dependencies:
   go_router: ^15.1.2
   google_fonts: ^6.2.1
   shared_preferences: ^2.5.3
+  dio: ^5.8.0
+  flutter_secure_storage: ^11.2.0
   smart_security_app_core:
     path: ../packages/smart_security_app_core
 

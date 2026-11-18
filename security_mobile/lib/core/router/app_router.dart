@@ -2,17 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/pages/login_placeholder_page.dart';
-import '../../features/bootstrap/presentation/pages/home_shell_page.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/bootstrap/presentation/pages/splash_page.dart';
-import '../session/session_bootstrap.dart';
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/devices/presentation/pages/alarm_event_detail_page.dart';
+import '../../features/devices/presentation/pages/command_detail_page.dart';
+import '../../features/devices/presentation/pages/device_detail_page.dart';
+import '../../features/devices/presentation/pages/device_history_page.dart';
+import '../../features/devices/presentation/pages/devices_list_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/shell/presentation/pages/owner_main_shell.dart';
+import '../../features/wifi_provisioning/presentation/pages/wifi_provisioning_page.dart';
+import '../session/auth_session_controller.dart';
+import '../session/auth_session_state.dart';
 import 'app_routes.dart';
+import 'auth_guard.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authListenable = ValueNotifier<BootstrapAuthStatus>(
-    ref.read(sessionBootstrapProvider),
+  final authListenable = ValueNotifier<AuthSessionState>(
+    ref.read(authSessionProvider),
   );
-  ref.listen<BootstrapAuthStatus>(sessionBootstrapProvider, (_, next) {
+  ref.listen<AuthSessionState>(authSessionProvider, (_, next) {
     authListenable.value = next;
   });
   ref.onDispose(authListenable.dispose);
@@ -21,19 +32,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     refreshListenable: authListenable,
     redirect: (context, state) {
-      final status = ref.read(sessionBootstrapProvider);
-      final loc = state.matchedLocation;
-      final onLogin = loc == AppRoutes.login;
-      final onSplash = loc == AppRoutes.splash;
-
-      if (status == BootstrapAuthStatus.unknown || onSplash) {
-        return null;
-      }
-      if (status == BootstrapAuthStatus.unauthenticated) {
-        return onLogin ? null : AppRoutes.login;
-      }
-      if (onLogin) return AppRoutes.home;
-      return null;
+      return authGuardRedirect(
+        session: ref.read(authSessionProvider),
+        matchedLocation: state.matchedLocation,
+      );
     },
     routes: [
       GoRoute(
@@ -42,11 +44,79 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (_, __) => const LoginPlaceholderPage(),
+        builder: (_, __) => const LoginPage(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return OwnerMainShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.dashboard,
+                builder: (_, __) => const DashboardPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.devices,
+                builder: (_, __) => const DevicesListPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.notifications,
+                builder: (_, __) => const NotificationsPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (_, __) => const ProfilePage(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
-        path: AppRoutes.home,
-        builder: (_, __) => const HomeShellPage(),
+        path: AppRoutes.deviceDetail,
+        builder: (_, state) => DeviceDetailPage(
+          deviceId: state.pathParameters['deviceId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.deviceHistory,
+        builder: (_, state) => DeviceHistoryPage(
+          deviceId: state.pathParameters['deviceId']!,
+          initialTab: state.uri.queryParameters['tab'] ?? 'events',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.deviceAlarmEventDetail,
+        builder: (_, state) => AlarmEventDetailPage(
+          deviceId: state.pathParameters['deviceId']!,
+          alarmEventId: state.pathParameters['alarmEventId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.deviceCommandDetail,
+        builder: (_, state) => CommandDetailPage(
+          deviceId: state.pathParameters['deviceId']!,
+          commandId: state.pathParameters['commandId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.deviceWifiSetup,
+        builder: (_, state) => WifiProvisioningPage(
+          deviceId: state.pathParameters['deviceId']!,
+        ),
       ),
     ],
   );
