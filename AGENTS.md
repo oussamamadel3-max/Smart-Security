@@ -51,7 +51,7 @@ When the owner issues an **Autonomous Sequential Mobile Development** prompt cov
 2. Save the task report under `docs/reports/mobile/` noting this exception.
 3. **G0/G1, Backend/ESP/shared-contract adoption, device/emulator/iOS runs** are **out of scope** for this sequence when the owner prompt already forbade them. Leave those cards unchecked or mark `BLOCKED` / `NOT VERIFIED` in the report; **do not stop the chain** and **do not** invent G0/G1 adoption or cross-project changes.
 4. Stop the chain only on: requirements conflict inside mobile scope, missing secret the owner did not defer, or an **unfixable in-scope mobile failure** after a fix attempt.
-5. This exception is **mobile-only** for that sequence. Default Section 6 (`APPROVE TASK CLOSURE`) remains for Backend, ESP, Integration, Ops — and for Web **unless** the Web exception below is active.
+5. This exception is **mobile-only** for that sequence. Default Section 6 (`APPROVE TASK CLOSURE`) remains for Backend, Integration, Ops — and for Web / ESP **unless** their respective exceptions below are active.
 6. The owner may revoke this exception at any time; thereafter default closure gates resume.
 
 The detailed procedure lives in `.cursor/rules/common/task-execution.mdc` §6A.
@@ -66,6 +66,20 @@ When the owner issues an **Autonomous Sequential Web Development** prompt coveri
 4. Stop the chain only on: requirements conflict inside web scope, missing secret the owner did not defer, absent mandatory API for acceptance that cannot be software-completed, or an **unfixable in-scope web failure** after a fix attempt.
 5. This exception is **web-only**. It does not authorize Backend, ESP, Mobile, Integration, or Ops auto-close.
 6. The owner may revoke this exception at any time; thereafter default closure gates resume.
+
+### Temporary exception — Autonomous Sequential ESP Execution (owner-authorized, 2026-11-18)
+
+When the owner issues an **Autonomous Sequential ESP Development** prompt covering `ESP-T-02`…`ESP-T-09` (or explicitly re-authorizes / restores that mode):
+
+1. **`APPROVE TASK CLOSURE` is suspended for `ESP-T-*` (`T-02`…`T-09`) in this sequence.** After evidenced software-scope acceptance, the agent **must auto-close** (mark proved `[x]`, update `esp-*` / `system-*`) and **must continue immediately** to the next eligible `ESP-T-*` without waiting for any closure message.
+2. Save the task report under `docs/reports/esp/` noting this exception.
+3. **Real hardware acceptance (SW-420, siren/driver circuit, independent 12V battery, electrical safety measurements), device/board bring-up, Secure Boot / Flash / NVS Encryption activation, OTA (`D-08`), and G1/G2 contract adoption** are **out of scope for auto-closure** when hardware or external adoption is unavailable. Leave those cards unchecked or mark `BLOCKED BY HARDWARE` / `BLOCKED BY EXTERNAL DEPENDENCY` / `NOT VERIFIED` in the report; **do not stop the chain** and **do not** invent hardware test results, gate adoption, or cross-project (Backend/Mobile/Web/Integration/Ops) changes.
+4. **`T-01` (hardware decisions & gate `G0`) is excluded from this exception.** `G0` closure still requires explicit owner review given its safety-critical hardware-decision content (`D-01`…`D-07`, battery/power-loss policy, corrupted-config safety behavior). The agent may complete and report `T-01`'s documentation work but must not auto-close `T-01` or declare `G0` closed; default Section 6 governs `T-01`.
+5. Stop the chain only on: requirements conflict inside ESP scope, missing secret/decision the owner did not defer, or an **unfixable in-scope software failure** after a fix attempt.
+6. This exception is **ESP-only**, and only for `T-02`…`T-09`. It does not authorize Backend, Mobile, Web, Integration, or Ops auto-close, and does not relax `G0`/`G1`/`G2` gate-closure requirements or the "no production firmware before `G0`" / "no guessed production TTL/capacity while `D-03`/`NFR-008` are open" boundaries above.
+7. The owner may revoke this exception at any time; thereafter default closure gates resume.
+
+The detailed procedure lives in `.cursor/rules/common/task-execution.mdc` §6B.
 
 ## Work discipline
 

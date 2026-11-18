@@ -223,8 +223,24 @@ While active for **mobile tasks only**:
 5. Do not apply this exception to Backend, ESP, Web, Integration, or Ops.
 6. The owner may revoke this exception at any time; thereafter default Section 6/7 resume.
 
+## 6B. Autonomous Sequential ESP exception (owner-authorized)
+
+Active when the owner message is an Autonomous Sequential ESP Development prompt for `ESP-T-02`…`ESP-T-09`, or the owner later restores that mode.
+
+While active for **ESP software-scope tasks only**:
+
+1. **`APPROVE TASK CLOSURE` does not apply** to `ESP-T-*` (`T-02`…`T-09`) in this sequence. After software-scope criteria are evidenced (`PASSED` / `VERIFIED` at the appropriate test level — unit/component/state-machine, not a claimed hardware result), **auto-close** using Section 6 documentation steps and **immediately start** the next eligible `ESP-T-*`.
+2. Save the full report under `docs/reports/esp/` noting this exception.
+3. Real hardware acceptance (sensor/siren/battery/electrical safety), board bring-up, Secure Boot/Flash/NVS Encryption activation, OTA (`D-08`), and G1/G2 contract adoption remain out of auto-closure scope when hardware or external adoption is unavailable: leave those checklist items unchecked; record `BLOCKED BY HARDWARE` / `BLOCKED BY EXTERNAL DEPENDENCY` / `NOT VERIFIED` in the report; **still auto-close the evidenced software scope and continue the chain**. Do not invent hardware test results, gate adoption, or cross-project changes.
+4. `T-01` / gate `G0` is **excluded** from this exception — it stays under default Section 6 (explicit `APPROVE TASK CLOSURE: ESP-T-01` / `APPROVE TASK CLOSURE: G0` required) because of its safety-critical hardware-decision content.
+5. Stop the chain only on: in-scope requirements conflict, undeferred required secret/decision, or unfixable in-scope software failure after a fix attempt.
+6. Do not apply this exception to Backend, Mobile, Web, Integration, or Ops, and do not relax G0/G1/G2 gate-closure requirements.
+7. The owner may revoke this exception at any time; thereafter default Section 6/7 resume.
+
 ## 7. Stop condition
 
 **Default:** After the implementation report, await closure approval. After an approved documentation update, provide the closure report and **stop**. Do not chain to another task or create a Git commit unless explicitly asked.
 
 **Under Section 6A (mobile autonomous sequential):** After auto-close, **do not stop** — continue to the next eligible mobile task until the sequence ends or a real blocker in Section 6A.4 applies. Deferred G1/hardware cards alone are **not** a stop. Still do not create a Git commit unless explicitly asked.
+
+**Under Section 6B (ESP autonomous sequential):** After auto-close, **do not stop** — continue to the next eligible `ESP-T-*` (`T-02`…`T-09`) task until the sequence ends or a real blocker in Section 6B.5 applies. Deferred hardware/G1/G2 cards alone are **not** a stop. `T-01`/`G0` is never auto-closed under this section. Still do not create a Git commit unless explicitly asked.

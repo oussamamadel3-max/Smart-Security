@@ -34,7 +34,7 @@
 | مشروع | ملف التقدّم | مكتمل / الكل | الجارية | النسبة |
 |--------|-------------|--------------|---------|--------|
 | باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | التالية T-05 (لم تُبدأ؛ T-09 ✓) | ~38% |
-| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 | T-01 | 0% |
+| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · 5/9 `SOFTWARE COMPLETE` كلياً/جزئياً | T-01 بانتظار المالك؛ T-02/T-06/T-09 `BLOCKED` | 0% رسمياً |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 8 / 8 | تسلسل عميل مكتمل | 100% |
 | ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C مغلق خارج العدّاد. الحي وEXT-08 معلّقان | 8/8 بطاقات؛ ليست جاهزية إنتاج |
 | تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |

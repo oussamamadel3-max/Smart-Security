@@ -1,6 +1,6 @@
 # المهمة الحالية — ESP والعتاد
 
-status: pending
+status: drafted — awaiting owner closure review (G0 excluded from ESP autonomous-closure exception)
 task: قرارات العتاد وبوابة البدء G0 (D-01…D-07)
 srs: القسم 5.3 ونقاط الحسم — يمهّد FR-019 وما بعده؛ بلا قبول إنذار مغلق قبل D-02
 parent: T-01 / hardware decisions & G0
@@ -38,8 +38,18 @@ worktree: C:/Users/Osama/Desktop/SmartSecurity/security_esp
 
 ## تم
 
-_(فارغ — المهمة لم تبدأ)_
+- سجل قرارات D-01…D-07 كاملاً (مبدأ/معلّق/دليل/مالك/حالة) في [`docs/HARDWARE-DECISIONS-D01-D07.md`](./docs/HARDWARE-DECISIONS-D01-D07.md).
+- قائمة قطع أولية (BOM) ومخطط توصيل منطقي نصي أولي وخطة معايرة SW-420 — ضمن نفس الملف.
+- إعلان بوابة G0 (مسموح/محظور) في نفس الملف وفي [`../docs/gates/G0-decision.md`](../docs/gates/G0-decision.md).
+- تقرير المهمة: [`../docs/reports/esp/ESP-T-01-report.md`](../docs/reports/esp/ESP-T-01-report.md).
+- لا عتاد فعلي متاح في هذه الجلسة؛ خطة المعايرة ونتائج القياس غير منفَّذة فعلياً (موسومة صريحاً في الوثيقة).
 
 ## التحقق
 
-_(بعد التنفيذ: رابط/مسار وثيقة القرارات + نتيجة مراجعة G0)_
+- وثيقة القرارات: [`docs/HARDWARE-DECISIONS-D01-D07.md`](./docs/HARDWARE-DECISIONS-D01-D07.md).
+- حالة G0: `G0 NOT CLOSED` — بانتظار مراجعة المالك الصريحة (`APPROVE TASK CLOSURE: ESP-T-01` أو `: G0`)؛ T-01/G0 مستثناة من الإغلاق الذاتي التسلسلي لـESP (`AGENTS.md`، بند 4).
+- لم يُعلَّم `[x]` على بطاقة T-01 في `esp-development-tasks.md` لهذا السبب.
+
+## ملاحظة — تقدّم متوازٍ على T-02…T-09 في نفس الجولة
+
+بموجب استثناء ESP (`ESP-T-02`…`ESP-T-09`)، استُكمل كل العمل البرمجي المستقل الممكن دون انتظار إغلاق G0 (مطابق لمبدأ "تجارب طاولة محدودة بعد D-01/D-02 دون انتظار الويب" في هذا الملف وخطة التطوير). T-03/T-04/T-05 بلغت `SOFTWARE COMPLETE` (منطق صِرف، 53 اختبار Unity على المضيف)؛ T-07/T-08 جزئياً؛ T-02/T-06/T-09 `BLOCKED` ببيئة التطوير (لا عتاد، لا ESP-IDF). التفاصيل الكاملة: [`ESP-REMAINING-WORK.md`](./ESP-REMAINING-WORK.md) وتقارير [`../docs/reports/esp/`](../docs/reports/esp/).
