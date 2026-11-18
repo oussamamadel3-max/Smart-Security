@@ -14,22 +14,19 @@ enum AppEnvironment {
   }
 
   String get apiBaseUrl => switch (this) {
-        AppEnvironment.dev =>
-          const String.fromEnvironment(
-            'API_BASE_URL',
-            defaultValue: 'http://localhost:5080',
-          ),
-        AppEnvironment.staging =>
-          const String.fromEnvironment(
-            'API_BASE_URL',
-            defaultValue: 'https://staging-api.example.invalid',
-          ),
-        AppEnvironment.prod =>
-          const String.fromEnvironment(
-            'API_BASE_URL',
-            defaultValue: 'https://api.example.invalid',
-          ),
-      };
+    AppEnvironment.dev => const String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'http://localhost:5080',
+    ),
+    AppEnvironment.staging => const String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://staging-api.example.invalid',
+    ),
+    AppEnvironment.prod => const String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://api.example.invalid',
+    ),
+  };
 
   String get label => name;
 }

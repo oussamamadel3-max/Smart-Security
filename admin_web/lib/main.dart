@@ -5,6 +5,8 @@ import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 import 'app.dart';
 import 'core/config/app_environment.dart';
+import 'core/network/web_credentials_adapter.dart';
+import 'core/network/web_network_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +17,13 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         appCoreConfigProvider.overrideWithValue(
-          AppCoreConfig(baseUrl: env.apiBaseUrl),
+          AppCoreConfig(
+            baseUrl: env.apiBaseUrl,
+            httpClientAdapter: createWebCredentialsAdapter(),
+          ),
         ),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        dioProvider.overrideWith((ref) => ref.watch(webDioProvider)),
       ],
       child: const HisnWebApp(),
     ),

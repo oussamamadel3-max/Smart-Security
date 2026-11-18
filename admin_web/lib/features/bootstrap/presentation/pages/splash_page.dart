@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_security_app_core/smart_security_app_core.dart';
 
 import '../../../../core/router/app_routes.dart';
-import '../../../../core/session/session_bootstrap.dart';
+import '../../../../core/router/auth_guard.dart';
+import '../../../../core/session/auth_session_controller.dart';
+import '../../../../core/session/auth_session_state.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -17,28 +19,39 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      final session = ref.read(sessionBootstrapProvider);
-      if (session.status == BootstrapAuthStatus.authenticated) {
-        context.go(
-          session.role == BootstrapUiRole.admin
-              ? AppRoutes.adminHome
-              : AppRoutes.ownerHome,
-        );
-      } else {
-        context.go(AppRoutes.login);
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
+  }
+
+  Future<void> _bootstrap() async {
+    await ref.read(authSessionProvider.notifier).restoreSession();
+    if (!mounted) return;
+    final session = ref.read(authSessionProvider);
+    if (session.status == AuthStatus.authenticated && session.user != null) {
+      context.go(homeRouteFor(session.user!));
+    } else {
+      context.go(AppRoutes.login);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: DesignTokens.background,
       body: Center(
-        child: Text(
-          context.tr.appName,
-          style: Theme.of(context).textTheme.headlineLarge,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              context.tr.appName,
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
+            const SizedBox(height: DesignTokens.spaceLg),
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          ],
         ),
       ),
     );
