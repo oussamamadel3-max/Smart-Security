@@ -409,6 +409,714 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App shell is ready — feature screens come in later tasks'**
   String get bootstrapPlaceholder;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access your security devices.'**
+  String get loginSubtitle;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. Check your credentials and try again.'**
+  String get loginFailed;
+
+  /// No description provided for @ownerRoleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is for OWNER accounts only.'**
+  String get ownerRoleRequired;
+
+  /// No description provided for @signingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in...'**
+  String get signingIn;
+
+  /// No description provided for @myDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'My devices'**
+  String get myDevices;
+
+  /// No description provided for @myDevicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review linked devices and their confirmed states.'**
+  String get myDevicesSubtitle;
+
+  /// No description provided for @pendingLinkNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices awaiting link acknowledgment show name and link status only — no controls or history.'**
+  String get pendingLinkNotice;
+
+  /// No description provided for @noDevicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No linked devices'**
+  String get noDevicesTitle;
+
+  /// No description provided for @noDevicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When an admin links a device to your account it will appear here.'**
+  String get noDevicesSubtitle;
+
+  /// No description provided for @connectionOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get connectionOnline;
+
+  /// No description provided for @connectionOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get connectionOffline;
+
+  /// No description provided for @armArmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Armed'**
+  String get armArmed;
+
+  /// No description provided for @armDisarmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Disarmed'**
+  String get armDisarmed;
+
+  /// No description provided for @armUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Arm state unknown'**
+  String get armUnknown;
+
+  /// No description provided for @healthHealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware healthy'**
+  String get healthHealthy;
+
+  /// No description provided for @healthFault.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware fault'**
+  String get healthFault;
+
+  /// No description provided for @healthUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware health unknown'**
+  String get healthUnknown;
+
+  /// No description provided for @sirenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Siren off'**
+  String get sirenOff;
+
+  /// No description provided for @sirenAlarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm siren'**
+  String get sirenAlarm;
+
+  /// No description provided for @sirenTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Siren test'**
+  String get sirenTest;
+
+  /// No description provided for @sirenUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Siren state unknown'**
+  String get sirenUnknown;
+
+  /// No description provided for @lastSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen'**
+  String get lastSeen;
+
+  /// No description provided for @lastConfirmedState.
+  ///
+  /// In en, this message translates to:
+  /// **'Last confirmed state'**
+  String get lastConfirmedState;
+
+  /// No description provided for @awaitingOwnershipSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting ownership version sync'**
+  String get awaitingOwnershipSync;
+
+  /// No description provided for @linkPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link pending completion'**
+  String get linkPendingTitle;
+
+  /// No description provided for @ownershipActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Ownership active'**
+  String get ownershipActive;
+
+  /// No description provided for @staleWhileOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Device is offline. Showing last known state, not live state.'**
+  String get staleWhileOffline;
+
+  /// No description provided for @commandHoldUntilSync.
+  ///
+  /// In en, this message translates to:
+  /// **'A command request may be accepted when online; the server holds publish until ownership sync.'**
+  String get commandHoldUntilSync;
+
+  /// No description provided for @cannotControlYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Control is unavailable until ownership sync completes.'**
+  String get cannotControlYet;
+
+  /// No description provided for @refreshDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh devices'**
+  String get refreshDevices;
+
+  /// No description provided for @deviceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Device details'**
+  String get deviceDetails;
+
+  /// No description provided for @viewDeviceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'View events and commands history'**
+  String get viewDeviceHistory;
+
+  /// No description provided for @deviceHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device history'**
+  String get deviceHistoryTitle;
+
+  /// No description provided for @alarmEventsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get alarmEventsTab;
+
+  /// No description provided for @commandsHistoryTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands'**
+  String get commandsHistoryTab;
+
+  /// No description provided for @searchHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by id, type, or status'**
+  String get searchHistoryHint;
+
+  /// No description provided for @noAlarmEventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No alarm events'**
+  String get noAlarmEventsTitle;
+
+  /// No description provided for @noAlarmEventsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm incidents for the current ownership period appear here.'**
+  String get noAlarmEventsSubtitle;
+
+  /// No description provided for @noCommandsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No commands'**
+  String get noCommandsTitle;
+
+  /// No description provided for @noCommandsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Control commands for the current ownership period appear here.'**
+  String get noCommandsSubtitle;
+
+  /// No description provided for @alarmEventLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm event'**
+  String get alarmEventLabel;
+
+  /// No description provided for @alarmEventDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Event details'**
+  String get alarmEventDetailTitle;
+
+  /// No description provided for @commandDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Command details'**
+  String get commandDetailTitle;
+
+  /// No description provided for @receivedAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Received at'**
+  String get receivedAtLabel;
+
+  /// No description provided for @occurredAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Occurred at'**
+  String get occurredAtLabel;
+
+  /// No description provided for @occurrenceUntrusted.
+  ///
+  /// In en, this message translates to:
+  /// **'Occurrence time is unconfirmed — device clock was not trusted.'**
+  String get occurrenceUntrusted;
+
+  /// No description provided for @occurrenceUntrustedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Unconfirmed'**
+  String get occurrenceUntrustedShort;
+
+  /// No description provided for @bufferedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buffered'**
+  String get bufferedLabel;
+
+  /// No description provided for @bufferedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This event arrived late from the device buffer. No invented delay duration is shown.'**
+  String get bufferedNotice;
+
+  /// No description provided for @wasBufferedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'wasBuffered'**
+  String get wasBufferedLabel;
+
+  /// No description provided for @sensorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor'**
+  String get sensorLabel;
+
+  /// No description provided for @statusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get statusLabel;
+
+  /// No description provided for @deviceIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Device id'**
+  String get deviceIdLabel;
+
+  /// No description provided for @eventUidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'eventUid'**
+  String get eventUidLabel;
+
+  /// No description provided for @alarmEventIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'alarmEventId'**
+  String get alarmEventIdLabel;
+
+  /// No description provided for @mutedAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted at'**
+  String get mutedAtLabel;
+
+  /// No description provided for @notificationLinkLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm details can be opened from the notifications inbox via notificationId after server ownership checks. Live FCM still depends on Firebase.'**
+  String get notificationLinkLater;
+
+  /// No description provided for @sirenTestCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Siren test'**
+  String get sirenTestCommand;
+
+  /// No description provided for @timedOutUnknownNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'TIMED_OUT does not prove execution failure until reconciliation.'**
+  String get timedOutUnknownNotice;
+
+  /// No description provided for @commandTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Command type'**
+  String get commandTypeLabel;
+
+  /// No description provided for @createdAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Created at'**
+  String get createdAtLabel;
+
+  /// No description provided for @expiresAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get expiresAtLabel;
+
+  /// No description provided for @rejectCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject code'**
+  String get rejectCodeLabel;
+
+  /// No description provided for @targetAlarmEventUidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'targetAlarmEventUid'**
+  String get targetAlarmEventUidLabel;
+
+  /// No description provided for @actualStateChangedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'actualStateChanged'**
+  String get actualStateChangedLabel;
+
+  /// No description provided for @commandIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'commandId'**
+  String get commandIdLabel;
+
+  /// No description provided for @wifiSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Wi-Fi setup'**
+  String get wifiSetupTitle;
+
+  /// No description provided for @wifiCloudCommandsSeparated.
+  ///
+  /// In en, this message translates to:
+  /// **'This path talks to the device locally only. ARM/DISARM stay on the cloud API and are never sent here.'**
+  String get wifiCloudCommandsSeparated;
+
+  /// No description provided for @wifiPossessionSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'1) Confirm you are the owner or authorized technician.\n2) Perform the physical action to open provisioning on the device.\n3) Join the device temporary network from phone settings.\n4) Return here to send Wi-Fi credentials locally.'**
+  String get wifiPossessionSteps;
+
+  /// No description provided for @wifiContinueToForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined temporary network — continue'**
+  String get wifiContinueToForm;
+
+  /// No description provided for @wifiFormNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The Wi-Fi password is sent to the device locally only and is never stored on the server or in the app.'**
+  String get wifiFormNotice;
+
+  /// No description provided for @wifiSsidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Network name (SSID)'**
+  String get wifiSsidLabel;
+
+  /// No description provided for @wifiPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Network password'**
+  String get wifiPasswordLabel;
+
+  /// No description provided for @wifiSubmitLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to device locally'**
+  String get wifiSubmitLocal;
+
+  /// No description provided for @wifiResultConnectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device confirmed connection'**
+  String get wifiResultConnectedTitle;
+
+  /// No description provided for @wifiResultConnectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The device itself confirmed it joined the new network.'**
+  String get wifiResultConnectedBody;
+
+  /// No description provided for @wifiResultFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Network join failed'**
+  String get wifiResultFailedTitle;
+
+  /// No description provided for @wifiResultFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The device reported a join failure. You can retry.'**
+  String get wifiResultFailedBody;
+
+  /// No description provided for @wifiResultTimeoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unconfirmed / timed out'**
+  String get wifiResultTimeoutTitle;
+
+  /// No description provided for @wifiResultTimeoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed out without device confirmation. Sending credentials alone is not success.'**
+  String get wifiResultTimeoutBody;
+
+  /// No description provided for @wifiResultUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local provisioning contract not available yet'**
+  String get wifiResultUnavailableTitle;
+
+  /// No description provided for @wifiResultUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The soft-AP path awaits the ESP/D-04 contract. Connection success was not claimed.'**
+  String get wifiResultUnavailableBody;
+
+  /// No description provided for @navDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navDashboard;
+
+  /// No description provided for @navDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get navDevices;
+
+  /// No description provided for @navNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get navNotifications;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get navProfile;
+
+  /// No description provided for @dashboardGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}'**
+  String dashboardGreeting(String name);
+
+  /// No description provided for @dashboardGreetingGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get dashboardGreetingGeneric;
+
+  /// No description provided for @dashboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick look at the security devices linked to your account.'**
+  String get dashboardSubtitle;
+
+  /// No description provided for @metricTotalDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Total devices'**
+  String get metricTotalDevices;
+
+  /// No description provided for @metricOnlineDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Online devices'**
+  String get metricOnlineDevices;
+
+  /// No description provided for @metricArmedDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Armed'**
+  String get metricArmedDevices;
+
+  /// No description provided for @metricPendingLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending links'**
+  String get metricPendingLinks;
+
+  /// No description provided for @viewAllDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAllDevices;
+
+  /// No description provided for @dashboardConfirmedStateNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Arm state shown is the last device-confirmed state via the server — not a UI guess.'**
+  String get dashboardConfirmedStateNotice;
+
+  /// No description provided for @accountSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account details'**
+  String get accountSectionTitle;
+
+  /// No description provided for @profileDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get profileDisplayName;
+
+  /// No description provided for @profileRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get profileRoleLabel;
+
+  /// No description provided for @ownerRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner (OWNER)'**
+  String get ownerRoleLabel;
+
+  /// No description provided for @profileEnvironment.
+  ///
+  /// In en, this message translates to:
+  /// **'App environment'**
+  String get profileEnvironment;
+
+  /// No description provided for @profileFcmNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Live FCM delivery requires Firebase setup per flavor — not active under the current NoOp messaging port.'**
+  String get profileFcmNote;
+
+  /// No description provided for @notificationsOsPermissionNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'OS permission goes through the FCM port. With NoOp, push is not live; the inbox still loads server notifications.'**
+  String get notificationsOsPermissionNotice;
+
+  /// No description provided for @requestNotificationPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Request notification permission'**
+  String get requestNotificationPermission;
+
+  /// No description provided for @notificationPermissionGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'OS permission: granted (per current port).'**
+  String get notificationPermissionGranted;
+
+  /// No description provided for @notificationPermissionDeniedOrUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'OS permission: denied or unavailable via the current port.'**
+  String get notificationPermissionDeniedOrUnavailable;
+
+  /// No description provided for @notificationsInboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification inbox'**
+  String get notificationsInboxTitle;
+
+  /// No description provided for @noNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get noNotificationsTitle;
+
+  /// No description provided for @noNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account notifications from the server appear here when available.'**
+  String get noNotificationsSubtitle;
+
+  /// No description provided for @notificationOpenUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This notification cannot be opened as an alarm-event detail from the current payload.'**
+  String get notificationOpenUnsupported;
+
+  /// No description provided for @deviceCommandsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Control commands'**
+  String get deviceCommandsSection;
+
+  /// No description provided for @commandArm.
+  ///
+  /// In en, this message translates to:
+  /// **'Arm'**
+  String get commandArm;
+
+  /// No description provided for @commandDisarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Disarm'**
+  String get commandDisarm;
+
+  /// No description provided for @commandMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute siren'**
+  String get commandMute;
+
+  /// No description provided for @commandTestSiren.
+  ///
+  /// In en, this message translates to:
+  /// **'Test siren'**
+  String get commandTestSiren;
+
+  /// No description provided for @commandStopTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop test'**
+  String get commandStopTest;
+
+  /// No description provided for @deviceOfflineNoLiveControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Device is offline — live control is not accepted.'**
+  String get deviceOfflineNoLiveControl;
+
+  /// No description provided for @pendingCommandBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Command request {type}: {status}. Confirmed state below does not change on HTTP 202.'**
+  String pendingCommandBanner(String type, String status);
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,7 @@ library;
 export 'src/access/access.dart';
 export 'src/config/app_core_config.dart';
 export 'src/constants/constants.dart';
+export 'src/domain/device_status_codes.dart';
 export 'src/errors/export_errors.dart';
 export 'src/network/network.dart';
 export 'src/theme/theme.dart';
