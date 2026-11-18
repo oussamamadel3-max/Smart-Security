@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Purpose and scope
 
-This rule governs work on **one explicitly requested task at a time** within the Smart Security System monorepo. Follow the root `AGENTS.md` and the authoritative project documentation. Do not execute the next task automatically.
+This rule governs work on **one explicitly requested task at a time** within the Smart Security System monorepo. Follow the root `AGENTS.md` and the authoritative project documentation. Do not execute the next task automatically — **except** under the Autonomous Sequential Mobile exception below when the owner has authorized that mode.
 
 Task identifiers map to projects:
 
@@ -122,7 +122,7 @@ This section applies when implementing or editing Flutter Web (`admin_web/`) or 
 
 5. In the Arabic report, give **two separate assessments**: `Visual Fidelity` (match / mismatches / unverified) and `Functional Acceptance` (verified / partial / blocked). Identify missing assets, absent approved mobile layouts and any screenshot comparison that could not be performed. **Never claim pixel-perfect parity without verified evidence.**
 
-The usual pre-closure/closure rule still applies: do not check UI task boxes or update final progress before `APPROVE TASK CLOSURE: <TASK_ID>`.
+The usual pre-closure/closure rule still applies unless the Autonomous Sequential Mobile exception is active: do not check UI task boxes or update final progress before `APPROVE TASK CLOSURE: <TASK_ID>` (or auto-close under that exception when authorized).
 
 **## 3B. Mandatory EF Core concurrency and consistency safeguards — when database state is modified
 
@@ -160,7 +160,7 @@ Record exact paths/symbols and actual test counts. A passing build does not prov
 - **Separate evidence levels.** Unit/mocked results, provider-backed integration results, device/hardware tests, and end-to-end acceptance tests are different. A build pass, a unit test pass, or HTTP 202 cannot substitute for verified device execution or actual state persistence.
 - **If execution is blocked**, state the concrete reason (for example Docker/Broker unavailable), list the unrun tests, mark their criteria `NOT VERIFIED` or `BLOCKED` as appropriate, and provide reproducible commands for later execution. Do not mark them passed.
 - **Do not silently broaden the work.** Fix defects needed for this task within its scope; report unrelated existing failures separately. Do not modify test expectations merely to make the suite green.
-- **Acceptance remains evidence-based and approval-gated.** Even if every test passes, the agent may only report `READY TO CLOSE`. It must not mark the task complete, check its boxes, advance progress pointers, or start another task without the exact user's closure approval under Section 6.
+- **Acceptance remains evidence-based.** Default mode is still approval-gated (`READY TO CLOSE` then Section 6). Under the Autonomous Sequential Mobile exception, the agent may auto-close and continue when mandatory criteria are evidenced as in Section 6A.
 
 ## 5. Pre-closure report and permitted progress updates**
 
@@ -176,21 +176,21 @@ After implementing the task, report in **Arabic** (keep technical identifiers in
 
 5. Remaining risks and decisions.
 
-6. Verdict: `READY TO CLOSE` or `NOT READY TO CLOSE`.
+6. Verdict: `READY TO CLOSE` or `NOT READY TO CLOSE` (or `CLOSED` when Section 6A auto-close applies).
 
 7. **Learning takeaway:** one concrete concept demonstrated in the implementation, why the approach works, when to apply it, and a practical check.
 
-You may update `{prefix}-current.md` with factual in-progress status if needed, but **do not check off tasks, change final counts, or advance the task pointer** before explicit closure approval.
+You may update `{prefix}-current.md` with factual in-progress status if needed. In default mode, **do not check off tasks, change final counts, or advance the task pointer** before explicit closure approval. Under Section 6A, auto-close documentation updates are allowed when criteria pass.
 
 ## 6. Close and synchronize documentation only after approval
 
-Require an **explicit user instruction for the exact task**, in the form:
+**Default (all projects):** require an **explicit user instruction for the exact task**, in the form:
 
 `APPROVE TASK CLOSURE: <FULL_TASK_ID>`
 
-For example: `APPROVE TASK CLOSURE: MOB-T-01`. Statements such as "continue", "tests passed", "looks good", or a request to execute the task **do not** authorize closure. This requirement applies to Backend, ESP, Mobile, Web, Integration, and Ops tasks alike.
+For example: `APPROVE TASK CLOSURE: MOB-T-01`. Statements such as "continue", "tests passed", "looks good", or a request to execute the task **do not** authorize closure in default mode. This requirement applies to Backend, ESP, Mobile, Web, Integration, and Ops tasks alike — **unless** Section 6A applies.
 
-Then, for that task **only**:
+Then, for that task **only** (default path or after 6A auto-close authorization):
 
 1. Revalidate the relevant evidence and all acceptance criteria.
 
@@ -198,7 +198,7 @@ Then, for that task **only**:
 
 3. Update `{prefix}-progress.md` with truthful completed / pending counts, percentages, dated evidence, and outstanding blockers.
 
-4. Update `{prefix}-current.md` to the next dependency-eligible task or to a blocked/waiting state. **Do not start the next task.**
+4. Update `{prefix}-current.md` to the next dependency-eligible task or to a blocked/waiting state. In default mode: **Do not start the next task.** Under Section 6A: start the next eligible mobile task immediately after documentation sync.
 
 5. Update `{prefix}-context.md` only if the project's overall state, dependency, or approved decision changed.
 
@@ -210,6 +210,21 @@ Then, for that task **only**:
 
 Verify that task status, current pointer, progress totals, and cross-project totals agree. Include a summary of documentation changes and unresolved caveats. Never imply a migration was deployed or hardware/staging was tested unless it actually was.
 
+## 6A. Autonomous Sequential Mobile exception (owner-authorized)
+
+Active when the owner message is an Autonomous Sequential Mobile Development prompt for `MOB-T-02`…`MOB-T-08`, or the owner later restores that mode (including canceling the `APPROVE TASK CLOSURE` wait so the prompt continues automatically).
+
+While active for **mobile tasks only**:
+
+1. **`APPROVE TASK CLOSURE` does not apply** to `MOB-T-*` in this sequence. After client-scope criteria are evidenced (`PASSED` / `VERIFIED`), **auto-close** using Section 6 documentation steps and **immediately start** the next eligible `MOB-T-*`.
+2. Save the full report under `docs/reports/mobile/` noting this exception.
+3. When the owner prompt forbids G0/G1 adoption, Backend/ESP/shared-contract edits, or device/emulator/iOS runs: leave those checklist items unchecked; record `BLOCKED` / `NOT VERIFIED` in the report; **still auto-close the evidenced client scope and continue the chain**. Do not invent G0/G1 adoption or cross-project changes.
+4. Stop the chain only on: in-scope requirements conflict, undeferred required secret, or unfixable in-scope mobile failure after a fix attempt.
+5. Do not apply this exception to Backend, ESP, Web, Integration, or Ops.
+6. The owner may revoke this exception at any time; thereafter default Section 6/7 resume.
+
 ## 7. Stop condition
 
-After the implementation report, await closure approval. After an approved documentation update, provide the closure report and **stop**. Do not chain to another task or create a Git commit unless explicitly asked.
+**Default:** After the implementation report, await closure approval. After an approved documentation update, provide the closure report and **stop**. Do not chain to another task or create a Git commit unless explicitly asked.
+
+**Under Section 6A (mobile autonomous sequential):** After auto-close, **do not stop** — continue to the next eligible mobile task until the sequence ends or a real blocker in Section 6A.4 applies. Deferred G1/hardware cards alone are **not** a stop. Still do not create a Git commit unless explicitly asked.

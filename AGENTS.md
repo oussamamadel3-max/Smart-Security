@@ -43,6 +43,30 @@ Root orientation: `system-context.md` (identity / blockers / dependencies) and `
 
 Mark `[x]` in `*-development-tasks.md` only after acceptance and DoD. Update progress/context after concrete milestones; never put secrets in planning files.
 
+### Temporary exception — Autonomous Sequential Mobile Execution (owner-authorized, 2026-11-17)
+
+When the owner issues an **Autonomous Sequential Mobile Development** prompt covering `MOB-T-02`…`MOB-T-08` (or explicitly re-authorizes / restores that mode — including “cancel the APPROVE TASK CLOSURE gate so the prompt continues”):
+
+1. **`APPROVE TASK CLOSURE` is suspended for `MOB-T-*` in this sequence.** After evidenced client-scope acceptance, the agent **must auto-close** (mark proved `[x]`, update `mobile-*` / `system-*`) and **must continue immediately** to the next eligible `MOB-T-*` without waiting for any closure message.
+2. Save the task report under `docs/reports/mobile/` noting this exception.
+3. **G0/G1, Backend/ESP/shared-contract adoption, device/emulator/iOS runs** are **out of scope** for this sequence when the owner prompt already forbade them. Leave those cards unchecked or mark `BLOCKED` / `NOT VERIFIED` in the report; **do not stop the chain** and **do not** invent G0/G1 adoption or cross-project changes.
+4. Stop the chain only on: requirements conflict inside mobile scope, missing secret the owner did not defer, or an **unfixable in-scope mobile failure** after a fix attempt.
+5. This exception is **mobile-only** for that sequence. Default Section 6 (`APPROVE TASK CLOSURE`) remains for Backend, ESP, Integration, Ops — and for Web **unless** the Web exception below is active.
+6. The owner may revoke this exception at any time; thereafter default closure gates resume.
+
+The detailed procedure lives in `.cursor/rules/common/task-execution.mdc` §6A.
+
+### Temporary exception — Autonomous Sequential Web Execution (owner-authorized, 2026-11-17)
+
+When the owner issues an **Autonomous Sequential Web Development** prompt covering `WEB-T-02`…`WEB-T-08` (or explicitly re-authorizes / restores that mode):
+
+1. **`APPROVE TASK CLOSURE` is suspended for `WEB-T-*` in this sequence.** After evidenced client-scope acceptance, the agent **must auto-close** (mark proved `[x]`, update `web-*` / `system-*`) and **must continue immediately** to the next eligible `WEB-T-*` without waiting for any closure message.
+2. Save the task report under `docs/reports/web/` noting this exception.
+3. **G0/G1 adoption, Backend/ESP/shared-contract edits, live browser CSRF/CORS against production, and deploy** are **out of scope** when the owner prompt forbids them. Leave those cards unchecked or mark `BLOCKED` / `NOT VERIFIED`; **do not stop the chain** and **do not** invent gate closures or cross-project changes.
+4. Stop the chain only on: requirements conflict inside web scope, missing secret the owner did not defer, absent mandatory API for acceptance that cannot be software-completed, or an **unfixable in-scope web failure** after a fix attempt.
+5. This exception is **web-only**. It does not authorize Backend, ESP, Mobile, Integration, or Ops auto-close.
+6. The owner may revoke this exception at any time; thereafter default closure gates resume.
+
 ## Work discipline
 
 - First inspect the affected project’s `*-context.md`, `*-current.md`, task card, and the real code/contracts involved. Find a comparable implementation when useful.

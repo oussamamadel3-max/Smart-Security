@@ -1,6 +1,6 @@
 # التقدّم العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-17  
+آخر تحديث: 2026-11-18  
 السياق العام: [`system-context.md`](./system-context.md)
 
 ## توضيح التسميات (ملفات التخطيط)
@@ -35,11 +35,11 @@
 |--------|-------------|--------------|---------|--------|
 | باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | التالية T-05 (لم تُبدأ؛ T-09 ✓) | ~38% |
 | ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 | T-01 | 0% |
-| موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 1 / 8 | التالية T-02 (لم تبدأ) | 12.5% |
-| ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 1 / 8 | التالية T-02 (لم تبدأ) | 12.5% |
+| موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 8 / 8 | تسلسل عميل مكتمل | 100% |
+| ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C مغلق خارج العدّاد. الحي وEXT-08 معلّقان | 8/8 بطاقات؛ ليست جاهزية إنتاج |
 | تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |
 | تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | T-01 | 0% |
-| **المجموع** | — | **7 / 50** | — | **14%** |
+| **المجموع** | — | **21 / 50** | — | **42%** |
 
 ## سجل عام (معالم فقط)
 
@@ -54,11 +54,22 @@
 | 2026-11-06 | `security_backEnd` | إغلاق **T-04 / BE-T-04** (وارد حالة + API مؤشرات)؛ Mosquitto الحي وG1 **غير منجزين**؛ التالية T-05 (لم تُبدأ). |
 | 2026-11-06 | `security_backEnd` | إغلاق **T-09 / BE-T-09** (FCM Fake + push_tokens)؛ Firebase الحي معطّل؛ T-06…T-08 بلا إغلاق رسمي؛ لا بدء تلقائي لـ T-10. |
 | 2026-11-17 | Flutter | إغلاق **MOB-T-01** و**WEB-T-01**. تشغيل Android/iOS مؤجّل بموافقة المالك وليس نجاحاً. التالية الموبايل T-02 بانتظار التنفيذ؛ WEB-T-02 لم تبدأ. |
+| 2026-11-17 | `security_mobile` | إغلاق **MOB-T-02** بعد `APPROVE TASK CLOSURE` (جلسة/HTTP/single-flight؛ test 14/14؛ APK dev). |
+| 2026-11-17 | حوكمة | استثناء Autonomous Sequential Mobile في `AGENTS.md` و`task-execution.mdc` (إغلاق/سلسلة تلقائية لـ MOB فقط). |
+| 2026-11-17 | `security_mobile` | إغلاق تلقائي **MOB-T-03** (قائمة أجهزة؛ test 20/20؛ APK). بدء **T-04**. |
+| 2026-11-17 | `security_mobile` | **MOB-T-04** عميل أوامر جاهز (test 22/22؛ APK)؛ التسلسل توقف — بطاقات ACK تحتاج G1. |
+| 2026-11-17 | حوكمة | تعديل AGENTS/6A: تعليق `APPROVE TASK CLOSURE` للموبايل؛ G1 المؤجّل لا يوقف السلسلة. |
+| 2026-11-17 | `security_mobile` | إغلاق تلقائي **T-04…T-08** (نطاق عميل). test ختامي **34/34**. تقرير: `docs/reports/mobile/MOBILE-FINAL-REPORT.md`. |
+| 2026-11-17 | `admin_web` | إغلاق تلقائي **WEB-T-04** (تفاصيل وأوامر؛ test 38/38؛ `flutter build web --release`). G1/ACK وOWNERSHIP_SYNC الحي **BLOCKED**. التالية **WEB-T-05**. |
+| 2026-11-17 | `admin_web` | إغلاق تلقائي **WEB-T-05** (سجل حوادث/أوامر؛ test 58/58؛ `flutter build web --release`). نقل ملكية حي **NOT VERIFIED**. التالية **WEB-T-06**. |
+| 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-07** (سجل إدارة وتنبيه إداري؛ test 76/76؛ `flutter build web --release`). تسليم FCM الحي **NOT VERIFIED / BLOCKED**. زُامن عدّ T-06 الذي كان مغلقاً في قائمة المهام. التالية **WEB-T-08**. |
+| 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-08** (مجموعة قبول العميل؛ test 80/80؛ `flutter analyze` نظيف؛ `flutter build web --release`). CSRF/Origin الحي وG1/ACK ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي **BLOCKED / NOT VERIFIED**. لا مهمة ويب تالية داخل التسلسل. التقرير: `docs/reports/web/WEB-FINAL-REPORT.md`. |
+| 2026-11-18 | `admin_web` | إغلاق استكمال **WEB-C-01…C-06** خارج 21/50 (إعادة تحقق C-06: test 121/121). الحكم SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. ليست جاهزية إنتاج. التقرير: `docs/reports/web/completion/WEB-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
 
 ## التالي على مستوى النظام
 
 1. العقود والعتاد أولاً حيث يلزم؛ Backend التالية المؤهلة **T-05** (إغلاقها الإنتاجي بعد G1)؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
-2. Flutter: **MOB-T-01** و**WEB-T-01** مغلقتان. التالية المؤهلة للموبايل **T-02** بعد موافقة التنفيذ. WEB-T-02 لم يُؤذن ببدئها.  
+2. Flutter موبايل والويب: تسلسل العميل مكتمل (MOB-T-01…T-08 وWEB-T-01…T-08)، واستكمال الويب WEB-C-01…C-06 مغلق خارج العدّاد. الميداني وG1 وCSRF/CORS الحي وACK الحي ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي والمطابقة البصرية المتبقية مؤجّلة وموثّقة، وليست جاهزية إنتاج.  
 3. لا أوامر/حوادث إنتاج قبل **G1**؛ استقبال MQTT الحي عبر Mosquitto ما زال غير منجز؛ FCM إنتاجي غير مفعّل
 
 ## قواعد المزامنة
@@ -68,4 +79,4 @@
 3. حدّث `*-context.md` إن تغيّر المانع أو الهوية أو التبعية — لا تكرر السجل الزمني هناك.
 4. علّم `[x]` في `*-development-tasks.md` فقط بعد القبول وتعريف الإنجاز.
 
-**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 5/13 للباك بعد إغلاق T-09، و1/8 للموبايل، و1/8 للويب (المجموع 7/50). T-05 لم تُبدأ رسمياً كمسار أوامر؛ T-06…T-08 تنفيذ اختباري بلا `[x]`؛ Mosquitto الحي وG1 وFCM الإنتاجي غير منجزين. تشغيل تطبيق الموبايل على جهاز/محاكٍ وiOS مؤجّلان وليسا ضمن دليل الإغلاق.
+**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 5/13 للباك بعد إغلاق T-09، و8/8 للموبايل (نطاق عميل)، و8/8 للويب (نطاق عميل؛ المجموع 21/50). T-05 لم تُبدأ رسمياً كمسار أوامر في الباك؛ T-06…T-08 في الباك تنفيذ اختباري بلا `[x]`؛ Mosquitto الحي وG1 وFCM الإنتاجي غير منجزين. تشغيل تطبيق الموبايل على جهاز/محاكٍ وiOS مؤجّلان وليسا ضمن دليل الإغلاق. تحقق ACK الحي لأوامر الويب **BLOCKED**. نقل ملكية حي لسجل ويب T-05 **NOT VERIFIED**. تسليم FCM الحي لتنبيه الويب T-07 **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب الحي والمتصفح التفاعلي ضد Backend حقيقي **NOT VERIFIED / BLOCKED**. إغلاق بطاقات الويب 8/8 لا يعني جاهزية إنتاج 100%.

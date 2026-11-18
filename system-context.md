@@ -1,6 +1,6 @@
 # السياق العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-17 (إغلاق MOB-T-01 و WEB-T-01)  
+آخر تحديث: 2026-11-18 (إغلاق استكمال الويب WEB-C-06؛ 8/8 و21/50 بلا تغيير؛ الاعتمادات الخارجية معلّقة)  
 الغرض: صورة واحدة لحالة كل المشاريع وتبعياتها؛ التفاصيل داخل `*-context.md` لكل مجلد.  
 التقدّم الزمني والمؤشرات: [`system-progress.md`](./system-progress.md) · **توضيح التسميات** في أعلى ذلك الملف.
 
@@ -29,8 +29,8 @@
 |-------|--------|-------|--------|------------|-----|
 | `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-05** التالية (T-04 ✓·T-09 ✓ Fake؛ G1/Mosquitto/FCM إنتاجي غير منجزين) | 5/13 |
 | `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | **T-01** قرارات G0 | 0/9 |
-| `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي · يستهلك `packages/smart_security_app_core` | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | **T-02** الجلسة (بانتظار موافقة التنفيذ؛ T-01 ✓) | 1/8 |
-| `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | **T-02** لم تبدأ (T-01 ✓) | 1/8 |
+| `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي · يستهلك `packages/smart_security_app_core` | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | تسلسل T-01…T-08 مكتمل (عميل؛ ميداني مؤجّل) | 8/8 |
+| `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | لا تالية. T-01…T-08 وWEB-C-01…C-06 مغلقة (عميل/استكمال). الحي وWEB-EXT-08 معلّقان. ليست جاهزية إنتاج | 8/8 |
 | `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | **T-01** مسودة عقد MQTT | 0/6 |
 | `ops` | Compose · بيئات · نشر · نسخ · ميداني | [`ops-context`](./ops/ops-context.md) | [`ops-progress`](./ops/ops-progress.md) | **T-01** Compose محلي | 0/6 |
 
@@ -89,8 +89,8 @@ ops T-02…T-06 (نشر/نسخ/ميداني)  +  integration T-05 (G2)
 ## لقطة حالة سريعة
 
 - Backend: T-01…T-04 و**T-09** مكتملة رسمياً (2026-11-06 أُغلق `BE-T-09` خلف Fake FCM؛ Firebase الحي معطّل). T-06…T-08 تنفيذ اختباري بلا إغلاق رسمي. التالية المؤهلة **T-05** أوامر/Outbox (لم تُبدأ؛ إغلاق إنتاجي بعد G1). **استقبال MQTT الحي واعتماد G1 غير منجزين**؛ AC-T-19/Broker معلقان.
-- Flutter: **MOB-T-01** و**WEB-T-01** مغلقتان (2026-11-17). الحزمة `packages/smart_security_app_core` هي مصدر الثيم والأخطاء. نُسختا `app_core/` القديمتان حُذفتا. تشغيل Android على جهاز/محاكٍ وiOS مؤجّلان بموافقة المالك وليسا نجاحاً. **MOB-T-02** محلَّلة وبانتظار موافقة التنفيذ. **WEB-T-02** لم تبدأ. G0/G1 لم يُعتمدا.
-- التالي: باك **T-05** (بعد تفويض) · ESP **T-01** · integration **T-01** · ops **T-01** · تنفيذ الموبايل **T-02** بعد الموافقة فقط. لا بدء تلقائي لـ WEB-T-02 أو BE-T-10.
+- Flutter: **MOB-T-01…T-08** مكتملة ضمن نطاق العميل (Autonomous Sequential؛ test 34/34). بطاقات G1/Firebase/soft-AP/جهاز مؤجّلة. **WEB-T-01…T-08** مغلقة ضمن نطاق العميل (لقطة T-08: test 80/80). استكمال **WEB-C-01…C-06** مغلق 2026-11-18 خارج العدّاد (إعادة تحقق C-06: test 121/121) والحكم **SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING**. G1/ACK الحي **BLOCKED**. نقل الملكية الحي **NOT VERIFIED**. FCM الحي **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب والمتصفح ضد Backend **NOT VERIFIED / BLOCKED**. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. لا مهمة ويب تالية. إغلاق البطاقات ليس جاهزية إنتاج.
+- التالي: باك **T-05** · ESP/integration/ops **T-01**. ويب وموبايل: تسلسل العميل مكتمل والفجوات الخارجية موثّقة.
 
 ## كيف تُحدَّث ملفات السياق والتقدّم
 
