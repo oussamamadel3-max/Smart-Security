@@ -20,4 +20,8 @@ artifacts/
 *-adminsdk-*.json
 **/serviceAccount*.json
 **/service-account*.json
+# Explicit legacy / current project SA filenames (belt-and-suspenders; wildcards above already cover)
 smart-security-80d2c-firebase-adminsdk-fbsvc-65b0242a5a.json
+smart-security-dev-28642-firebase-adminsdk-*.json
+smart-security-stage-firebase-adminsdk-*.json
+smart-security-pro-fbdeb-firebase-adminsdk-*.json

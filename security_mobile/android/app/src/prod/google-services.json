@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "540692592111",
+    "project_id": "smart-security-pro-fbdeb",
+    "storage_bucket": "smart-security-pro-fbdeb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:540692592111:android:c787f0983088440089f21a",
+        "android_client_info": {
+          "package_name": "com.hisn.security.security_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDe2k0iLpqyRzbjDdZQjmxC1WHbxNzo2mM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

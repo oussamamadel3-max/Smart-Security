@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "19080112160",
+    "project_id": "smart-security-stage",
+    "storage_bucket": "smart-security-stage.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19080112160:android:1c75d1e166ec871f2c3445",
+        "android_client_info": {
+          "package_name": "com.hisn.security.security_mobile.staging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkd07EpnR83JvgCVbUowM2IB5OI3CQjVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

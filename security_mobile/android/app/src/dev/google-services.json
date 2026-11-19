@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "313416905013",
+    "project_id": "smart-security-dev-28642",
+    "storage_bucket": "smart-security-dev-28642.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313416905013:android:c2e6a7daa4d18bcd52dc7c",
+        "android_client_info": {
+          "package_name": "com.hisn.security.security_mobile.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcseaQiHW6qBy7YQs4QHXEsJ4x3it7qJg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

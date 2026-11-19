@@ -5,9 +5,9 @@
 
 | # | العمل | السبب / الاعتماد | شرط القبول المستقبلي |
 |---|--------|------------------|----------------------|
-| R-01 | تهيئة Firebase Apps + APNs لكل flavor | لا ملفات عميل · سياسة عدم بدء تكامل Firebase الآن | ملفات `google-services` / `GoogleService-Info` لكل بيئة + اختبار استقبال رسالة |
-| R-02 | استبدال `NoOpFcmMessaging` بتنفيذ SDK حي | يعتمد R-01 | token حقيقي · onTokenRefresh · إذن OS على جهاز |
-| R-03 | fg/bg/terminated + رسالة اختبار | جهاز Android حقيقي | دليل ميداني موثّق |
+| R-01 | تهيئة Firebase Apps + APNs لكل flavor | مرحلة **FCM-C** (`docs/fcm/`)؛ Android ملفات عميل جاهزة للتحقق في FCM-C-01 · iOS/APNs ما زالا مؤجّلين | إغلاق FCM-C-01 (Android) + لاحقاً iOS plists/APNs + اختبار استقبال |
+| R-02 | استبدال `NoOpFcmMessaging` بتنفيذ SDK حي | يعتمد R-01 / **FCM-C-03** | token حقيقي · onTokenRefresh · إذن OS على جهاز |
+| R-03 | fg/bg/terminated + رسالة اختبار | جهاز Android حقيقي / **FCM-C-05** | دليل ميداني موثّق |
 | R-04 | بناء/اختبار iOS | مؤجّل بموافقة المالك | بناء iOS + APNs |
 | R-05 | soft-AP Wi-Fi فعلي بدل `UnavailableLocalProvisioningClient` | ESP-T-08 + إغلاق D-04 | عقد HTTP محلي + connected/failed/timeout من الجهاز |
 | R-06 | استمرار الإنذار المحلي أثناء تغيير الشبكة | عتاد ESP | اختبار ميداني |
