@@ -4,6 +4,7 @@ using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using AppFcmOptions = Application.Options.FcmOptions;
 
 namespace Infrastructure.Services.Fcm;
@@ -17,11 +18,15 @@ namespace Infrastructure.Services.Fcm;
 public sealed class FirebaseFcmProvider : IFcmProvider
 {
     private readonly ILogger<FirebaseFcmProvider> _logger;
+    private readonly string _firebaseProjectId;
     private readonly Lazy<FirebaseMessaging> _messaging;
 
-    public FirebaseFcmProvider(ILogger<FirebaseFcmProvider> logger)
+    public FirebaseFcmProvider(
+        ILogger<FirebaseFcmProvider> logger,
+        IOptions<AppFcmOptions> options)
     {
         _logger = logger;
+        _firebaseProjectId = (options.Value.FirebaseProjectId ?? string.Empty).Trim();
         _messaging = new Lazy<FirebaseMessaging>(CreateMessaging, LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -86,12 +91,15 @@ public sealed class FirebaseFcmProvider : IFcmProvider
         if (FirebaseApp.DefaultInstance is null)
         {
             // ADC resolves GOOGLE_APPLICATION_CREDENTIALS or metadata server — never embed JSON.
+            // ProjectId pins the Admin SDK to the environment selected via Fcm:FirebaseProjectId.
             FirebaseApp.Create(new AppOptions
             {
-                Credential = GoogleCredential.GetApplicationDefault()
+                Credential = GoogleCredential.GetApplicationDefault(),
+                ProjectId = string.IsNullOrWhiteSpace(_firebaseProjectId) ? null : _firebaseProjectId
             });
             _logger.LogInformation(
-                "FirebaseApp initialized via Application Default Credentials for FCM (no credential material logged).");
+                "FirebaseApp initialized via Application Default Credentials for FCM project {FirebaseProjectId} (no credential material logged).",
+                _firebaseProjectId);
         }
 
         return FirebaseMessaging.DefaultInstance;

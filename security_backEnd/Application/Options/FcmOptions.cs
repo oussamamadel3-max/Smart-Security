@@ -24,6 +24,13 @@ public sealed class FcmOptions
     public string Provider { get; set; } = ProviderFake;
 
     /// <summary>
+    /// Expected Firebase GCP project id when <see cref="Provider"/> is Firebase (e.g. smart-security-dev-28642).
+    /// Compared to the service-account JSON <c>project_id</c> to prevent cross-environment credentials.
+    /// Leave empty with Fake; required for Firebase registration.
+    /// </summary>
+    public string FirebaseProjectId { get; set; } = string.Empty;
+
+    /// <summary>
     /// Poll interval for the hosted worker when enabled.
     /// </summary>
     public int PollIntervalMs { get; set; } = 2000;

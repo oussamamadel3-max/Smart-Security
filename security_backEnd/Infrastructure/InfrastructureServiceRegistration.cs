@@ -169,7 +169,10 @@ public static class InfrastructureServiceRegistration
         {
             // Real send path — refuse startup when ADC cannot be resolved.
             // Absence of GOOGLE_APPLICATION_CREDENTIALS must not affect Fake; it must block Firebase.
-            // Never log credential file paths or JSON contents.
+            // Never log credential file paths or JSON contents. Never silently fall back to Fake.
+            EnsureFirebaseProjectIdConfigured(fcmOptions);
+            EnsureCredentialFileMatchesFirebaseProject(fcmOptions);
+
             if (!TryProbeApplicationDefaultCredentials())
             {
                 throw new InvalidOperationException(
@@ -186,6 +189,69 @@ public static class InfrastructureServiceRegistration
         // Default and all automated tests: FakeFcmProvider (no network, no ADC required).
         services.AddSingleton<FakeFcmProvider>();
         services.AddSingleton<IFcmProvider>(sp => sp.GetRequiredService<FakeFcmProvider>());
+    }
+
+    /// <summary>
+    /// Firebase registration requires an explicit expected project id (dev/staging/prod isolation).
+    /// </summary>
+    private static void EnsureFirebaseProjectIdConfigured(FcmOptions fcmOptions)
+    {
+        if (string.IsNullOrWhiteSpace(fcmOptions.FirebaseProjectId))
+        {
+            throw new InvalidOperationException(
+                "Fcm:Provider=Firebase requires Fcm:FirebaseProjectId (e.g. smart-security-dev-28642). " +
+                "Set it via User Secrets / environment for the target environment only. " +
+                "Keep Fcm:Provider=Fake when no Firebase project is selected.");
+        }
+    }
+
+    /// <summary>
+    /// When GOOGLE_APPLICATION_CREDENTIALS points at a service-account JSON file, compare its
+    /// project_id to Fcm:FirebaseProjectId. Reads only the project_id field — never logs secrets.
+    /// </summary>
+    private static void EnsureCredentialFileMatchesFirebaseProject(FcmOptions fcmOptions)
+    {
+        var expected = fcmOptions.FirebaseProjectId.Trim();
+        var path = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException(
+                "Fcm:Provider=Firebase: GOOGLE_APPLICATION_CREDENTIALS path does not exist. " +
+                "Fix the path or keep Fcm:Provider=Fake.");
+        }
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+            if (!doc.RootElement.TryGetProperty("project_id", out var projectIdElement))
+            {
+                throw new InvalidOperationException(
+                    "Fcm:Provider=Firebase: credential file is missing project_id. " +
+                    "Keep Fcm:Provider=Fake until a valid service-account file is configured.");
+            }
+
+            var actual = projectIdElement.GetString()?.Trim() ?? string.Empty;
+            if (!string.Equals(actual, expected, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "Fcm:Provider=Firebase: credential project_id does not match Fcm:FirebaseProjectId. " +
+                    "Refusing cross-environment credentials. Keep Fcm:Provider=Fake or use the matching service account.");
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                "Fcm:Provider=Firebase: unable to read project_id from GOOGLE_APPLICATION_CREDENTIALS file. " +
+                "Keep Fcm:Provider=Fake until credentials are valid.",
+                ex);
+        }
     }
 
     /// <summary>

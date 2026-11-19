@@ -1,6 +1,6 @@
 # مصفوفة بيئات Firebase Cloud Messaging
 
-آخر تحديث: 2026-11-19 (FCM-C-01 — تحقق وتوثيق فقط؛ الإرسال الحي وSDK Flutter غير مفعّلين)
+آخر تحديث: 2026-11-19 (FCM-C-02 استكمال — قاعدة `esp32_security_fcm_dev` + تمييز OAuth عن صلاحية الإرسال؛ Git يبقى Fake)
 
 لا تضع Service Account أو مفاتيح APNs الخاصة في هذا الملف أو في Git.
 
@@ -44,37 +44,83 @@ Flavor Gradle المعتمد في `build.gradle.kts` هو الاسم **`prod`** 
 
 `C:\Users\Osama\Desktop\Secrets\smartSecurity\firebase\legacy\`
 
-## 3) إعداد `GOOGLE_APPLICATION_CREDENTIALS` (للاستخدام في FCM-C-02)
+## 3) تشغيل Backend مع Firebase (dev فقط — FCM-C-02)
 
-لا تغيّر الآن `Fcm:Enabled` أو `Fcm:Provider` في `appsettings.json` (يبقين `false` / `Fake`).
+**الملفات المتتبَّعة في Git تبقى دائماً:** `Fcm:Enabled=false` · `Fcm:Provider=Fake` · `Fcm:FirebaseProjectId=""`.
 
-### PowerShell — جلسة حالية (مثال dev)
+التفعيل الحي يتم **في جلسة محلية فقط** عبر متغيرات البيئة + User Secrets، وليس بتعديل `appsettings.json`.
+
+### قاعدة بيانات معزولة لاختبارات Firebase الحية
+
+| بند | قيمة |
+|-----|------|
+| الاسم | `esp32_security_fcm_dev` |
+| الغرض | جلسات `Provider=Firebase` فقط — طابور فارغ افتراضياً |
+| التهيئة | `dotnet ef database update` مع `ConnectionStrings__DefaultConnection` موجّه لهذه القاعدة |
+| ممنوع | نسخ مستخدمين / push tokens من `esp32_security` |
+| القاعدة العامة `esp32_security` | تبقى لعمل التطوير الاعتيادي خلف **Fake** |
+
+جلسة سابقة قصيرة استخدمت `esp32_security` مع العامل الحي؛ مراجعة السجل أثبتت claim بلا صفوف (`0 entities written`) ولا محاولة Send. التشغيل اللاحق والسكربت يستخدمان المعزولة فقط.
+
+### متطلبات مسبقة
+
+1. `ASPNETCORE_ENVIRONMENT=Development` حتى تُحمَّل User Secrets (`Auth:Jwt:SigningKey`, `Fcm:TokenEncryptionKey`، وسلسلة الاتصال الأساسية).
+2. `GOOGLE_APPLICATION_CREDENTIALS` → ملف SA داخل `...\firebase\dev\` فقط.
+3. `Fcm__FirebaseProjectId=smart-security-dev-28642` (يجب أن يطابق `project_id` في ملف SA؛ وإلا يُرفض الإقلاع).
+4. `Fcm__Provider=Firebase` و`Fcm__Enabled=true` للجلسة المفوضة.
+5. `ConnectionStrings__DefaultConnection` يعيد توجيه `Database=` إلى **`esp32_security_fcm_dev`** (السكربت يتكفل بذلك).
+
+### سكربت خارج المستودع
+
+`C:\Users\Osama\Desktop\Secrets\smartSecurity\firebase\dev\run-backend-fcm-dev.ps1`
 
 ```powershell
-$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\Users\Osama\Desktop\Secrets\smartSecurity\firebase\dev\<SA_FILE_NAME>.json"
-# ثم تشغيل API من مجلد المشروع بعد ضبط بقية الأسرار (JWT / TokenEncryptionKey) عبر User Secrets
+powershell -File "C:\Users\Osama\Desktop\Secrets\smartSecurity\firebase\dev\run-backend-fcm-dev.ps1"
 ```
 
-استبدل `<SA_FILE_NAME>` باسم ملف الـ SA داخل مجلد البيئة (يظهر محلياً فقط؛ لا يُلصق في Git).
+ملاحظات الإيقاف: `...\firebase\dev\stop-notes.txt`
+
+### صلاحيات Firebase (ما أُثبت / ما يدوي)
+
+| المستوى | الحالة |
+|---------|--------|
+| OAuth + `FirebaseApp` لـ `smart-security-dev-28642` | مُثبت |
+| قراءة Service Usage / IAM عبر SA | **403** — غير متاح لهذا الحساب |
+| تفعيل FCM HTTP v1 في Console | **تحقق يدوي للمالك** (APIs & Services → Firebase Cloud Messaging API) |
+| `messages:send` بـ token جهاز | مؤجّل لمراحل لاحقة |
+
+### إيقاف والعودة إلى Fake
+
+1. أوقف العملية (`Ctrl+C` أو إنهاء العملية).
+2. امسح متغيرات الجلسة:
+
+```powershell
+Remove-Item Env:GOOGLE_APPLICATION_CREDENTIALS, Env:Fcm__Enabled, Env:Fcm__Provider, Env:Fcm__FirebaseProjectId, Env:ConnectionStrings__DefaultConnection -ErrorAction SilentlyContinue
+```
+
+3. تشغيل `dotnet run` العادي بدون هذه المتغيرات يعود إلى Fake من `appsettings.json` وDB من User Secrets (`esp32_security`).
 
 ### staging / prod
 
-نفس المتغير مع مسار مجلد `staging` أو `production` تحت مجلد الأسرار أعلاه. شغّل نسخة Backend واحدة بملف SA واحد فقط في كل عملية.
+**غير مفعّلين في FCM-C-02.** لا تضبط `Fcm__FirebaseProjectId` على مشاريع staging/prod في جلسة التطوير.
 
-### User Secrets / بيئة نشر
+### حراسة خلط البيئات
 
-- محلياً: يمكن الإبقاء على المتغير البيئي للجلسة أو توثيقه في ملف تشغيل شخصي خارج Git.
-- نشر لاحق (ops): يُحقَن المسار أو محتوى السر عبر آلية أسرار المضيف — **ليس** عبر `appsettings.json` المتتبَّع.
+عند `Provider=Firebase` يفرض التسجيل:
+- وجود `Fcm:FirebaseProjectId`
+- تطابق `project_id` في ملف `GOOGLE_APPLICATION_CREDENTIALS` مع القيمة المتوقعة
+- نجاح ADC — **بدون** سقوط صامت إلى Fake
 
-`FirebaseFcmProvider` يستخدم Application Default Credentials (`GoogleCredential.GetApplicationDefault()`). عند `Fcm:Provider=Firebase` بدون ADC قابلة للحل، التسجيل يفشل عند الإقلاع عمداً.
-
-## 4) حالة Backend الحالية (لا تغيير في FCM-C-01)
+## 4) حالة Backend المتتبَّعة (Git)
 
 | مفتاح | القيمة في `API/appsettings.json` |
 |-------|-----------------------------------|
 | `Fcm:Enabled` | `false` |
 | `Fcm:Provider` | `Fake` |
+| `Fcm:FirebaseProjectId` | `""` |
 | حزمة | `FirebaseAdmin` 3.4.0 |
+
+الاختبارات الآلية (`AuthApiFactory` وغيرها) تثبت `Fcm:Provider=Fake` و`Enabled=false`.
 
 ## 5) iOS وAPNs — مؤجّل
 

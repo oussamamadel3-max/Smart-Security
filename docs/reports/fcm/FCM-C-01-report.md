@@ -4,7 +4,7 @@
 |--------|--------|
 | المهمة | **FCM-C-01** |
 | التاريخ | 2026-11-19 |
-| الحالة | **READY TO CLOSE** — بانتظار `APPROVE TASK CLOSURE: FCM-C-01` |
+| الحالة | **CLOSED** 2026-11-19 بموافقة `APPROVE TASK CLOSURE: FCM-C-01` |
 | النطاق | تحقق + توثيق فقط |
 | لم يُنفَّذ | FCM-C-02…C-07 · SDK Flutter · تفعيل إرسال Backend · جهاز/محاكٍ · iOS · Commit/Push |
 

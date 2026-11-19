@@ -19,10 +19,12 @@
 
 ## تتبّع
 
+**عدّاد مرحلة FCM (مستقل): 1 / 7** — لا يُضاف إلى عدّاد النظام الرسمي 21/50.
+
 | مهمة | العنوان | الحالة |
 |------|---------|--------|
-| FCM-C-01 | مشاريع Firebase وبيئات التشغيل | **READY TO CLOSE** — تقرير `docs/reports/fcm/FCM-C-01-report.md` · البطاقة `[ ]` حتى موافقة المالك |
-| FCM-C-02 | تفعيل `FirebaseFcmProvider` في Backend | لم تبدأ |
+| FCM-C-01 | مشاريع Firebase وبيئات التشغيل | **CLOSED** 2026-11-19 — `docs/reports/fcm/FCM-C-01-report.md` |
+| FCM-C-02 | تفعيل `FirebaseFcmProvider` في Backend | **READY TO CLOSE** — `FCM-C-02-report.md` + `FCM-C-02-supplement-report.md` · البطاقة `[ ]` حتى موافقة المالك |
 | FCM-C-03 | Firebase SDK في Flutter بدل NoOp | لم تبدأ |
 | FCM-C-04 | دورة حياة Token وربط الخادم | لم تبدأ |
 | FCM-C-05 | Foreground / Background / Terminated | لم تبدأ |
@@ -33,7 +35,7 @@
 
 ## FCM-C-01 — إنشاء مشاريع Firebase وإعداد بيئات التشغيل
 
-- [ ] الحالة: تنفيذ تحقق/توثيق 2026-11-19 — **بانتظار** `APPROVE TASK CLOSURE: FCM-C-01`
+- [x] الحالة: **CLOSED** 2026-11-19 بموافقة `APPROVE TASK CLOSURE: FCM-C-01`
 - **الهدف:** إثبات وجود ثلاثة مشاريع Firebase مستقلة وملفات عميل Android المطابقة وService Accounts خارج Git، مع توثيق ADC وعزل البيئات وتأجيل iOS/APNs.
 - **النطاق:** تحقق ملفات `google-services.json` · مطابقة Application ID · استخراج Project ID/Number · تحقق محلي لـ SA دون نسخها للمستودع · مراجعة `.gitignore`/Git · توثيق فقط.
 - **خارج النطاق:** تفعيل Backend الحي · تثبيت FlutterFire · تشغيل جهاز · iOS · Commit/Push.
@@ -57,18 +59,19 @@
 
 ## FCM-C-02 — استكمال تفعيل FirebaseFcmProvider في Backend
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: تنفيذ + استكمال عزل DB 2026-11-19 — **READY TO CLOSE** بانتظار `APPROVE TASK CLOSURE: FCM-C-02`
 - **الهدف:** تشغيل مسار الإرسال الحقيقي عبر ADC لمزوّد Firebase مع الإبقاء على Fake للاختبارات الآلية.
-- **النطاق:** إعداد بيئة تشغيل Backend (User Secrets / env) · التحقق من تسجيل المزوّد · تفعيل منضبط لـ`Fcm:Enabled`/`Fcm:Provider` في بيئة غير اختبار وحدة فقط بعد تفويض.
-- **خارج النطاق:** تغيير عقد الحمولة · إعادة بناء Fake · Flutter SDK.
+- **النطاق:** إعداد بيئة تشغيل Backend (User Secrets / env) · التحقق من تسجيل المزوّد · تفعيل منضبط لـ`Fcm:Enabled`/`Fcm:Provider` في بيئة غير اختبار وحدة فقط بعد تفويض · قاعدة `esp32_security_fcm_dev`.
+- **خارج النطاق:** تغيير عقد الحمولة · إعادة بناء Fake · Flutter SDK · إرسال حي بـ token جهاز.
 - **الاعتماديات:** FCM-C-01 · BE-T-09 (منفَّذ).
 - **خطوات التنفيذ:**
   1. ضبط `GOOGLE_APPLICATION_CREDENTIALS` للبيئة المستهدفة وفق `FCM-ENVIRONMENTS.md`.
   2. ضبط `Fcm:TokenEncryptionKey` عبر أسرار غير Git.
-  3. بعد تفويض صريح: تجربة `Provider=Firebase` على بيئة dev فقط.
+  3. بعد تفويض صريح: تجربة `Provider=Firebase` على بيئة **dev** فقط مع DB معزولة.
   4. الإبقاء على Fake في `appsettings.json` الافتراضي وCI ما لم يُعتمد خلاف ذلك.
-  5. اختبار إرسال تجريبي واحد أو تحقق تسجيل المزوّد دون تسريب أسرار.
-- **شروط القبول:** إقلاع Backend مع Firebase في بيئة مفوّضة · رفض الإقلاع بلا ADC · الاختبارات الآلية تبقى على Fake · لا أسرار في Git.
+  5. تحقق تسجيل المزوّد / ADC / ProjectId دون تسريب أسرار (Send الحي مؤجّل).
+- **شروط القبول:** إقلاع Backend مع Firebase في بيئة مفوّضة · رفض الإقلاع بلا ADC / mismatch · الاختبارات الآلية تبقى على Fake · لا أسرار في Git · قاعدة معزولة للجلسات الحية.
+- **الدليل:** `docs/reports/fcm/FCM-C-02-report.md` · `docs/reports/fcm/FCM-C-02-supplement-report.md`
 
 ---
 
