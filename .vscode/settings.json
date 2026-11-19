@@ -1,5 +1,19 @@
 {
   "java.configuration.updateBuildConfiguration": "interactive",
   "cmake.sourceDirectory": "C:/Users/Osama/Desktop/SmartSecurity/security_esp/firmware",
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "idf.currentSetup": "C:/Users/Osama/esp/esp-idf",
+  "idf.port": "detect",
+  "idf.flashBaudRate": "460800",
+  "idf.openOcdConfigs": [
+    "board/esp32-wrover-kit-3.3v.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_PATH": "C:/Users/Osama/esp/esp-idf",
+    "IDF_TOOLS_PATH": "C:/Users/Osama/.espressif",
+    "IDF_PYTHON_ENV_PATH": "C:/Users/Osama/.espressif/python_env/idf5.3_py3.12_env",
+    "OPENOCD_SCRIPTS": "C:/Users/Osama/.espressif/tools/openocd-esp32/v0.12.0-esp32-20260831/openocd-esp32/share/openocd/scripts",
+    "ESP_ROM_ELF_DIR": "C:/Users/Osama/.espressif/tools/esp-rom-elfs/20240305/",
+    "IDF_CCACHE_ENABLE": "1"
+  }
 }
