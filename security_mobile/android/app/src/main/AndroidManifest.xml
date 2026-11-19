@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required by the app itself (dio/Firebase HTTP calls — login, devices,
+         push-token registration, notification details), not only by Flutter's
+         debug tooling. `src/debug` and `src/profile` already declare this for
+         their own reasons, but `release` (used by every flavor's production
+         build — see android/app/build.gradle.kts) had no network permission
+         at all until now — FCM-R-04. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Runtime notification permission on Android 13+ (API 33), requested via
          FirebaseMessaging.requestPermission() in FirebaseFcmMessaging — FCM-C-03/C-04. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>

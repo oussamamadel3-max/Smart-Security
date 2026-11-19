@@ -142,3 +142,17 @@ Android flavors الثلاث جاهزة لربط العميل في **FCM-C-03**.
 | FCM-C-02 | ADC + تفعيل Backend مفوّض |
 | FCM-C-03…C-05 | SDK Flutter + دورة الرمز + حالات التطبيق |
 | FCM-C-06…C-07 | أمان/قبول |
+
+## 7) حالة ربط عميل Flutter — بعد FCM-C-03…C-07 (2026-11-19)
+
+| البند | الحالة |
+|-------|--------|
+| `firebase_core`/`firebase_messaging` في `pubspec.yaml` | **مُضافة** (`^5.1.0` / `^17.0.1`) |
+| Google Services Gradle Plugin | **مُطبَّق** في `android/settings.gradle.kts` + `android/app/build.gradle.kts` لكل الـ flavors الثلاثة |
+| `android.permission.POST_NOTIFICATIONS` | **مُضافة** إلى `src/main/AndroidManifest.xml` (Android 13+) |
+| `android.permission.INTERNET` في `src/main` | **مُضافة الآن (FCM-R-04)** — كانت موجودة فقط في `src/debug`/`src/profile`؛ `release` (المُستخدَم فعلياً لكل الـ flavors) كان بلا صلاحية شبكة لأي اتصال HTTP، لا للإشعارات فقط |
+| `flutter_local_notifications` | **مُضافة** (`^22.3.3`) — لازمة لأن Backend يرسل Data Messages بحتة (`FCM-C-05-report.md`) |
+| بناء APK فعلي (دليل دمج `google-services.json` لكل flavor) | **لم يكتمل بعد** — شبكة ضعيفة متكررة أثناء الجلسات؛ آخر محاولة واستمرت حالة المتابعة في `docs/fcm/fcm-remaining-tasks.md` (FCM-R-01…R-03B) |
+| بناء Release (بتوقيع debug الحالي، بلا نشر) | **لم يُحاوَل بعد** (معلَّق على نجاح debug) — FCM-R-03B |
+
+**لا تفعيل Firebase حي جديد في Mobile** — هذا القسم يوثّق ربط SDK العميل فقط، لا إرسالاً أو استقبالاً حياً.

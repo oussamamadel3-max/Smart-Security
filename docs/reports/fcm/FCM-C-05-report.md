@@ -93,7 +93,27 @@
 
 ## 7) ما لم يُثبَت
 
-اختبار استقبال/نقر حقيقي على جهاز في الحالات الثلاث، وسلوك دقيق لـ`onDidReceiveBackgroundNotificationResponse` (مُسجَّل no-op موثَّق السبب — عدم القدرة على التحقق من توقيته الدقيق بلا جهاز). مُسجَّلة في `docs/fcm/fcm-remaining-tasks.md` (FCM-R-07).
+اختبار استقبال/نقر حقيقي على جهاز في الحالات الثلاث. مُسجَّل في `docs/fcm/fcm-remaining-tasks.md` (FCM-R-07).
+
+## 7A) مراجعة تكميلية لـ `LocalNotificationsService` (بطلب المالك بعد SOFTWARE COMPLETE)
+
+مراجعة بندية لكل عنصر مطلوب، بالرجوع إلى الكود الفعلي الحالي ومصدر حزمة `flutter_local_notifications` 22.3.3 نفسها (لا افتراض):
+
+| البند | النتيجة |
+|-------|---------|
+| معالجة Data Messages | **صحيحة** — `firebaseMessagingBackgroundHandler` يتحقق من `message.data.isEmpty` قبل أي عرض؛ لا اعتماد على `message.notification` (غير موجود أصلاً) |
+| تسجيل Background Handler وتهيئته | **صحيح** — `FirebaseMessaging.onBackgroundMessage(...)` يُسجَّل في `main()` قبل `runApp()` مباشرة (الترتيب الموصى به من FlutterFire)، ومشروط بنجاح تهيئة Firebase في isolate الرئيسي (`FirebaseBootstrap.isInitialized`) لتفادي تسجيل معالج سيفشل حتماً |
+| أولوية الإشعارات العاجلة (Android) | **متطابقة بين الطرفين** — Backend: `AndroidConfig.Priority = Priority.High` (`FirebaseFcmProvider.cs`) · Mobile: قناة الإشعار `importance: Importance.high` + تفصيل الإشعار `priority: Priority.high` (`local_notifications_service.dart`) |
+| Notification Channels | **صحيحة** — قناة واحدة (`hisn_security_alerts`) تُنشَأ مرة واحدة عبر `createNotificationChannel` ضمن `initialize()`، بنفس المعرّف مستخدَم في كل عرض لاحق |
+| منع تكرار العرض | **صحيح بآليتين متكاملتين، لا تضارب:** (أ) داخل isolate الخلفية، `id: payload.hashCode` يجعل أي إعادة تسليم لنفس الحمولة تستبدل (`NotificationManager.notify` بنفس id يُحدِّث، لا يُكرِّر) بدل إنشاء إشعار إضافي — سلوك نظام Android نفسه، لا كود إضافي مطلوب. (ب) `ForegroundAlertCoordinator._lastShownNotificationId` يمنع تكرار Snackbar الفوري لنفس `notificationId` في Foreground |
+| منع تكرار الفتح | **صحيح** — `NotificationOpenCoordinator._handledNotificationIds` (Set دائم طوال عمر العملية) يمنع فتح نفس `notificationId` من أي من المصدرين (منفذ FCM أو لمسة إشعار محلي) مرتين |
+| معالجة النقر على الإشعارات المحلية | **صحيحة** — `onDidReceiveNotificationResponse` في `initialize()` يُمرِّر `payload` إلى `onTap` الذي يربطه `NotificationOpenCoordinator._queueOrHandle` عبر `_decodeLocalPayload` |
+| استخدام `getNotificationAppLaunchDetails` | **صحيح ومُطبَّق** — `consumeLaunchPayload()` يستدعيها ويتحقق من `didNotificationLaunchApp` قبل إرجاع `payload`؛ تُستهلَك مرة واحدة فقط عند إنشاء `NotificationOpenCoordinator` (لا استدعاء متكرر) |
+| `onDidReceiveBackgroundNotificationResponse` — no-op: مقبول أم فجوة؟ | **مقبول، وليس فجوة — مُحقَّق من مصدر الحزمة نفسها لا من الافتراض.** توثيق `flutter_local_notifications_plugin.dart` (السطور 103-110) ينص حرفياً: *"For notification actions that don't show the application/user interface, the `onDidReceiveBackgroundNotificationResponse` callback is invoked on a background isolate."* — أي أن هذا المسار **لا يُستدعى إلا لأزرار إجراء (Notification Actions) مُعلَّمة `showsUserInterface: false`**. التطبيق الحالي لا يُعرِّف أي `actions:` على `AndroidNotificationDetails` (نقرة واحدة بسيطة فقط على متن الإشعار)، فهذا المسار **غير قابل للاستدعاء بنيوياً** بالتصميم الحالي — ليس خللاً غير مُكتشَف، بل نتيجة مباشرة لغياب أي إجراء خلفي. سيبقى `no-op` صحيحاً حتى إضافة إجراء فعلي (مثل "إغلاق"/"عرض سريع") بدون فتح التطبيق — وهذا تحسين منتج مستقبلي، لا إصلاح فجوة حالية |
+
+### تصحيح على التسجيل السابق في `fcm-remaining-tasks.md`
+
+البند FCM-R-07 كان يصف دقة توقيت `onDidReceiveBackgroundNotificationResponse` كأمر "غير قادر على التحقق منه بلا جهاز". بعد هذه المراجعة المرجعية من مصدر الحزمة، **هذا ليس أمراً غامضاً يحتاج جهازاً للتحقق منه** — السلوك موثَّق ومحدَّد بوضوح في مصدر الحزمة، والتحقق منه لا يحتاج استقبالاً حياً بل فحصاً للتصميم (منفَّذ الآن). تم تحديث `fcm-remaining-tasks.md` لعكس هذا (انظر التعديل المرافق).
 
 ## 8) الحكم
 
