@@ -23,9 +23,16 @@ extern "C" {
 typedef struct {
     uint32_t version;
     arm_state_t arm_state;      /* last CONFIRMED value only; never store UNKNOWN as if it were confirmed */
-    uint32_t next_event_uid;
     uint32_t checksum;          /* storage_checksum() over the fields above, checksum field excluded */
 } persisted_state_record_t;
+
+/* No event-uid counter is persisted here (or anywhere) — event identity is
+ * a freshly-generated UUIDv4 per trigger (uuid128.h), not a sequence that
+ * needs resuming across reboot. An active event in progress at the moment
+ * of an unclean reboot is simply not remembered; a new one starts on the
+ * next qualifying trigger. This is an intentional scope limit, not an
+ * oversight — no requirement read in this repo asks for alarm-event
+ * continuity across a reboot, only for arm_state continuity. */
 
 typedef enum {
     PERSISTED_STATE_LOAD_OK = 0,
@@ -37,7 +44,7 @@ persisted_state_load_result_t persisted_state_load(const storage_backend_t *back
                                                     persisted_state_record_t *out);
 
 /* Saves arm_state as CONFIRMED. Never call this with arm_state == ARM_STATE_UNKNOWN. */
-bool persisted_state_save(const storage_backend_t *backend, arm_state_t arm_state, uint32_t next_event_uid);
+bool persisted_state_save(const storage_backend_t *backend, arm_state_t arm_state);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,9 @@
 #include "unity.h"
 #include "protection_core.h"
+#include <string.h>
 
 static protection_core_t core;
+static uint8_t fake_rng_counter;
 
 static alarm_detector_config_t test_detector_config(void)
 {
@@ -9,10 +11,24 @@ static alarm_detector_config_t test_detector_config(void)
     return cfg;
 }
 
+/* Deterministic fake RNG: a different byte pattern each call (seeded by a
+ * counter) so successive generated event UUIDs are distinct, without
+ * depending on any real randomness source. */
+static void fake_uuid_source(void *ctx, uint8_t *out, size_t len)
+{
+    (void)ctx;
+    fake_rng_counter++;
+    for (size_t i = 0; i < len; i++) {
+        out[i] = (uint8_t)(fake_rng_counter + i);
+    }
+}
+
 void setUp(void)
 {
+    fake_rng_counter = 0;
     alarm_detector_config_t cfg = test_detector_config();
-    TEST_ASSERT_TRUE(protection_core_init(&core, &cfg, 30000 /* D-03 reference siren-test duration */));
+    TEST_ASSERT_TRUE(protection_core_init(&core, &cfg, 30000 /* D-03 reference siren-test duration */,
+                                          fake_uuid_source, NULL));
 }
 void tearDown(void) {}
 
@@ -63,13 +79,13 @@ static void test_mute_silences_without_disarming_or_clearing_event(void)
     protection_core_arm(&core);
     protection_core_on_sensor_pulse(&core, 0);
     protection_core_on_sensor_pulse(&core, 500);
-    uint32_t uid = core.current_event.uid;
+    uuid128_t uid = core.current_event.uid;
 
     TEST_ASSERT_EQUAL(PROTECTION_CMD_OK, protection_core_mute(&core, uid));
     TEST_ASSERT_EQUAL(SIREN_STATE_OFF, protection_core_siren_state(&core));
     TEST_ASSERT_EQUAL(ARM_STATE_ARMED, core.arm_state);
     TEST_ASSERT_TRUE(core.current_event.is_active);
-    TEST_ASSERT_EQUAL(uid, core.current_event.uid);
+    TEST_ASSERT_TRUE(uuid128_equal(&uid, &core.current_event.uid));
 }
 
 /* AC-T-18 equivalent: MUTE with a mismatched/stale targetAlarmEventUid is
@@ -79,16 +95,20 @@ static void test_mute_rejects_event_uid_mismatch(void)
     protection_core_arm(&core);
     protection_core_on_sensor_pulse(&core, 0);
     protection_core_on_sensor_pulse(&core, 500);
-    uint32_t real_uid = core.current_event.uid;
+
+    uuid128_t wrong_uid;
+    memset(&wrong_uid, 0xAA, sizeof(wrong_uid)); /* guaranteed different from any fake_uuid_source output */
 
     TEST_ASSERT_EQUAL(PROTECTION_CMD_REJECTED_MUTE_EVENT_MISMATCH,
-                      protection_core_mute(&core, real_uid + 999));
+                      protection_core_mute(&core, wrong_uid));
     TEST_ASSERT_EQUAL(SIREN_STATE_ALARM, protection_core_siren_state(&core)); /* unaffected by rejected mute */
 }
 
 static void test_mute_rejects_when_no_active_event(void)
 {
-    TEST_ASSERT_EQUAL(PROTECTION_CMD_REJECTED_MUTE_NO_ACTIVE_EVENT, protection_core_mute(&core, 1));
+    uuid128_t any_uid;
+    memset(&any_uid, 1, sizeof(any_uid));
+    TEST_ASSERT_EQUAL(PROTECTION_CMD_REJECTED_MUTE_NO_ACTIVE_EVENT, protection_core_mute(&core, any_uid));
 }
 
 /* AC-T-22 equivalent: event id survives mute and keeps being "the same
@@ -99,11 +119,11 @@ static void test_event_uid_persists_through_mute_until_sensor_normal(void)
     protection_core_arm(&core);
     protection_core_on_sensor_pulse(&core, 0);
     protection_core_on_sensor_pulse(&core, 500);
-    uint32_t uid = core.current_event.uid;
+    uuid128_t uid = core.current_event.uid;
     protection_core_mute(&core, uid);
 
     protection_core_on_sensor_pulse(&core, 1000); /* signal continues while muted */
-    TEST_ASSERT_EQUAL(uid, core.current_event.uid);
+    TEST_ASSERT_TRUE(uuid128_equal(&uid, &core.current_event.uid));
     TEST_ASSERT_TRUE(core.current_event.is_active);
 
     protection_core_tick(&core, 1000 + 3000); /* cooldown elapses -> sensor "back to normal" */

@@ -1,0 +1,11 @@
+# Pinned ESP-IDF for SmartSecurity ESP firmware builds.
+# Verified on 2026-11-19 against a local checkout that reports `ESP-IDF v5.3.6`.
+ESP_IDF_VERSION=v5.3.6
+ESP_IDF_BRANCH=release/v5.3
+ESP_IDF_COMMIT=db32f7de6368445b431361f30e72be38ba2994d3
+ESP_IDF_REMOTE=https://github.com/espressif/esp-idf.git
+# Install tip (Windows PowerShell native — not Git Bash):
+#   git clone -b release/v5.3 --recursive https://github.com/espressif/esp-idf.git
+#   git -C esp-idf checkout db32f7de6368445b431361f30e72be38ba2994d3
+#   .\install.ps1 esp32
+#   . .\export.ps1

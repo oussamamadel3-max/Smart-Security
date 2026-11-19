@@ -22,7 +22,7 @@ typedef struct {
     siren_state_t siren_state;
     health_state_t health_state;
     bool has_current_alarm_event_uid;
-    uint32_t current_alarm_event_uid;
+    uuid128_t current_alarm_event_uid;
     uint64_t ownership_version;
     uint64_t confirmed_ownership_version; /* always == ownership_state.version; see ownership_state.h */
     bool clock_trusted;

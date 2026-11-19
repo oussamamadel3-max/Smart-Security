@@ -45,6 +45,13 @@ static bool fake_save(void *ctx_v, const char *key, const void *data, size_t siz
     if (entry == NULL) {
         return false;
     }
+    if (ctx->simulate_torn_write) {
+        size_t torn_size = size / 2;
+        memset(entry->data, 0, size);
+        memcpy(entry->data, data, torn_size);
+        entry->size = size; /* caller still expects to read back `size` bytes */
+        return true;        /* torn writes still "succeed" from the caller's point of view */
+    }
     memcpy(entry->data, data, size);
     entry->size = size;
     return true;

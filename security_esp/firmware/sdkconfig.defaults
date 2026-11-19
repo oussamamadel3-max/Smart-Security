@@ -1,0 +1,17 @@
+# ESP-C-02 — development/bench defaults ONLY. Not a production configuration.
+#
+# No Secure Boot / Flash Encryption / NVS Encryption flags here or anywhere
+# in this project — enabling those is a separate, explicit, reversibility-
+# reviewed decision per security_esp/docs/T-09-RECOVERY-AND-ACCEPTANCE.md,
+# never a default picked up silently by a dev build.
+#
+# D-01 board target: ESP32-WROOM-32 (proposed, not yet procurement-approved —
+# see security_esp/docs/HARDWARE-DECISIONS-D01-D07.md). If the approved board
+# changes, update this value and re-run `idf.py set-target`.
+CONFIG_IDF_TARGET="esp32"
+
+# Experimental connectivity (lab builds). No Secure Boot / Flash Encryption.
+CONFIG_ESP_WIFI_SOFTAP_SUPPORT=y
+CONFIG_LWIP_SNTP_MAX_SERVERS=1
+# Allow larger MQTT payloads for draft JSON messages.
+CONFIG_MQTT_BUFFER_SIZE=2048

@@ -43,7 +43,7 @@ typedef struct {
     remote_command_type_t type;
     esp_core_time_ms_t expires_at_ms;
     bool has_target_event;
-    uint32_t target_event_uid; /* required by schema when type == MUTE_ALARM */
+    uuid128_t target_event_uid; /* required by schema when type == MUTE_ALARM */
 } execute_command_t;
 
 typedef struct {

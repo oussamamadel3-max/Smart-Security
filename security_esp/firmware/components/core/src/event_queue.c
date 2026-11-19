@@ -11,7 +11,7 @@ bool event_queue_init(event_queue_t *queue, uint16_t capacity)
     return true;
 }
 
-bool event_queue_enqueue(event_queue_t *queue, uint32_t event_uid, bool alarm_phase_ended,
+bool event_queue_enqueue(event_queue_t *queue, uuid128_t event_uid, bool alarm_phase_ended,
                          esp_core_time_ms_t occurred_at_ms, bool was_buffered)
 {
     if (queue->count >= queue->capacity) {
@@ -35,11 +35,11 @@ bool event_queue_enqueue(event_queue_t *queue, uint32_t event_uid, bool alarm_ph
     return false;
 }
 
-bool event_queue_ack(event_queue_t *queue, uint32_t event_uid, bool alarm_phase_ended)
+bool event_queue_ack(event_queue_t *queue, uuid128_t event_uid, bool alarm_phase_ended)
 {
     for (uint16_t i = 0; i < queue->capacity; i++) {
         if (queue->slots[i].in_use &&
-            queue->slots[i].event_uid == event_uid &&
+            uuid128_equal(&queue->slots[i].event_uid, &event_uid) &&
             queue->slots[i].alarm_phase_ended == alarm_phase_ended) {
             queue->slots[i].in_use = false;
             queue->count--;

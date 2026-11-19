@@ -3,14 +3,18 @@
 
 bool protection_core_init(protection_core_t *core,
                           const alarm_detector_config_t *detector_config,
-                          uint32_t test_duration_ms)
+                          uint32_t test_duration_ms,
+                          uuid128_random_source_fn_t uuid_source,
+                          void *uuid_source_ctx)
 {
-    if (core == NULL) {
+    if (core == NULL || uuid_source == NULL) {
         return false;
     }
     memset(core, 0, sizeof(*core));
     core->arm_state = ARM_STATE_DISARMED;
     core->test_duration_ms = test_duration_ms;
+    core->uuid_source = uuid_source;
+    core->uuid_source_ctx = uuid_source_ctx;
     return alarm_detector_init(&core->detector, detector_config);
 }
 
@@ -32,7 +36,7 @@ void protection_core_on_sensor_pulse(protection_core_t *core, esp_core_time_ms_t
     alarm_detector_event_t ev = alarm_detector_on_pulse(&core->detector, now_ms);
     if (ev == ALARM_DETECTOR_EVENT_TRIGGERED) {
         core->current_event.is_active = true;
-        core->current_event.uid = ++core->next_event_uid;
+        core->current_event.uid = uuid128_generate_v4(core->uuid_source, core->uuid_source_ctx);
         core->current_event.started_at_ms = now_ms;
         core->muted = false;
         core->test_active = false; /* real alarm pre-empts an in-progress test */
@@ -50,12 +54,12 @@ void protection_core_tick(protection_core_t *core, esp_core_time_ms_t now_ms)
     }
 }
 
-protection_cmd_result_t protection_core_mute(protection_core_t *core, uint32_t target_event_uid)
+protection_cmd_result_t protection_core_mute(protection_core_t *core, uuid128_t target_event_uid)
 {
     if (!core->current_event.is_active) {
         return PROTECTION_CMD_REJECTED_MUTE_NO_ACTIVE_EVENT;
     }
-    if (core->current_event.uid != target_event_uid) {
+    if (!uuid128_equal(&core->current_event.uid, &target_event_uid)) {
         return PROTECTION_CMD_REJECTED_MUTE_EVENT_MISMATCH;
     }
     core->muted = true;

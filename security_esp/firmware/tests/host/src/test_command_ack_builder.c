@@ -4,10 +4,18 @@
 static protection_core_t core;
 static ownership_state_t ownership;
 
+static void fake_uuid_source(void *ctx, uint8_t *out, size_t len)
+{
+    (void)ctx;
+    for (size_t i = 0; i < len; i++) {
+        out[i] = (uint8_t)(i + 1);
+    }
+}
+
 void setUp(void)
 {
     alarm_detector_config_t cfg = { .pulses_to_qualify = 2, .window_ms = 1000, .cooldown_ms = 3000 };
-    protection_core_init(&core, &cfg, 30000);
+    protection_core_init(&core, &cfg, 30000, fake_uuid_source, NULL);
     ownership_state_init(&ownership);
     ownership_state_apply_sync(&ownership, 7, true);
 }
@@ -40,7 +48,7 @@ static void test_ack_reflects_active_alarm_event_uid(void)
 
     TEST_ASSERT_EQUAL(SIREN_STATE_ALARM, ack.siren_state);
     TEST_ASSERT_TRUE(ack.has_current_alarm_event_uid);
-    TEST_ASSERT_EQUAL(core.current_event.uid, ack.current_alarm_event_uid);
+    TEST_ASSERT_TRUE(uuid128_equal(&core.current_event.uid, &ack.current_alarm_event_uid));
 }
 
 static void test_rejected_ack_carries_reject_code(void)

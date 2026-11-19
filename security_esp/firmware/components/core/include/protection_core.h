@@ -2,7 +2,8 @@
  * T-03/T-04 — local protection state machine, siren priority rules, and the
  * five device commands (ARM, DISARM, MUTE_ALARM, TEST_SIREN, STOP_TEST).
  * Hardware/network independent: no GPIO, no MQTT, no persistence here (T-05
- * owns saving/restoring arm_state and the event-uid counter across reboot).
+ * owns saving/restoring arm_state across reboot; event UUIDs are generated
+ * fresh on each trigger and are not persisted — see uuid128.h).
  *
  * siren_state is a *derived* value (protection_core_siren_state), never stored
  * directly, so it can never drift out of sync with arm_state / current_event /
@@ -10,13 +11,14 @@
  * "real alarm preempts test" hold by construction instead of by scattered
  * special cases.
  *
- * ASSUMPTION flagged for SRS/integration confirmation: the contract text found
- * in this repo (docs/contracts/state-machines.md, esp-development-tasks.md)
- * does not spell out whether DISARM must clear current_alarm_event_uid. This
- * module keeps the event id alive across DISARM (only sirenState is forced
- * off) because event-lifecycle elsewhere in the contract is sensor-driven
- * ("نهاية الحادثة عند عودة الحساس للوضع الطبيعي"), not command-driven. Treat
- * this as a documented engineering interpretation, not an approved decision.
+ * Confirmed by the approved contract (was flagged as an engineering
+ * assumption pending confirmation; resolved on review): DISARM does not
+ * clear current_alarm_event_uid, only forces sirenState off. This matches
+ * docs/contracts/state-machines.md, which describes "السلوك المعتمد في SRS
+ * وخطة التطوير" (the approved behaviour, not a draft) and states plainly
+ * that an event only ends via a sensor-driven ALARM_EVENT/alarmPhase=ENDED
+ * report ("نهاية الحادثة... عندما يعود الحساس"), with no command-driven
+ * exception mentioned anywhere for DISARM or any other command.
  */
 #ifndef PROTECTION_CORE_H
 #define PROTECTION_CORE_H
@@ -43,16 +45,23 @@ typedef struct {
     bool test_active;
     esp_core_time_ms_t test_started_at_ms;
     uint32_t test_duration_ms;   /* D-03 reference value: 30000 ms; caller-configured, not hard-coded here */
-    uint32_t next_event_uid;     /* monotonic local counter; T-05 persists/restores this across reboot */
     alarm_detector_state_t detector;
+    uuid128_random_source_fn_t uuid_source; /* see protection_core_init */
+    void *uuid_source_ctx;
 } protection_core_t;
 
 /* arm_state starts DISARMED. test_duration_ms is the siren-test duration in
  * milliseconds (pass the D-03 reference 30000 for the current test-only
- * value). Returns false if detector_config is invalid (see alarm_detector_init). */
+ * value). uuid_source supplies raw random bytes for generating a fresh
+ * event UUID each time a new alarm is triggered (see uuid128.h) — pass the
+ * real hardware RNG (esp_fill_random) in production, a deterministic fake
+ * in tests; must not be NULL. Returns false if detector_config is invalid
+ * (see alarm_detector_init) or uuid_source is NULL. */
 bool protection_core_init(protection_core_t *core,
                           const alarm_detector_config_t *detector_config,
-                          uint32_t test_duration_ms);
+                          uint32_t test_duration_ms,
+                          uuid128_random_source_fn_t uuid_source,
+                          void *uuid_source_ctx);
 
 void protection_core_arm(protection_core_t *core);
 
@@ -67,7 +76,7 @@ void protection_core_on_sensor_pulse(protection_core_t *core, esp_core_time_ms_t
  * transitions. */
 void protection_core_tick(protection_core_t *core, esp_core_time_ms_t now_ms);
 
-protection_cmd_result_t protection_core_mute(protection_core_t *core, uint32_t target_event_uid);
+protection_cmd_result_t protection_core_mute(protection_core_t *core, uuid128_t target_event_uid);
 
 protection_cmd_result_t protection_core_start_test(protection_core_t *core, esp_core_time_ms_t now_ms);
 

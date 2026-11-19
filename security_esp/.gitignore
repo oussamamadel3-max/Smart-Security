@@ -1,0 +1,29 @@
+# ESP-IDF / firmware build outputs (never commit)
+firmware/build/
+firmware/sdkconfig
+firmware/sdkconfig.old
+firmware/dependencies.lock
+firmware/managed_components/
+
+# Host test binaries
+firmware/tests/host/build/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*.user
+
+# Local secrets / lab credentials (never commit)
+*.pem
+*.key
+secrets/
+.env
+.env.*
+
+# Optional: keep third_party sources local but allow lockfile
+# third_party/Unity/ and third_party/cJSON/ are fetched by tools/fetch_host_deps.sh
+# Uncomment the next two lines if you prefer NOT to commit vendored trees:
+# third_party/Unity/
+# third_party/cJSON/
+!third_party/HOST_DEPS.lock

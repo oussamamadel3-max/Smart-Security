@@ -67,6 +67,25 @@ static void test_batch_exhaustion_persists_a_new_ceiling(void)
     TEST_ASSERT_TRUE(rec.reserved_ceiling >= 4);
 }
 
+/* ESP-C-05 gap review item 5: if the ceiling write itself is torn, init()
+ * must not trust it — a corrupted ceiling record is treated the same as "no
+ * proven ceiling" (falls back to 0), never as a guessed high value that
+ * could skip or reuse real values incorrectly. See sequence_counter.h for
+ * why falling back to 0 is itself a flagged, not a "safe by definition",
+ * choice for a real deployment. */
+static void test_torn_ceiling_write_does_not_crash_or_silently_trust_garbage(void)
+{
+    fake_ctx.simulate_torn_write = true;
+    sequence_counter_t boot1;
+    sequence_counter_init(&boot1, &backend, 10); /* persists a torn ceiling record */
+    fake_ctx.simulate_torn_write = false;
+
+    sequence_counter_t boot2;
+    TEST_ASSERT_TRUE(sequence_counter_init(&boot2, &backend, 10));
+    uint64_t v = sequence_counter_next(&boot2);
+    TEST_ASSERT_EQUAL_UINT64(1, v); /* torn record rejected -> treated as no prior ceiling */
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -74,5 +93,6 @@ int main(void)
     RUN_TEST(test_values_strictly_increase_within_a_batch);
     RUN_TEST(test_resumes_after_reboot_without_reusing_values);
     RUN_TEST(test_batch_exhaustion_persists_a_new_ceiling);
+    RUN_TEST(test_torn_ceiling_write_does_not_crash_or_silently_trust_garbage);
     return UNITY_END();
 }

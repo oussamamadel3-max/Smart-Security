@@ -26,7 +26,7 @@ extern "C" {
 #define EVENT_QUEUE_MAX_CAPACITY 32
 
 typedef struct {
-    uint32_t event_uid;
+    uuid128_t event_uid;     /* matches alarm_event_id_t.uid / the backend's AlarmEvent.EventUid (Guid) */
     bool alarm_phase_ended;  /* false = ACTIVE, true = ENDED (docs/contracts/state-machines.md alarmPhase) */
     esp_core_time_ms_t occurred_at_ms;
     bool was_buffered;
@@ -47,14 +47,14 @@ bool event_queue_init(event_queue_t *queue, uint16_t capacity);
 /* Returns true if stored. Returns false and sets the loss flag (retrievable
  * via event_queue_consume_loss_flag) if the queue is already at capacity —
  * the record is dropped, nothing existing is evicted. */
-bool event_queue_enqueue(event_queue_t *queue, uint32_t event_uid, bool alarm_phase_ended,
+bool event_queue_enqueue(event_queue_t *queue, uuid128_t event_uid, bool alarm_phase_ended,
                          esp_core_time_ms_t occurred_at_ms, bool was_buffered);
 
 /* Removes the record matching (event_uid, alarm_phase_ended) once the backend
  * has confirmed EVENT_PERSISTED for that exact phase. Returns false if no
  * matching record is queued (e.g. already acked, or never buffered because it
  * was sent and acked in real time without ever needing this queue). */
-bool event_queue_ack(event_queue_t *queue, uint32_t event_uid, bool alarm_phase_ended);
+bool event_queue_ack(event_queue_t *queue, uuid128_t event_uid, bool alarm_phase_ended);
 
 /* Oldest not-yet-acked record, for the network layer to (re)attempt sending.
  * Returns false if the queue is empty. */

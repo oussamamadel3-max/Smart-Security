@@ -10,6 +10,18 @@
  * struct currently holds is what gets reported as confirmedOwnershipVersion
  * on every outgoing STATE/COMMAND_ACK (see command_ack_builder.h). Applying a
  * sync never arms or disarms the device ("الإقرار لا يسلّح الجهاز").
+ *
+ * Resolved (was ESP-C-05 gap review item 7, "استمرار اتساق الملكية وحالة
+ * الجهاز"): ownership_state is deliberately NOT persisted across reboot
+ * (unlike arm_state in persisted_state.h). This is not a gap — the
+ * approved development plan already specifies the recovery path:
+ * docs/خطة_تطوير_نظام_الأمان_الذكي_v1.0.md §4.4 / scenario "نقل الجهاز وهو
+ * غير متصل" states "تعاد OWNERSHIP_SYNC عند الاتصال" (OWNERSHIP_SYNC is
+ * re-sent on connection). So a rebooted/reconnected device reporting
+ * version=0/is_linked=false until it receives a fresh OWNERSHIP_SYNC is the
+ * intended behaviour, not a window of inconsistency this module needs to
+ * paper over by persisting a value it has no authority over in the first
+ * place.
  */
 #ifndef OWNERSHIP_STATE_H
 #define OWNERSHIP_STATE_H
