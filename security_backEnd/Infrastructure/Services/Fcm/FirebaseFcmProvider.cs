@@ -76,7 +76,10 @@ public sealed class FirebaseFcmProvider : IFcmProvider
         {
             MessagingErrorCode.Unregistered or MessagingErrorCode.SenderIdMismatch
                 => FcmSendResult.Failed(code.ToString()!, revokeToken: true),
-            MessagingErrorCode.InvalidArgument
+            // Permanent server/credential misconfiguration (e.g. invalid APNs
+            // certificate), not an invalid device token — never revoke a
+            // valid push token because of it (FCM-C-06).
+            MessagingErrorCode.InvalidArgument or MessagingErrorCode.ThirdPartyAuthError
                 => FcmSendResult.Failed(code.ToString()!, revokeToken: false),
             MessagingErrorCode.QuotaExceeded
                 or MessagingErrorCode.Unavailable

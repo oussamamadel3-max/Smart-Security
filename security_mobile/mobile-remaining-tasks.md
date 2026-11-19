@@ -6,8 +6,8 @@
 | # | العمل | السبب / الاعتماد | شرط القبول المستقبلي |
 |---|--------|------------------|----------------------|
 | R-01 | تهيئة Firebase Apps + APNs لكل flavor | **FCM-C-01 CLOSED** (Android projects/files) · iOS/APNs + اختبار استقبال حي ما زالا مؤجّلين — **لا إغلاق كامل لـ R-01** | iOS plists/APNs + رسالة اختبار على جهاز |
-| R-02 | استبدال `NoOpFcmMessaging` بتنفيذ SDK حي | يعتمد R-01 / **FCM-C-03** | token حقيقي · onTokenRefresh · إذن OS على جهاز |
-| R-03 | fg/bg/terminated + رسالة اختبار | جهاز Android حقيقي / **FCM-C-05** | دليل ميداني موثّق |
+| R-02 | استبدال `NoOpFcmMessaging` بتنفيذ SDK حي | **FCM-C-03/C-04 SOFTWARE COMPLETE** (`FirebaseFcmMessaging` + `PushTokenLifecycle` منفَّذان ومُختبَران بالكامل على Android منطقياً) — توكن حقيقي/onTokenRefresh/إذن OS على جهاز فعلي ما زالت **غير مُثبَتة** (لا جهاز، ولا بناء APK ناجح بعد — انظر `docs/fcm/fcm-remaining-tasks.md` FCM-R-01/R-06) — **لا إغلاق كامل لـ R-02** | token حقيقي · onTokenRefresh · إذن OS على جهاز |
+| R-03 | fg/bg/terminated + رسالة اختبار | **FCM-C-05 SOFTWARE COMPLETE** (عرض محلي + فتح إشعار مُنفَّذان ومُختبَران بـ test doubles؛ اكتُشف أن Backend يرسل Data Messages بحتة فعولِج ببنية `LocalNotificationsService`) — دليل ميداني حقيقي ما زال **غير مُثبَت** (لا جهاز — انظر FCM-R-07) — **لا إغلاق كامل لـ R-03** | دليل ميداني موثّق |
 | R-04 | بناء/اختبار iOS | مؤجّل بموافقة المالك | بناء iOS + APNs |
 | R-05 | soft-AP Wi-Fi فعلي بدل `UnavailableLocalProvisioningClient` | ESP-T-08 + إغلاق D-04 | عقد HTTP محلي + connected/failed/timeout من الجهاز |
 | R-06 | استمرار الإنذار المحلي أثناء تغيير الشبكة | عتاد ESP | اختبار ميداني |

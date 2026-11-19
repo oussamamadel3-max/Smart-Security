@@ -15,6 +15,16 @@ abstract class FcmMessagingPort {
 
   /// Request OS notification permission. Returns false when denied.
   Future<bool> requestPermission();
+
+  /// Messages received while the app is in the foreground
+  /// (`FirebaseMessaging.onMessage`) — FCM-C-05.
+  ///
+  /// Additive to the contract above (MOB-T-06): the port had no hook for
+  /// this case because `NoOpFcmMessaging` never received any message.
+  /// Required to display an in-app alert for a message, since Android does
+  /// not auto-show anything for a foreground data-only payload (see
+  /// `FcmPayloadBuilder` — identifiers only, no `notification` block).
+  Stream<Map<String, String>> get onForegroundMessage;
 }
 
 /// Default until Firebase client files exist for each flavor.
@@ -35,4 +45,7 @@ class NoOpFcmMessaging implements FcmMessagingPort {
 
   @override
   Future<bool> requestPermission() async => false;
+
+  @override
+  Stream<Map<String, String>> get onForegroundMessage => const Stream.empty();
 }

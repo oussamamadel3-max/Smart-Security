@@ -11,9 +11,10 @@ class HisnMobileApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Keep push lifecycle + notification-open coordinators alive.
+    // Keep push lifecycle + notification coordinators alive.
     ref.watch(pushTokenLifecycleProvider);
     ref.watch(notificationOpenCoordinatorProvider);
+    ref.watch(foregroundAlertCoordinatorProvider);
 
     final locale = ref.watch(localeProvider);
     final router = ref.watch(appRouterProvider);

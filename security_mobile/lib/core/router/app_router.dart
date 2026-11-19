@@ -19,6 +19,11 @@ import '../session/auth_session_state.dart';
 import 'app_routes.dart';
 import 'auth_guard.dart';
 
+/// Lets code outside the widget tree (e.g. a foreground FCM message handler
+/// — FCM-C-05) reach a `BuildContext` for a global SnackBar without each
+/// caller threading its own context through.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ValueNotifier<AuthSessionState>(
     ref.read(authSessionProvider),
@@ -29,6 +34,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   ref.onDispose(authListenable.dispose);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     refreshListenable: authListenable,
     redirect: (context, state) {

@@ -16,8 +16,13 @@ class PushTokensRepositoryImpl implements PushTokensRepository {
     required String token,
     required String platform,
   }) async {
-    final result = await _remote.register(
-      RegisterPushTokenRequestDto(token: token, platform: platform),
+    // Safe to retry on network/timeout/server failures: Backend
+    // RegisterOrUpdateAsync is keyed by token fingerprint (upsert), so a
+    // repeated call with the same token+user never creates a duplicate row.
+    final result = await executeWithRetry(
+      () => _remote.register(
+        RegisterPushTokenRequestDto(token: token, platform: platform),
+      ),
     );
     return switch (result) {
       Failure_(:final failure) => Failure_(failure),
@@ -31,12 +36,20 @@ class PushTokensRepositoryImpl implements PushTokensRepository {
   @override
   Future<Result<void>> revokeStoredOrAll() async {
     final storedId = await _idStore.read();
+    // Safe to retry: Backend RevokeAsync/RevokeAllActiveAsync only set
+    // revokedAt when still null, so a repeated call is a no-op, not a
+    // duplicate side effect.
     final result = storedId != null && storedId.isNotEmpty
-        ? await _remote.revokeById(storedId)
-        : await _remote.revokeAll();
-    await _idStore.clear();
+        ? await executeWithRetry(() => _remote.revokeById(storedId))
+        : await executeWithRetry(_remote.revokeAll);
     return switch (result) {
-      Success() => const Success<void>(null),
+      Success() => () async {
+          // Only clear the locally stored id once the server confirms the
+          // revoke — never claim revocation happened (and never orphan the
+          // id) when a network interruption made it uncertain.
+          await _idStore.clear();
+          return const Success<void>(null);
+        }(),
       Failure_(:final failure) => Failure_<void>(failure),
     };
   }

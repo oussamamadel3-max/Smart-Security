@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Runtime notification permission on Android 13+ (API 33), requested via
+         FirebaseMessaging.requestPermission() in FirebaseFcmMessaging — FCM-C-03/C-04. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="security_mobile"
         android:name="${applicationName}"

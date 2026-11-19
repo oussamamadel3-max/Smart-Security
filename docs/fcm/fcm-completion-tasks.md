@@ -19,17 +19,17 @@
 
 ## تتبّع
 
-**عدّاد مرحلة FCM (مستقل): 1 / 7** — لا يُضاف إلى عدّاد النظام الرسمي 21/50.
+**عدّاد مرحلة FCM (مستقل): 2 / 7** — لا يُضاف إلى عدّاد النظام الرسمي 21/50.
 
 | مهمة | العنوان | الحالة |
 |------|---------|--------|
 | FCM-C-01 | مشاريع Firebase وبيئات التشغيل | **CLOSED** 2026-11-19 — `docs/reports/fcm/FCM-C-01-report.md` |
-| FCM-C-02 | تفعيل `FirebaseFcmProvider` في Backend | **READY TO CLOSE** — `FCM-C-02-report.md` + `FCM-C-02-supplement-report.md` · البطاقة `[ ]` حتى موافقة المالك |
-| FCM-C-03 | Firebase SDK في Flutter بدل NoOp | لم تبدأ |
-| FCM-C-04 | دورة حياة Token وربط الخادم | لم تبدأ |
-| FCM-C-05 | Foreground / Background / Terminated | لم تبدأ |
-| FCM-C-06 | أمان ومناولة أخطاء الإرسال | لم تبدأ |
-| FCM-C-07 | اختبارات وتوثيق وقبول نهائي | لم تبدأ |
+| FCM-C-02 | تفعيل `FirebaseFcmProvider` في Backend | **CLOSED** 2026-11-19 بموافقة `APPROVE TASK CLOSURE: FCM-C-02` — `FCM-C-02-report.md` + `FCM-C-02-supplement-report.md` |
+| FCM-C-03 | Firebase SDK في Flutter بدل NoOp | **SOFTWARE COMPLETE — BUILD VERIFICATION PENDING** (شبكة ضعيفة لدى المالك أثناء الجلسة؛ مؤجَّل بطلبه) — `docs/reports/fcm/FCM-C-03-report.md` |
+| FCM-C-04 | دورة حياة Token وربط الخادم | **SOFTWARE COMPLETE** — `docs/reports/fcm/FCM-C-04-report.md` · البطاقة `[ ]` حتى موافقة المالك (توكن حقيقي على جهاز مؤجَّل) |
+| FCM-C-05 | Foreground / Background / Terminated | **SOFTWARE COMPLETE** — `docs/reports/fcm/FCM-C-05-report.md` · البطاقة `[ ]` حتى موافقة المالك (اختبار جهاز حقيقي مؤجَّل) |
+| FCM-C-06 | أمان ومناولة أخطاء الإرسال | **SOFTWARE COMPLETE** — `docs/reports/fcm/FCM-C-06-report.md` · البطاقة `[ ]` حتى موافقة المالك |
+| FCM-C-07 | اختبارات وتوثيق وقبول نهائي | **SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING** — `docs/reports/fcm/FCM-C-07-report.md` + `docs/reports/fcm/FCM-FINAL-REPORT.md` · البطاقة `[ ]` حتى موافقة المالك |
 
 ---
 
@@ -59,7 +59,7 @@
 
 ## FCM-C-02 — استكمال تفعيل FirebaseFcmProvider في Backend
 
-- [ ] الحالة: تنفيذ + استكمال عزل DB 2026-11-19 — **READY TO CLOSE** بانتظار `APPROVE TASK CLOSURE: FCM-C-02`
+- [x] الحالة: **CLOSED** 2026-11-19 بموافقة `APPROVE TASK CLOSURE: FCM-C-02`
 - **الهدف:** تشغيل مسار الإرسال الحقيقي عبر ADC لمزوّد Firebase مع الإبقاء على Fake للاختبارات الآلية.
 - **النطاق:** إعداد بيئة تشغيل Backend (User Secrets / env) · التحقق من تسجيل المزوّد · تفعيل منضبط لـ`Fcm:Enabled`/`Fcm:Provider` في بيئة غير اختبار وحدة فقط بعد تفويض · قاعدة `esp32_security_fcm_dev`.
 - **خارج النطاق:** تغيير عقد الحمولة · إعادة بناء Fake · Flutter SDK · إرسال حي بـ token جهاز.
@@ -77,7 +77,7 @@
 
 ## FCM-C-03 — ربط Firebase SDK بتطبيق Flutter واستبدال NoOpFcmMessaging
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: **SOFTWARE COMPLETE — BUILD VERIFICATION PENDING** — الكود والاختبارات مكتملة ومُحقَّقة؛ تحقق بناء APK لكل flavor مؤجَّل بطلب المالك بسبب شبكة ضعيفة أثناء الجلسة (انظر `docs/reports/fcm/FCM-C-03-report.md`). البطاقة `[ ]` حتى اكتمال شرط القبول الخاص بالبناء وموافقة المالك.
 - **الهدف:** تفعيل عميل Firebase Messaging لكل Android flavor مع تنفيذ حقيقي لـ`FcmMessagingPort`.
 - **النطاق:** إضافة حزم FlutterFire · تطبيق google-services Gradle plugin · تنفيذ port بدل `NoOpFcmMessaging` · flavors فقط.
 - **خارج النطاق:** iOS/APNs · تفعيل Backend الحي (إن لم يُفوَّض) · إعادة كتابة HTTP push-tokens.
@@ -94,7 +94,7 @@
 
 ## FCM-C-04 — استكمال دورة حياة FCM Token وربطه بالخادم
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: **SOFTWARE COMPLETE** — انظر `docs/reports/fcm/FCM-C-04-report.md`. اكتُشفت وعُولجت فجوة سباق حقيقية (نتيجة تسجيل متأخرة بعد تبديل حساب قد تُبقي توكن المستخدم الحالي الفعلي غير مُبطَل)، وأُضيفت إعادة محاولة شبكية (السياسة الحالية `executeWithRetry`) وحماية من ادّعاء إبطال لم يحدث. توكن حقيقي على جهاز غير متاح ضمن قيود المرحلة. البطاقة `[ ]` حتى موافقة المالك.
 - **الهدف:** تسجيل/تحديث/إبطال الرمز الحقيقي عبر API الموجود عند الدخول والخروج وتبديل الحساب و`onTokenRefresh`.
 - **النطاق:** تفعيل `PushTokenLifecycle` مع token حقيقي · أذونات OS · عدم تخزين أسرار.
 - **خارج النطاق:** تغيير عقد Backend push-tokens · سيناريوهات fg/bg التفصيلية (C-05).
@@ -111,7 +111,7 @@
 
 ## FCM-C-05 — معالجة الإشعارات في حالات Foreground وBackground وTerminated
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: **SOFTWARE COMPLETE** — انظر `docs/reports/fcm/FCM-C-05-report.md`. اكتُشفت فجوة جوهرية: Backend يرسل Data Messages بحتة (لا `notification` block) فلا يعرض Android أي شيء تلقائياً في أي حالة، ومسارات `FcmMessagingPort` الأصلية لفتح الإشعار لن تُستدعى عملياً بهذا الشكل — عولجت بإضافة `flutter_local_notifications` + توسيع إضافي للعقد (`onForegroundMessage`) + حارس جاهزية Bootstrap + منع فتح مكرر. اختبار جهاز حقيقي غير متاح ضمن قيود المرحلة. البطاقة `[ ]` حتى موافقة المالك.
 - **الهدف:** استقبال النقر/الفتح في الحالات الثلاث وفتح التفاصيل عبر API بالمعرّفات فقط.
 - **النطاق:** handlers للمنصّة · الربط بـ`OpenNotificationUseCase` الموجود · بلا بيانات حسّاسة على شاشة القفل.
 - **خارج النطاق:** إعادة تصميم صندوق الإشعارات · قبول iOS.
@@ -127,7 +127,7 @@
 
 ## FCM-C-06 — مراجعة الأمان ومعالجة أخطاء الإرسال
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: **SOFTWARE COMPLETE** — انظر `docs/reports/fcm/FCM-C-06-report.md`. مراجعة شاملة لم تكشف فجوات حرجة جديدة في Mobile؛ وجدت وأصلحت فجوة تصنيف خطأ واحدة حقيقية في Backend (`ThirdPartyAuthError` كان يُعامَل كقابل لإعادة المحاولة بدل فشل دائم). بناء + Application.Tests (114/114) ناجحان بعد الإصلاح. البطاقة `[ ]` حتى موافقة المالك.
 - **الهدف:** ضمان عدم تسرّب الأسرار ومناولة أخطاء FCM (إبطال الرمز غير الصالح، إعادة المحاولة المؤقتة، عدم اعتبار القبول «مقروءاً»).
 - **النطاق:** مراجعة Backend provider mapping · عميل Flutter · `.gitignore` · سجلات بلا token خام.
 - **خارج النطاق:** تغيير SRS · نشر إنتاج.
@@ -143,7 +143,7 @@
 
 ## FCM-C-07 — الاختبارات والتوثيق والقبول النهائي
 
-- [ ] الحالة: لم تبدأ
+- [ ] الحالة: **SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING** — انظر `docs/reports/fcm/FCM-C-07-report.md` والتقرير النهائي `docs/reports/fcm/FCM-FINAL-REPORT.md`. تجميع كامل للأدلة: Backend (build + 114 + 161/21 skip) وMobile (analyze 0 + 76 اختباراً) بلا تراجع عن أي مرحلة سابقة. بناء APK لم يكتمل (شبكة). البطاقة `[ ]` حتى موافقة المالك.
 - **الهدف:** قبول مرحلة الاستكمال مع تمييز المثبت عن المؤجّل (iOS/ميداني/إنتاج).
 - **النطاق:** مصفوفة اختبار · تحديث التقارير · ربط R-01…R-03 · حكم نهائي صريح.
 - **خارج النطاق:** إعلان PRODUCTION READY دون أدلة حية مطلوبة.

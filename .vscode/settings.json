@@ -1,4 +1,5 @@
 {
   "java.configuration.updateBuildConfiguration": "interactive",
-  "cmake.sourceDirectory": "C:/Users/Osama/Desktop/SmartSecurity/security_esp/firmware"
+  "cmake.sourceDirectory": "C:/Users/Osama/Desktop/SmartSecurity/security_esp/firmware",
+  "java.compile.nullAnalysis.mode": "automatic"
 }
