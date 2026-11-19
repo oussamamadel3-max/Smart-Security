@@ -31,7 +31,7 @@
 
 ## T-03 نواة firmware والحماية المحلية
 
-- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف فقط، 21 اختبار Unity على المضيف، 0 فشل — `firmware/components/core/{alarm_detector,protection_core}.*`). `BLOCKED BY HARDWARE` للقبول الكامل (لا اختبار على جهاز حقيقي). التفصيل: `docs/reports/esp/ESP-T-03-report.md`.
+- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف، 21 اختبار Unity على المضيف، 0 فشل — `firmware/components/core/{alarm_detector,protection_core}.*`). **ESP-C-03:** مربوط فعلياً بـGPIO حقيقي عبر `components/port_esp32/sensor_siren_port.*`، و`idf.py build` الكامل نجح (صفر تحذيرات). `BLOCKED BY HARDWARE` للقبول الكامل فقط (لا اختبار على جهاز حقيقي، لا `idf.py flash`). التفصيل: `docs/reports/esp/ESP-T-03-report.md` و`docs/reports/esp/ESP-C-03-report.md`.
 - SRS: `FR-019` `FR-020` `FR-011` (جانب الجهاز)، و`BR-012` `BR-013`، و`NFR-001`
 - تعتمد على: `T-02` و`D-02`
 - المطلوب: تقسيم firmware (إدخال حساس، آلة حماية، صفارة، تخزين، شبكة، MQTT، تشخيص)؛ قراءة SW-420 ومنع حادثة لكل نبضة؛ معرف حادثة ثابت حتى عودة الحساس؛ إنذار محلي دون شبكة عند ARMED.
@@ -43,7 +43,7 @@
 
 ## T-04 الأوامر المحلية الخمس وأولوية الإنذار
 
-- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف ضمن `protection_core`، مشترك مع T-03؛ AC-T-18/AC-T-22 مُثبَتان على مستوى منطقي). `BLOCKED BY HARDWARE` للقبول الكامل. افتراض هندسي موسوم بشأن تفاعل DISARM مع حادثة جارية يحتاج تأكيد SRS — التفصيل: `docs/reports/esp/ESP-T-04-report.md`.
+- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف ضمن `protection_core`، مشترك مع T-03؛ AC-T-18/AC-T-22 مُثبَتان على مستوى منطقي). `BLOCKED BY HARDWARE` للقبول الكامل. تفاعل DISARM مع حادثة جارية **مؤكَّد (ESP-C-05)** بنص `docs/contracts/state-machines.md` المعتمد، لم يبق افتراضاً — التفصيل: `docs/reports/esp/ESP-T-04-report.md` و`docs/reports/esp/ESP-C-05-report.md`.
 - SRS: `FR-010`…`FR-013` (تنفيذ الجهاز)، و`BR-008` `BR-009` `BR-011`
 - تعتمد على: `T-03`
 - المطلوب: تنفيذ ARM, DISARM, MUTE_ALARM, TEST_SIREN, STOP_TEST؛ الكتم يوقف صوت الحادثة الجارية فقط إن طابق `targetAlarmEventUid`؛ الاختبار لمدة معتمدة ثم إيقاف محلي؛ رفض الاختبار أثناء إنذار؛ أولوية الإنذار الحقيقي إن بدأ أثناء الاختبار؛ الإبقاء على `current_alarm_event_uid` بعد الكتم حتى عودة الحساس.
@@ -55,7 +55,7 @@
 
 ## T-05 التخزين غير المتطاير وطابور الأحداث
 
-- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف فوق واجهة تخزين مجردة، 14 اختبار Unity، 0 فشل — `firmware/components/core/{persisted_state,sequence_counter,event_queue}.*`). لا NVS حقيقي، لا اختبار انقطاع طاقة فعلي. التفصيل: `docs/reports/esp/ESP-T-05-report.md`.
+- [ ] الحالة: `SOFTWARE COMPLETE` (منطق صِرف فوق واجهة تخزين مجردة، 14 اختبار Unity، 0 فشل — `firmware/components/core/{persisted_state,sequence_counter,event_queue}.*`). **ESP-C-03:** `components/port_esp32/nvs_storage_backend.*` يطبّق الواجهة فوق NVS حقيقي، و`main/app_main.c` يستدعي `nvs_flash_init`/`persisted_state_load` فعلياً عند الإقلاع — مبنيان بنجاح تحت `idf.py build`. لا اختبار انقطاع طاقة فعلي على عتاد حقيقي. التفصيل: `docs/reports/esp/ESP-T-05-report.md` و`docs/reports/esp/ESP-C-03-report.md`.
 - SRS: `FR-021` `FR-029`، و`BR-014` `BR-018`، و`NFR-005`
 - تعتمد على: `T-03` و`D-03` (سعة معتمدة أو حد اختبار موثّق)
 - المطلوب: حفظ آخر إعداد حماية مؤكد؛ طابور أحداث محدود مع حيز مستقل/محجوز لعلامة الفقد؛ وسم wasBuffered عند الإعادة؛ لا حذف حدث قبل EVENT_PERSISTED؛ بعد إعادة التشغيل استعادة الحماية المؤكدة أو الإبلاغ عن `UNKNOWN` إن تلف الإعداد، **مع سياسة محلية آمنة منفصلة معتمدة في G0** تحدد فعل الجهاز والصفارة حين لا تُعرف حالة الحماية؛ لا يُستنتج من UNKNOWN وحده أنه ARM أو DISARM؛ رفض الأوامر القديمة.
@@ -68,7 +68,7 @@
 
 ## T-06 الشبكة وMQTT وعزل القنوات
 
-- [ ] الحالة: `BLOCKED BY EXTERNAL DEPENDENCY` — لا كود مُنفَّذ؛ يتطلب ESP-IDF (`esp_wifi`/`esp_mqtt`/mbedTLS) غير المتوفر في هذه البيئة. التفصيل: `docs/reports/esp/ESP-T-06-report.md`.
+- [ ] الحالة: كود تجريبي `SOFTWARE COMPLETE` في `firmware/components/connectivity/` (Wi-Fi/MQTT/SNTP/Identity/SoftAP/orchestrator) مربوط من `app_main` ومبني بـ`idf.py build` (2026-11-19). **قبول عزل القنوات (`AC-T-11`) وWi-Fi/MQTT الحي:** `BLOCKED BY HARDWARE`. G1 غير معتمد. التفصيل: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`.
 - SRS: `FR-034` `FR-027` (نبضات الجهاز)، و`BR-003` `BR-020`، و`NFR-002` `NFR-004`
 - تعتمد على: `T-05` و`D-04` ومسودة عقد MQTT من `integration` للتطوير التجريبي؛ **اعتماد G1 النهائي شرط إغلاق المسار الإنتاجي**
 - المطلوب: Wi-Fi عند التركيب؛ MQTT عبر TLS وهوية مستقلة؛ نشر state/events/acks فقط؛ الاشتراك في قناة الأوامر الواردة الخاصة بالجهاز؛ إعادة الاتصال وإعادة إرسال الحالة والأحداث غير المؤكدة؛ QoS وفق العقد (1 للأوامر/الأحداث/ACK، 0 للنبضات الدورية)؛ لا retained لأوامر لحظية.
@@ -80,7 +80,7 @@
 
 ## T-07 تنفيذ الأوامر البعيدة والتأكيد والملكية
 
-- [ ] الحالة: منطق داخلي صِرف (تحقق الأمر + OWNERSHIP_SYNC + بناء COMMAND_ACK): `SOFTWARE COMPLETE` (15 اختبار Unity، 0 فشل). المهمة الأصلية: `BLOCKED BY EXTERNAL DEPENDENCY` (JSON/نقل MQTT/G1 متروكة عمداً معلّقة). التفصيل: `docs/reports/esp/ESP-T-07-report.md`.
+- [ ] الحالة: منطق + JSON + استقبال/تنفيذ/ACK عبر `conn_orchestrator` `SOFTWARE COMPLETE` برمجياً (مسودة v1). **قبول حي وترتيب STATE/ACK على وسيط حقيقي + اعتماد G1:** معلّق. لا `[x]` رسمي. التفصيل: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`.
 - SRS: `FR-014` `FR-015` `FR-017` `FR-035`، و`BR-007` `BR-011` `BR-015`، و`D-09`
 - تعتمد على: `T-06` وعقد `G1` مع أمثلة JSON
 - المطلوب: التحقق من commandId والتسلسل وownershipVersion وexpiresAt؛ تنفيذ مرة واحدة؛ رفض القديم/المنتهي/مجهول الصلاحية إن لم يثبت الوقت؛ استقبال OWNERSHIP_SYNC وإقرار confirmedOwnershipVersion حتى عند isLinked=false؛ إرسال `COMMAND_ACK` يحمل **الحالة الفعلية الكاملة بعد معالجة الأمر مع `resultStateSequence`** وفق قرار `D-09` على مستوى المتطلبات؛ تبقى أسماء الحقول الدقيقة وترتيب وصول `STATE` قبل/بعد ACK واختبارات التوافق رهناً بعقد G1. لا يعني ACK الوسيط تنفيذ الأمر.
@@ -92,7 +92,7 @@
 
 ## T-08 التشخيص والطاقة وWi-Fi المحلي
 
-- [ ] الحالة: منطق تشخيص UNKNOWN-بلا-قياس: `SOFTWARE COMPLETE` (3 اختبارات Unity، 0 فشل). مسار تهيئة Wi-Fi المحلي: `BLOCKED BY EXTERNAL DEPENDENCY` (يتطلب `esp_wifi`). التفصيل: `docs/reports/esp/ESP-T-08-report.md`.
+- [ ] الحالة: تشخيص UNKNOWN `SOFTWARE COMPLETE`؛ SoftAP provisioning التجريبي منفَّذ في `wifi_provisioning_ap` (يرفض أوامر الحماية صراحةً) ومبني. **تحقق ميداني/تكامل موبايل:** `BLOCKED BY HARDWARE`. التفصيل: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`.
 - SRS: `FR-025` `FR-028` `FR-031` `FR-036`، و`BR-017`
 - تعتمد على: `T-06`؛ إجراء فتح التهيئة مع التطبيق (`security_mobile`)
 - المطلوب: إرسال تشخيص/جهد فقط عند وجود دائرة قياس؛ وإلا UNKNOWN؛ لا افتراض صوت الصفارة من نجاح GPIO؛ مسار تهيئة Wi-Fi محلي مؤقت محمي (رمز/إجراء/مهلة وفق `D-04`) للفني ثم للمالك ACTIVE؛ إغلاق بعد نجاح أو مهلة؛ لا أوامر ARM/DISARM عبر مسار التهيئة؛ لا تخزين كلمة مرور الشبكة في الخادم أو السجلات. إذا استلزم v1 تحديث إعدادات تشغيل الجهاز، فعقد `SETTINGS_SYNC` يخضع لـ G1 وهو مختلف عن OTA المؤجل.

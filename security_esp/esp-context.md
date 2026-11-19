@@ -1,6 +1,6 @@
 # سياق المشروع — ESP والعتاد (`security_esp`)
 
-آخر تحديث: 2026-11-04  
+آخر تحديث: 2026-11-19  
 السياق العام: [`../system-context.md`](../system-context.md) · التقدّم: [`esp-progress.md`](./esp-progress.md)
 
 ## الهوية
@@ -9,7 +9,7 @@
 |--------|--------|
 | المسؤولية | عتاد + firmware ESP32: إنذار محلي، أوامر على الجهاز، MQTT، تخزين أحداث، Wi-Fi محلي |
 | التقنية | ESP-IDF (مخطط) · SW-420 · صفارة · بطارية 12V عبر منظم/حماية |
-| مسار العمل | `security_esp/` — تخطيط + `firmware/components/core` (منطق صِرف مُختبَر على المضيف، لا منفذ ESP-IDF حقيقي بعد) |
+| مسار العمل | `security_esp/` — تخطيط + `firmware/` (core/wire_json/port_esp32/connectivity/main) مبني بـESP-IDF v5.3.6 — لا عتاد حي مُختبَر، لا `idf.py flash` |
 | لا يملك | API خادم · Flutter · Compose/VPS · اعتماد G1/G2 الرسمي |
 
 ## مبادئ ملزمة
@@ -47,15 +47,15 @@
 |------|---------|--------|
 | T-01 | قرارات العتاد وبوابة G0 | مسودة كاملة، بانتظار موافقة المالك على G0 |
 | T-02 | دائرة الطاولة والسلامة الكهربائية | `BLOCKED BY HARDWARE` — خطط جاهزة، لا تنفيذ |
-| T-03 | نواة firmware والحماية المحلية | `SOFTWARE COMPLETE` (منطق صِرف، مُختبَر على المضيف) |
+| T-03 | نواة firmware والحماية المحلية | `SOFTWARE COMPLETE` + مربوطة بـGPIO حقيقي (`port_esp32`)، مبنية فعلياً |
 | T-04 | الأوامر المحلية الخمس وأولوية الإنذار | `SOFTWARE COMPLETE` (منطق صِرف، مُختبَر على المضيف) |
-| T-05 | التخزين غير المتطاير وطابور الأحداث | `SOFTWARE COMPLETE` (منطق صِرف، مُختبَر على المضيف) |
-| T-06 | الشبكة وMQTT وعزل القنوات | `BLOCKED BY EXTERNAL DEPENDENCY` — لا ESP-IDF |
-| T-07 | تنفيذ الأوامر البعيدة والتأكيد والملكية | منطق داخلي `SOFTWARE COMPLETE`؛ JSON/نقل `BLOCKED` (G1 + ESP-IDF) |
-| T-08 | التشخيص والطاقة وWi-Fi المحلي | تشخيص UNKNOWN `SOFTWARE COMPLETE`؛ AP `BLOCKED` (ESP-IDF) |
-| T-09 | الاسترداد الميداني والتحديث وقبول العتاد | `BLOCKED BY HARDWARE`/`EXTERNAL DEPENDENCY` — مراجعة تخطيطية فقط |
+| T-05 | التخزين غير المتطاير وطابور الأحداث | `SOFTWARE COMPLETE` + مربوطة بـNVS حقيقي (`port_esp32`)، مبنية فعلياً |
+| T-06 | الشبكة وMQTT وعزل القنوات | كود تجريبي `SOFTWARE COMPLETE` (`connectivity`) ومبني؛ قبول عزل القنوات `BLOCKED BY HARDWARE` + G1 |
+| T-07 | تنفيذ الأوامر البعيدة والتأكيد والملكية | منطق + JSON + orchestrator يستقبل/ينفّذ/يرسل ACK؛ قبول حي/G1 معلّق |
+| T-08 | التشخيص والطاقة وWi-Fi المحلي | تشخيص UNKNOWN + SoftAP provisioning برمجي؛ تحقق ميداني معلّق |
+| T-09 | الاسترداد الميداني والتحديث وقبول العتاد | `BLOCKED BY HARDWARE` — مراجعة تخطيطية فقط |
 
-**ملخص:** 0/9 مكتملة رسمياً (`[x]`، قبول عتاد حقيقي) · 5/9 بلغت `SOFTWARE COMPLETE` كلياً أو جزئياً (T-03…T-05، T-07، T-08) · التفاصيل والاعتماديات: [`ESP-REMAINING-WORK.md`](./ESP-REMAINING-WORK.md)
+**ملخص:** 0/9 مكتملة رسمياً (`[x]`) · الاستكمال البرمجي ESP-C 6/6 · طبقة اتصال تجريبية مربوطة ومبنية · التفاصيل: [`ESP-REMAINING-WORK.md`](./ESP-REMAINING-WORK.md)
 
 ## قرار عقد 2026-11-16 — للتنفيذ اللاحق على العتاد، لا في هذه الجولة
 
@@ -79,7 +79,7 @@
 ## ما أُنجز فعلياً (حتى الآن)
 
 - وثائق التخطيط (كما كانت) + سجل قرارات D-01…D-07 ومسودة G0 (T-01) + خطط T-02.
-- `firmware/components/core/`: منطق firmware مستقل عن العتاد (حماية/حساس/أوامر/تخزين/أمر بعيد/تشخيص) — **لا دائرة طاولة فعلية، لا منفذ ESP-IDF حقيقي بعد**. 53 اختبار Unity على المضيف (`firmware/tests/host/`)، 0 فشل، لكن هذا تحقق منطقي لا تحقق عتاد. التفاصيل الكاملة في `ESP-REMAINING-WORK.md` وتقارير `docs/reports/esp/`.
+- `firmware/components/{core,wire_json,port_esp32}/` + `main/`: مشروع ESP-IDF كامل يُبنى فعلياً (`idf.py build`، بناء نظيف كامل 1000/1000 خطوة، صفر تحذيرات/أخطاء). `port_esp32` يربط NVS/RNG/GPIO حقيقيين. **لا دائرة طاولة فعلية، لا `idf.py flash`، لا اختبار عتاد حقيقي بعد.** 83 اختبار Unity على المضيف (`firmware/tests/host/`)، 0 فشل — تحقق منطقي، لا تحقق عتاد. التفاصيل الكاملة في `ESP-REMAINING-WORK.md` وتقارير `docs/reports/esp/`.
 
 ## قواعد تحديث هذا الملف
 

@@ -28,7 +28,7 @@
 | مجلد | الدور | سياق | تقدّم | مهمة جارية | عدّ |
 |-------|--------|-------|--------|------------|-----|
 | `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-05** التالية (T-04 ✓·T-09 ✓ Fake؛ G1/Mosquitto/FCM إنتاجي غير منجزين) | 5/13 |
-| `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | T-01 مسودة G0 بانتظار المالك؛ T-03…T-05+جزء T-07/T-08 `SOFTWARE COMPLETE` (منطق صِرف، 53 اختبار مضيف)؛ T-02/T-06/T-09 `BLOCKED` (لا عتاد/ESP-IDF) | 0/9 |
+| `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | T-01 G0 بانتظار المالك؛ ESP-C 6/6؛ طبقة `connectivity` تجريبية مبنية (100 host tests؛ idf 1018/1018)؛ قبول عتاد/G1 معلّق؛ لا flash | 0/9 |
 | `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي · يستهلك `packages/smart_security_app_core` | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | تسلسل T-01…T-08 مكتمل (عميل؛ ميداني مؤجّل) | 8/8 |
 | `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | لا تالية. T-01…T-08 وWEB-C-01…C-06 مغلقة (عميل/استكمال). الحي وWEB-EXT-08 معلّقان. ليست جاهزية إنتاج | 8/8 |
 | `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | **T-01** مسودة عقد MQTT | 0/6 |

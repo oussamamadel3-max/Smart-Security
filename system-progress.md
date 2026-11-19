@@ -1,6 +1,6 @@
 # التقدّم العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-18  
+آخر تحديث: 2026-11-19  
 السياق العام: [`system-context.md`](./system-context.md)
 
 ## توضيح التسميات (ملفات التخطيط)
@@ -34,7 +34,7 @@
 | مشروع | ملف التقدّم | مكتمل / الكل | الجارية | النسبة |
 |--------|-------------|--------------|---------|--------|
 | باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | التالية T-05 (لم تُبدأ؛ T-09 ✓) | ~38% |
-| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · 5/9 `SOFTWARE COMPLETE` كلياً/جزئياً | T-01 بانتظار المالك؛ T-02/T-06/T-09 `BLOCKED` | 0% رسمياً |
+| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · ESP-C 6/6 · connectivity تجريبي مبني (100 host tests؛ idf build 1018/1018) | T-01 بانتظار المالك؛ قبول العتاد/G1 معلّق | 0% رسمياً |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 8 / 8 | تسلسل عميل مكتمل | 100% |
 | ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C مغلق خارج العدّاد. الحي وEXT-08 معلّقان | 8/8 بطاقات؛ ليست جاهزية إنتاج |
 | تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |
@@ -65,6 +65,7 @@
 | 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-07** (سجل إدارة وتنبيه إداري؛ test 76/76؛ `flutter build web --release`). تسليم FCM الحي **NOT VERIFIED / BLOCKED**. زُامن عدّ T-06 الذي كان مغلقاً في قائمة المهام. التالية **WEB-T-08**. |
 | 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-08** (مجموعة قبول العميل؛ test 80/80؛ `flutter analyze` نظيف؛ `flutter build web --release`). CSRF/Origin الحي وG1/ACK ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي **BLOCKED / NOT VERIFIED**. لا مهمة ويب تالية داخل التسلسل. التقرير: `docs/reports/web/WEB-FINAL-REPORT.md`. |
 | 2026-11-18 | `admin_web` | إغلاق استكمال **WEB-C-01…C-06** خارج 21/50 (إعادة تحقق C-06: test 121/121). الحكم SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. ليست جاهزية إنتاج. التقرير: `docs/reports/web/completion/WEB-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
+| 2026-11-19 | `security_esp` | إغلاق فجوات **ESP-C-03…C-06** (إعادة فتح ثم إغلاق ذاتي): طبقة `connectivity` + ربط `app_main`؛ host **100/100**؛ `idf.py fullclean/build` **1018/1018**؛ bin `0xea740`. لا flash ولا اختبار شبكة حي. العدّاد الرسمي 0/9 بلا تغيير. التقرير: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
 
 ## التالي على مستوى النظام
 
