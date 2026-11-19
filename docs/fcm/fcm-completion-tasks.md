@@ -77,7 +77,7 @@
 
 ## FCM-C-03 — ربط Firebase SDK بتطبيق Flutter واستبدال NoOpFcmMessaging
 
-- [ ] الحالة: **SOFTWARE COMPLETE — BUILD VERIFICATION PENDING** — الكود والاختبارات مكتملة ومُحقَّقة؛ تحقق بناء APK لكل flavor مؤجَّل بطلب المالك بسبب شبكة ضعيفة أثناء الجلسة (انظر `docs/reports/fcm/FCM-C-03-report.md`). البطاقة `[ ]` حتى اكتمال شرط القبول الخاص بالبناء وموافقة المالك.
+- [ ] الحالة: **SOFTWARE COMPLETE — BUILD VERIFICATION PENDING** — الكود والاختبارات مكتملة ومُحقَّقة. محاولات بناء APK (4 محاولات عبر جلستين) تجاوزت مرحلة الشبكة/التنزيل وكشفت فجوتي ضبط Gradle حقيقيتين تم إصلاحهما فعلاً (`isCoreLibraryDesugaringEnabled` + `desugar_jdk_libs:2.1.4` لمتطلبات `flutter_local_notifications`)، وتعليقاً واحداً في عملية Gradle (lock/daemon عالق، لا شبكة) تم تطهيره؛ المحاولة الأخيرة بعد كل الإصلاحات أُوقفت بطلب المالك قبل اكتمالها — **لم يُثبَت نجاح بناء كامل حتى الآن**. انظر `docs/reports/fcm/FCM-C-03-report.md` و`fcm-remaining-tasks.md` (FCM-R-01…R-03B). البطاقة `[ ]` حتى اكتمال شرط القبول الخاص بالبناء وموافقة المالك.
 - **الهدف:** تفعيل عميل Firebase Messaging لكل Android flavor مع تنفيذ حقيقي لـ`FcmMessagingPort`.
 - **النطاق:** إضافة حزم FlutterFire · تطبيق google-services Gradle plugin · تنفيذ port بدل `NoOpFcmMessaging` · flavors فقط.
 - **خارج النطاق:** iOS/APNs · تفعيل Backend الحي (إن لم يُفوَّض) · إعادة كتابة HTTP push-tokens.

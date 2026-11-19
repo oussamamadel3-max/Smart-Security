@@ -105,4 +105,4 @@ idf.py build
 
 ## `components/port_esp32/` — موجودة ومبنية فعلياً (ESP-C-03)
 
-تربط `core` بـNVS حقيقي (`nvs_storage_backend.*`)، RNG عتادي حقيقي (`hw_rng.*`)، وGPIO حساس/صفارة باستقصاء دوري عبر `esp_timer` (`sensor_siren_port.*` — قرار مقصود، لا مقاطعة GPIO مباشرة، انظر `docs/reports/esp/ESP-C-03-report.md`). أرقام GPIO عناصر نائبة بانتظار `D-01`. `esp_wifi`/`esp_mqtt` (T-06) **غير مكتوبين بعد** — خارج نطاق `port_esp32` الحالي، ويبقيان عملاً لاحقاً (لا عتاد لاختبار اتصال شبكي حقيقي بأي حال).
+تربط `core` بـNVS حقيقي (`nvs_storage_backend.*`)، RNG عتادي حقيقي (`hw_rng.*`)، وGPIO حساس/صفارة باستقصاء دوري عبر `esp_timer` (`sensor_siren_port.*` — قرار مقصود، لا مقاطعة GPIO مباشرة، انظر `docs/reports/esp/ESP-C-03-report.md`). أرقام GPIO عناصر نائبة بانتظار `D-01`. `esp_wifi`/`esp_mqtt` (T-06) **خارج نطاق `port_esp32`** — منفَّذان تجريبياً في `components/connectivity/` ومربوطان من `app_main` (انظر التقرير النهائي المحدَّث). قبول Wi-Fi/MQTT على عتاد حقيقي ما زال معلّقاً.

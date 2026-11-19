@@ -3,7 +3,7 @@
 ملف مستقل عن `mobile-development-tasks.md` (T-01…T-08).  
 لا يغيّر إجمالي مهام النظام (50). يُغلق كل بند بعد قبول برمجي مؤكد (analyze + test + APK `dev`) دون Firebase/ESP/G1/جهاز.
 
-المرجع البصري: `design/index.html` · المرجع الوظيفي: SRS + عقود Backend المنفَّذة · التدقيق: `docs/reports/mobile/MOBILE-IMPLEMENTATION-AUDIT.md`
+المرجع البصري: `design/index.html` · المرجع الوظيفي: SRS + عقود Backend المنفَّذة · ملخص الإغلاق: `docs/reports/mobile/MOBILE-SOFTWARE-COMPLETION-REPORT.md`
 
 ## MOB-C-01 [Feature][UI] استكمال الواجهات والتنقل وفق التصميم
 

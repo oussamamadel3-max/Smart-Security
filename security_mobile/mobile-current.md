@@ -10,7 +10,7 @@ worktree: C:/Users/Osama/Desktop/SmartSecurity/security_mobile
 - استكمال: `mobile-completion-tasks.md`
 - متبقي خارجي: `mobile-remaining-tasks.md`
 - تقرير: `docs/reports/mobile/MOBILE-SOFTWARE-COMPLETION-REPORT.md`
-- تدقيق سابق: `docs/reports/mobile/MOBILE-IMPLEMENTATION-AUDIT.md`
+- تسلسل العميل: `docs/reports/mobile/MOBILE-FINAL-REPORT.md`
 
 ## تمييز
 
