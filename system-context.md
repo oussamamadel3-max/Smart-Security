@@ -1,8 +1,9 @@
 # السياق العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-18 (إغلاق استكمال الويب WEB-C-06؛ 8/8 و21/50 بلا تغيير؛ الاعتمادات الخارجية معلّقة)  
+آخر تحديث: 2026-11-21 (تثبيت قرارات مالك G0/G1؛ البوابات غير مغلقة؛ 21/50 بلا تغيير)  
 الغرض: صورة واحدة لحالة كل المشاريع وتبعياتها؛ التفاصيل داخل `*-context.md` لكل مجلد.  
-التقدّم الزمني والمؤشرات: [`system-progress.md`](./system-progress.md) · **توضيح التسميات** في أعلى ذلك الملف.
+التقدّم الزمني والمؤشرات: [`system-progress.md`](./system-progress.md) · **توضيح التسميات** في أعلى ذلك الملف.  
+قرارات المالك: [`docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](./docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md) · الاعتماديات: [`docs/gates/G0-G1-remaining-dependencies.md`](./docs/gates/G0-G1-remaining-dependencies.md)
 
 ## صورة النظام
 
@@ -27,21 +28,21 @@
 
 | مجلد | الدور | سياق | تقدّم | مهمة جارية | عدّ |
 |-------|--------|-------|--------|------------|-----|
-| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | **T-05** التالية (T-04 ✓·T-09 ✓ Fake؛ G1/Mosquitto/FCM إنتاجي غير منجزين) | 5/13 |
-| `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | T-01 G0 بانتظار المالك؛ ESP-C 6/6؛ طبقة `connectivity` تجريبية مبنية (100 host tests؛ idf 1018/1018)؛ قبول عتاد/G1 معلّق؛ لا flash | 0/9 |
+| `security_backEnd` | API · Identity · MQTT عمال · FCM خادم · PostgreSQL | [`backend-context`](./security_backEnd/backend-context.md) | [`backend-progress`](./security_backEnd/backend-progress.md) | T-05…T-08/T-10 تنفيذ اختباري بلا `[x]`؛ الإغلاق الإنتاجي بعد G1 حيث يلزم؛ MQTT/FCM إنتاجي معطّل | 5/13 |
+| `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | قرارات مالك مثبّتة؛ **G0 NOT CLOSED**؛ ESP-T-01 بلا إغلاق؛ ESP-C 6/6؛ لا flash | 0/9 |
 | `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي · يستهلك `packages/smart_security_app_core` | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | تسلسل T-01…T-08 مكتمل (عميل؛ ميداني مؤجّل) | 8/8 |
-| `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | لا تالية. T-01…T-08 وWEB-C-01…C-06 مغلقة (عميل/استكمال). الحي وWEB-EXT-08 معلّقان. ليست جاهزية إنتاج | 8/8 |
-| `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | **T-01** مسودة عقد MQTT | 0/6 |
-| `ops` | Compose · بيئات · نشر · نسخ · ميداني | [`ops-context`](./ops/ops-context.md) | [`ops-progress`](./ops/ops-progress.md) | **T-01** Compose محلي | 0/6 |
+| `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | لا تالية. T-01…T-08 وWEB-C مغلقة (عميل). الحي معلّق. ليست جاهزية إنتاج | 8/8 |
+| `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | **INT-T-01** التالية المعتمدة بعد تثبيت القرارات — لم تُبدأ في جولة التوثيق | 0/6 |
+| `ops` | Compose · بيئات · نشر · نسخ · ميداني | [`ops-context`](./ops/ops-context.md) | [`ops-progress`](./ops/ops-progress.md) | **OPS-T-01** بعد INT-T-01 في التسلسل المعتمد — لم تُبدأ | 0/6 |
 
 ## ترتيب التنفيذ المقترح (مرتفع المستوى)
 
 | مرحلة | المعنى | أين تُحرَّك الآن |
 |--------|--------|-------------------|
-| **P0** | قرارات عتاد/عقود/بيئات | `security_esp` T-01 (G0) + `integration` T-01 |
-| **P1** | تجربة عتاد محلية | بعد G0 → `security_esp` T-02… |
-| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ وT-09 ✓ (Fake FCM) · التالي باك `T-05` (بعد G1 للإغلاق الإنتاجي) و`ops` T-01؛ استقبال/نشر Mosquitto الحي وFCM الإنتاجي ينتظران تفويضاً/G1/ops |
-| **P3** | شريحة متكاملة أولى | بعد G1: أوامر/حوادث + ESP MQTT + واجهة قائمة |
+| **P0** | قرارات عتاد/عقود/بيئات | قرارات مالك G0/G1 **مُسجَّلة** 2026-11-21؛ التالي المعتمد: **INT-T-01** ثم **OPS-T-01** (بلا بدء في جولة التوثيق) |
+| **P1** | تجربة عتاد محلية | بعد توفر القطع ورفع تأجيل D-01 → `security_esp` T-02…؛ G0 تبقى مفتوحة حتى الموافقة والأدلة |
+| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ وT-09 ✓ · تقوية مسودة T-05…T-10 بلا تفعيل إنتاج · Compose عبر OPS-T-01 |
+| **P3** | شريحة متكاملة أولى | بعد أدلة G1: أوامر/حوادث + ESP MQTT + واجهات |
 | **P4…P7** | بقية SRS → واجهات → VPS → قبول G2 | حسب المهام في كل `*-context` |
 
 **استقلالية المصادقة:** إنجاز Backend T-02 يسمح لعميل Web/Mobile T-02 بالعمل على عقد HTTP الجاري التحقق منه، دون انتظار MQTT/G1.
@@ -71,26 +72,29 @@ ops T-02…T-06 (نشر/نسخ/ميداني)  +  integration T-05 (G2)
 
 | رمز | الموضوع | المالك الأساسي | الحالة |
 |-----|---------|----------------|--------|
-| D-01 | حساس SW-420 وبطارية 12V مستقلة معروفة؛ طراز ESP32 ودائرة التغذية/قيادة الصفارة | العتاد | النطاق معتمد؛ تفاصيل التنفيذ والفحص الكهربائي معلقة |
-| D-02 | إنذار الاهتزاز فقط | العتاد + صاحب المنتج | النطاق معتمد؛ المعايرة وشرط التحقق العملي معلقان |
-| D-03 | اختبار 30 ثانية، غير متصل 60 دقيقة، انتظار ACK عشر ثوانٍ | العتاد + Backend | المهل المبدئية معتمدة؛ TTL موجب وسعة أحداث ساعة تحتاجان قياساً واعتماداً |
-| D-04 | إعداد Wi-Fi محلياً ومصادقة MQTT | ESP + التشغيل + الأمن | مسار الإعداد معتمد مبدئياً؛ حماية وضع التهيئة وتدوير الاعتماد معلقان |
-| D-05 | وقت موثوق وتسلسل بعد إعادة التشغيل | ESP + Backend | آلية التنفيذ والاختبار معلقة |
-| D-06 | أرشفة واحتفاظ تشغيلي شهر ونسخ يومي مشفر وهدف استعادة 4 ساعات | المنتج + التشغيل | مبادئ معتمدة مبدئياً؛ مدة الاحتفاظ بالنسخ والتحقق من الاستعادة معلقة |
-| D-07 | هوية ASP.NET Core Identity جديدة بمفاتيح UUID | Backend + DB | قرار الهوية معتمد؛ يلزم التحقق من المطابقة التنفيذية قبل إغلاق G0 |
-| D-08 | OTA | عتاد/منتج | مؤجّل للنسخة الأولى الميدانية |
-| D-09 | COMMAND_ACK يحمل الحالة الفعلية كاملة مع resultStateSequence | `integration` + ESP + باك | القرار الوظيفي معتمد؛ تفاصيل العقد واختبارات ترتيب ACK/STATE معلقة ضمن G1 |
-| G1 | اعتماد عقد الرسائل/HTTP | `integration` | لم يبدأ |
-| G2 | قبول إنتاج مشترك؛ اجتياز AC-T-01…AC-T-25 وفق خطة §12 قبل الإطلاق، بلا استثناءات غير معتمدة | `integration` | لم يبدأ |
+| D-01 | قطع إلكترونية نهائية + متطلبات منتج (SW-420 / 12V / إنذار محلي) | العتاد | `DEFERRED — HARDWARE DECISION PENDING` (متطلبات المنتج السابقة نافذة؛ BOM غير معتمد للشراء) |
+| D-02 | قاعدة تحقق حادثة الاهتزاز | العتاد + منتج | `OWNER APPROVED — HARDWARE CALIBRATION PENDING` (أرقام `TEST_ONLY`) |
+| D-03 | 30ث / 60د / ACK 10ث / تغطية ~ساعة | العتاد + Backend | `PROVISIONAL DEVELOPMENT VALUES — PRODUCTION VALIDATION PENDING` (فصل ACK Timeout عن Command TTL) |
+| D-04 | Wi-Fi محلي + هوية MQTT + تدوير اعتماد | ESP + تشغيل + أمن | `OWNER APPROVED — MANUAL ROTATION FOR V1` |
+| S1 | سلامة تلف الإعداد / فقد الطاقة الكامل | منتج + ESP | `OWNER APPROVED — S1 — VALIDATION PENDING` |
+| D-05 | وقت موثوق وتسلسل بعد إعادة التشغيل | ESP + Backend | مبدأ معتمد سابقاً؛ إثبات العتاد معلّق |
+| D-06 | أرشفة واحتفاظ | المنتج + التشغيل | مبادئ معتمدة؛ التحقق التشغيلي معلّق |
+| D-07 | ASP.NET Core Identity / UUID | Backend + DB | معتمد معمارياً؛ بلا إعادة فتح |
+| D-08 | OTA | عتاد/منتج | مؤجّل — بلا إعادة فتح |
+| D-09 | COMMAND_ACK كامل + resultStateSequence | `integration` + ESP + باك | وظيفي معتمد؛ اعتماد G1 التفصيلي معلّق |
+| MQTT/TLS | إنتاج مشفّر فقط؛ محلي معزول مسموح | تشغيل + أمن | `OWNER APPROVED — ISOLATED LOCAL INTEGRATION ALLOWED — PRODUCTION DISABLED` |
+| G1 عقد | القرارات الثمانية 2026-11-16 | `integration` | نافذة؛ **ليست** اجتياز بوابة |
+| G1 بوابة | اعتماد عقد الرسائل/HTTP بأدلة | `integration` | `BLOCKED` |
+| G2 | قبول AC-T-01…AC-T-25 | `integration` | `NOT CLOSED` |
 
 
-**وضع G0:** غير مغلقة. اعتماد قرار على مستوى المنتج لا يعني اكتمال التوثيق أو التحقق على العتاد؛ تبقى متطلبات D-01 إلى D-07 التي تتطلب قياسات/عقوداً/اختبارات مفتوحة حتى دليل إغلاقها.
+**وضع G0:** `NOT CLOSED`. تثبيت قرارات المالك ≠ إغلاق البوابة. التفاصيل: `docs/gates/G0-decision.md`.
 
 ## لقطة حالة سريعة
 
 - Backend: T-01…T-04 و**T-09** مكتملة رسمياً (2026-11-06 أُغلق `BE-T-09` خلف Fake FCM؛ Firebase الحي معطّل). T-06…T-08 تنفيذ اختباري بلا إغلاق رسمي. التالية المؤهلة **T-05** أوامر/Outbox (لم تُبدأ؛ إغلاق إنتاجي بعد G1). **استقبال MQTT الحي واعتماد G1 غير منجزين**؛ AC-T-19/Broker معلقان.
 - Flutter: **MOB-T-01…T-08** مكتملة ضمن نطاق العميل (Autonomous Sequential؛ test 34/34). بطاقات G1/Firebase/soft-AP/جهاز مؤجّلة. **WEB-T-01…T-08** مغلقة ضمن نطاق العميل (لقطة T-08: test 80/80). استكمال **WEB-C-01…C-06** مغلق 2026-11-18 خارج العدّاد (إعادة تحقق C-06: test 121/121) والحكم **SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING**. G1/ACK الحي **BLOCKED**. نقل الملكية الحي **NOT VERIFIED**. FCM الحي **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب والمتصفح ضد Backend **NOT VERIFIED / BLOCKED**. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. لا مهمة ويب تالية. إغلاق البطاقات ليس جاهزية إنتاج.
-- التالي: باك **T-05** · ESP/integration/ops **T-01**. ويب وموبايل: تسلسل العميل مكتمل والفجوات الخارجية موثّقة.
+- التالي المعتمد (بعد جولة التوثيق): **INT-T-01** ثم **OPS-T-01** ثم INT-T-02/T-03 ثم تقوية Backend المستقلة؛ العتاد/الخارجي لاحقاً. ويب وموبايل: عميل مكتمل برمجياً. **ليس PRODUCTION READY.**
 
 ## كيف تُحدَّث ملفات السياق والتقدّم
 

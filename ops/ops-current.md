@@ -1,6 +1,6 @@
 # المهمة الحالية — التشغيل والبيئات
 
-status: pending
+status: pending — sequenced after INT-T-01 per owner 2026-11-21; not started in documentation phase
 task: بيئة تطوير محلية — Docker Compose (PostgreSQL + MQTT)
 srs: P2 من خطة التطوير — يمهّد NFR-002 تشغيلياً
 parent: T-01 / local compose stack

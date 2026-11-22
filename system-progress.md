@@ -1,7 +1,7 @@
 # التقدّم العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-19  
-السياق العام: [`system-context.md`](./system-context.md)
+آخر تحديث: 2026-11-21  
+السياق العام: [`system-context.md`](./system-context.md) · قرارات مالك: [`docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](./docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md)
 
 ## توضيح التسميات (ملفات التخطيط)
 
@@ -33,12 +33,12 @@
 
 | مشروع | ملف التقدّم | مكتمل / الكل | الجارية | النسبة |
 |--------|-------------|--------------|---------|--------|
-| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | التالية T-05 (لم تُبدأ؛ T-09 ✓) | ~38% |
-| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · ESP-C 6/6 · connectivity تجريبي مبني (100 host tests؛ idf build 1018/1018) | T-01 بانتظار المالك؛ قبول العتاد/G1 معلّق | 0% رسمياً |
+| باك إند | [`security_backEnd/backend-progress.md`](./security_backEnd/backend-progress.md) | 5 / 13 | T-05…T-08/T-10 تنفيذ اختباري بلا `[x]`؛ T-09 ✓ | ~38% |
+| ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · ESP-C 6/6 · connectivity مبني | قرارات مالك مثبّتة؛ G0 NOT CLOSED؛ ESP-T-01 بلا إغلاق | 0% رسمياً |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 8 / 8 | تسلسل عميل مكتمل | 100% |
-| ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C مغلق خارج العدّاد. الحي وEXT-08 معلّقان | 8/8 بطاقات؛ ليست جاهزية إنتاج |
-| تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | T-01 | 0% |
-| تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | T-01 | 0% |
+| ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C خارج العدّاد. الحي معلّق | 8/8؛ ليست جاهزية إنتاج |
+| تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | التالية المعتمدة INT-T-01 (لم تُبدأ في جولة التوثيق) | 0% |
+| تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | OPS-T-01 بعد INT-T-01 (لم تبدأ) | 0% |
 | **المجموع** | — | **21 / 50** | — | **42%** |
 
 ## سجل عام (معالم فقط)
@@ -66,12 +66,13 @@
 | 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-08** (مجموعة قبول العميل؛ test 80/80؛ `flutter analyze` نظيف؛ `flutter build web --release`). CSRF/Origin الحي وG1/ACK ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي **BLOCKED / NOT VERIFIED**. لا مهمة ويب تالية داخل التسلسل. التقرير: `docs/reports/web/WEB-FINAL-REPORT.md`. |
 | 2026-11-18 | `admin_web` | إغلاق استكمال **WEB-C-01…C-06** خارج 21/50 (إعادة تحقق C-06: test 121/121). الحكم SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. ليست جاهزية إنتاج. التقرير: `docs/reports/web/completion/WEB-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
 | 2026-11-19 | `security_esp` | إغلاق فجوات **ESP-C-03…C-06** (إعادة فتح ثم إغلاق ذاتي): طبقة `connectivity` + ربط `app_main`؛ host **100/100**؛ `idf.py fullclean/build` **1018/1018**؛ bin `0xea740`. لا flash ولا اختبار شبكة حي. العدّاد الرسمي 0/9 بلا تغيير. التقرير: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
+| 2026-11-21 | حوكمة G0/G1 | تثبيت قرارات المالك (D-01 مؤجّل قطع؛ D-02 قاعدة اهتزاز؛ D-03 قيم مؤقتة؛ D-04 تدوير يدوي v1؛ S1؛ MQTT محلي معزول/إنتاج معطّل؛ قرارات G1 الثمانية نافذة). **لا** إغلاق بوابات/مهام؛ **21/50** بلا تغيير. التقرير: `docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md` · الاعتماديات: `docs/gates/G0-G1-remaining-dependencies.md`. |
 
 ## التالي على مستوى النظام
 
-1. العقود والعتاد أولاً حيث يلزم؛ Backend التالية المؤهلة **T-05** (إغلاقها الإنتاجي بعد G1)؛ ESP **T-01 (G0)** وintegration **T-01** وops **T-01**  
-2. Flutter موبايل والويب: تسلسل العميل مكتمل (MOB-T-01…T-08 وWEB-T-01…T-08)، واستكمال الويب WEB-C-01…C-06 مغلق خارج العدّاد. الميداني وG1 وCSRF/CORS الحي وACK الحي ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي والمطابقة البصرية المتبقية مؤجّلة وموثّقة، وليست جاهزية إنتاج.  
-3. لا أوامر/حوادث إنتاج قبل **G1**؛ استقبال MQTT الحي عبر Mosquitto ما زال غير منجز؛ FCM إنتاجي غير مفعّل
+1. بعد جولة التوثيق: تفويض بدء **INT-T-01** ثم **OPS-T-01** ثم INT-T-02/T-03 ثم تقوية Backend المستقلة — بلا تجاوز شروط بدء/إغلاق أي مهمة.  
+2. G0 تبقى `NOT CLOSED` (ESP-T-01 بلا `APPROVE TASK CLOSURE`)؛ G1 تبقى `BLOCKED`؛ لا أوامر/حوادث إنتاج قبل اعتماد G1.  
+3. Flutter موبايل/ويب: عميل مكتمل برمجياً؛ الاعتمادات الخارجية والعتاد مؤجّلة — **ليست جاهزية إنتاج**.
 
 ## قواعد المزامنة
 

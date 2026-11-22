@@ -1,7 +1,7 @@
 # سياق المشروع — التشغيل والبيئات (`ops`)
 
-آخر تحديث: 2026-11-04  
-السياق العام: [`../system-context.md`](../system-context.md) · التقدّم: [`ops-progress.md`](./ops-progress.md)
+آخر تحديث: 2026-11-21  
+السياق العام: [`../system-context.md`](../system-context.md) · التقدّم: [`ops-progress.md`](./ops-progress.md) · قرارات مالك: [`../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md)
 
 ## الهوية
 
@@ -36,8 +36,9 @@
 ## المهمة الجارية
 
 - المصدر التفصيلي: [`ops-current.md`](./ops-current.md)
-- المهمة: **T-01** — بيئة تطوير محلية (Docker Compose: PostgreSQL + MQTT)
-- الحالة: `pending` — لم تبدأ
+- المهمة: **OPS-T-01** — بيئة تطوير محلية (Docker Compose: PostgreSQL + MQTT)
+- الحالة: `pending` — في التسلسل المعتمد **بعد INT-T-01**؛ لم تبدأ؛ لا يلزم إغلاق G0/G1 لبدء Compose المحلي
+- سياسة MQTT: تكامل محلي معزول مسموح؛ إنتاج معطّل؛ لا نقل شهادات اختبار للإنتاج
 - SRS/خطة: P2 · يمهّد NFR-002 تشغيلياً
 
 ## تتبّع المهام

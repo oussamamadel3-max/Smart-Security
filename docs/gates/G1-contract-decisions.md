@@ -4,6 +4,12 @@
 
 في 2026-11-16 وُافق على القرارات الثمانية بالشروط المكتوبة في طلب التنفيذ. نُفذت البنود المتوافقة على المخطط والخادم. لم يُنشأ firmware ولا Flutter. لم يُغيَّر `appsettings.json`. لم تُغلق مهام ولم تُحدَّث نسب الإنجاز. لم تُضف Migration: أعمدة نهاية الحادثة موجودة مسبقاً.
 
+## إضافة مالك 2026-11-21 — إعادة تأكيد دون اعتماد بوابة
+
+المالك أعاد تأكيد نفاذ القرارات الثمانية أدناه **دون إعادة فتحها**. هذه الإضافة ليست اعتماداً لبوابة G1 ولا اجتيازاً لمعاييرها. المرجع السردي لهذه الجولة: [`../reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](../reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md). سياسة MQTT/TLS الإنتاجية المؤكدة: إنتاج معطّل؛ تكامل محلي معزول مسموح؛ لا استثناء TLS إنتاجي — التفاصيل في [`G1-decision.md`](./G1-decision.md) و[`G0-G1-remaining-dependencies.md`](./G0-G1-remaining-dependencies.md) (`DEP-OPS-01`).
+
+**فجوة تنفيذ مسجّلة (ليست نقص عقد):** عمود `MutedAt` / `muted_at` موجود بلا كاتب في مسار الكتم — تُعالَج لاحقاً ضمن `BE-T-05` / `SS-P4-040` (`DEP-BE-MUTED`). الكتم لا ينهي الحادثة؛ عقد `alarmPhase` يبقى المرجع.
+
 المصادر التي قُرئت: `AGENTS.md`، `docs/SRS_نظام_الأمان_الذكي_v1.0.md`، `docs/خطة_تطوير_نظام_الأمان_الذكي_v1.0.md` §4.1 و§4.4 وقرارات `D-03`/`D-05`، `docs/G1_Contract_Decision_and_Acceptance.md`، `docs/contracts/mqtt/v1/`، `docs/contracts/state-machines.md`، `docs/gates/G1-evidence.md`، `docs/gates/G1-decision.md`، و`AlarmEventIngestService` و`DeviceInboundTelemetryService.ParseCommandAck` و`ApprovedDeviceSettings` وكيان `AlarmEvent`.
 
 ## 1. محسوم في المراجع والكود الحالي

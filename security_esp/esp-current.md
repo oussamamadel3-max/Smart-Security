@@ -1,7 +1,7 @@
 # المهمة الحالية — ESP والعتاد
 
-status: drafted — awaiting owner closure review (G0 excluded from ESP autonomous-closure exception)
-task: قرارات العتاد وبوابة البدء G0 (D-01…D-07)
+status: owner_decisions_recorded — G0 NOT CLOSED (awaiting explicit APPROVE TASK CLOSURE later; G0 excluded from ESP autonomous-closure exception)
+task: قرارات العتاد وبوابة البدء G0 (D-01…D-07 + S1)
 srs: القسم 5.3 ونقاط الحسم — يمهّد FR-019 وما بعده؛ بلا قبول إنذار مغلق قبل D-02
 parent: T-01 / hardware decisions & G0
 branch: (لم تُنشأ بعد)
@@ -46,9 +46,10 @@ worktree: C:/Users/Osama/Desktop/SmartSecurity/security_esp
 
 ## التحقق
 
-- وثيقة القرارات: [`docs/HARDWARE-DECISIONS-D01-D07.md`](./docs/HARDWARE-DECISIONS-D01-D07.md).
-- حالة G0: `G0 NOT CLOSED` — بانتظار مراجعة المالك الصريحة (`APPROVE TASK CLOSURE: ESP-T-01` أو `: G0`)؛ T-01/G0 مستثناة من الإغلاق الذاتي التسلسلي لـESP (`AGENTS.md`، بند 4).
-- لم يُعلَّم `[x]` على بطاقة T-01 في `esp-development-tasks.md` لهذا السبب.
+- وثيقة القرارات: [`docs/HARDWARE-DECISIONS-D01-D07.md`](./docs/HARDWARE-DECISIONS-D01-D07.md) (محدَّثة 2026-11-21 بحالات المالك).
+- تقرير تثبيت القرارات: [`../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md).
+- حالة G0: `G0 NOT CLOSED` — تثبيت القرارات **لا** يغلق البوابة؛ الإغلاق ما زال يتطلب `APPROVE TASK CLOSURE: ESP-T-01` أو `: G0` بعد الاعتماديات العتادية.
+- لم يُعلَّم `[x]` على بطاقة T-01؛ العدّاد الرسمي ESP `0/9` بلا تغيير.
 
 ## ملاحظة — تقدّم متوازٍ على T-02…T-09 في نفس الجولة
 

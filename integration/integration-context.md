@@ -1,7 +1,7 @@
 # سياق المشروع — العقود والتكامل (`integration`)
 
-آخر تحديث: 2026-11-04  
-السياق العام: [`../system-context.md`](../system-context.md) · التقدّم: [`integration-progress.md`](./integration-progress.md)
+آخر تحديث: 2026-11-21  
+السياق العام: [`../system-context.md`](../system-context.md) · التقدّم: [`integration-progress.md`](./integration-progress.md) · قرارات مالك: [`../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](../docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md)
 
 ## الهوية
 
@@ -35,22 +35,22 @@
 ## المهمة الجارية
 
 - المصدر التفصيلي: [`integration-current.md`](./integration-current.md)
-- المهمة: **T-01** — مسودة عقد MQTT وآلات الحالات (مدخل G1)
-- الحالة: `pending` — لم تبدأ
+- المهمة: **INT-T-01** — مسودة عقد MQTT وآلات الحالات (مدخل G1)
+- الحالة: `authorized_next_after_doc_phase` — **لم تبدأ التنفيذ** في جولة تثبيت القرارات؛ Conditionally ready (لا يلزم إغلاق G0/G1 لكتابة المسودة)
 - SRS: مكمل FR-006 FR-021 FR-034 · NFR-002 NFR-004 NFR-005
 
 ## تتبّع المهام
 
 | مهمة | العنوان | الحالة |
 |------|---------|--------|
-| T-01 | مسودة عقد MQTT وآلات الحالات | جارية / لم تبدأ |
+| T-01 | مسودة عقد MQTT وآلات الحالات | التالية المعتمدة — لم تبدأ بعد جولة التوثيق |
 | T-02 | توثيق D-09 المحسوم وأمثلة COMMAND_ACK / STATE | معلّقة |
 | T-03 | عقد HTTP / OpenAPI مشترك | معلّقة |
 | T-04 | بوابة اعتماد G1 | معلّقة |
 | T-05 | مصفوفة قبول وبوابة G2 | معلّقة |
 | T-06 | تعريف إنجاز المهمة (§14) | معلّقة (وثيقة موجودة؛ إغلاق المهمة لاحقاً) |
 
-**ملخص:** 0/6 مكتملة · التالية T-01
+**ملخص:** 0/6 مكتملة · التالية INT-T-01 (بانتظار تفويض بدء التنفيذ) · G1 BLOCKED · قرارات العقد الثمانية نافذة
 
 ## قرار عقد 2026-11-16 — ليس اعتماد G1
 
