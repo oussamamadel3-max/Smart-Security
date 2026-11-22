@@ -1,0 +1,26 @@
+{
+  "environment": "development",
+  "httpsRequiredForCookieChannel": false,
+  "notes": "Cookie Secure flag may be false on plain http://localhost only. Prefer https://localhost when testing Secure cookies.",
+  "corsAllowedOrigins": [
+    "https://localhost:5173",
+    "http://localhost:5173"
+  ],
+  "cookie": {
+    "name": "esp32_rt_dev",
+    "path": "/api/auth",
+    "domain": null,
+    "sameSite": "Lax",
+    "httpOnly": true,
+    "secure": "host-dependent"
+  },
+  "csrf": {
+    "cookieName": "esp32_csrf_dev",
+    "headerName": "X-CSRF-TOKEN",
+    "boundToSession": true
+  },
+  "refreshChannels": {
+    "mobile": "body",
+    "web": "cookie"
+  }
+}

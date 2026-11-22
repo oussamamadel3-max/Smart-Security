@@ -1,6 +1,10 @@
 # MQTT draft v1 — مستخرج من الكود، وليس اعتماد G1
 
-هذه الملفات تصف الشكل الذي يبنيه أو يقبله الكود اليوم. هي **مسودة قابلة للتحقق** وليست عقداً معتمداً. لا تُغلق `INT-T-01` ولا بوابة G1 بوجودها.
+**الوصي:** Integration · **الحالة:** `DRAFT ACCEPTED` (INT-T-01 أُغلقت 2026-11-22)  
+**وثيقة التوحيد:** [`../../../integration/contracts/MQTT-V1-DRAFT.md`](../../../integration/contracts/MQTT-V1-DRAFT.md)  
+**فهرس الملكية:** [`../../../integration/contracts/README.md`](../../../integration/contracts/README.md)
+
+هذه الملفات تصف الشكل الذي يبنيه أو يقبله الكود اليوم. **مسودة مقبولة ضمن INT-T-01** وليست عقداً إنتاجياً معتمداً. بوابة **G1 تبقى BLOCKED** حتى INT-T-04 والأدلة.
 
 ## المصادر
 
@@ -52,4 +56,5 @@
 
 - `samples/accept/` يجب أن تنجح.
 - `samples/reject/` يجب أن تفشل.
-- الاختبار: `Application.Tests/MqttDraftV1SchemaTests.cs`.
+- `samples/ordering/` — أمثلة ترتيب ACK/STATE (INT-T-02)؛ كل ملف يطابق مخطط `state` أو `command-ack`. القواعد: [`../../../integration/contracts/D-09-COMMAND-ACK-AND-STATE.md`](../../../integration/contracts/D-09-COMMAND-ACK-AND-STATE.md).
+- الاختبار: `Application.Tests/MqttDraftV1SchemaTests.cs` (قبول/رفض + `Ordering_Scenario_Messages_Match_Schemas`).

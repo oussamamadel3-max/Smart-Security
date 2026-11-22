@@ -2,7 +2,8 @@
   "openapi": "3.0.4",
   "info": {
     "title": "ESP32 Smart Security API",
-    "version": "v1"
+    "version": "v1",
+    "description": "INT-T-03 consolidated draft of implemented HTTP routes (Swashbuckle export + documentation overlays). NOT G1 approved. POST /api/owner/devices/{deviceId}/commands returns 202 with status PENDING and actualStateChanged=false — HTTP accept is not device execution. Web refresh uses HttpOnly cookie + CSRF; Mobile uses body refreshToken. See integration/contracts/HTTP-V1-DRAFT.md and error-codes.md. Proposed-only items live in openapi.proposed.json."
   },
   "paths": {
     "/api/admin/alerts": {
@@ -30,10 +31,11 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "get": {
         "tags": [
@@ -77,7 +79,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/alerts/{id}": {
@@ -100,7 +103,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/device-faults": {
@@ -145,7 +149,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/audit-logs": {
@@ -257,7 +262,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/auth/login": {
@@ -288,7 +294,9 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented",
+        "security": []
       }
     },
     "/api/auth/refresh": {
@@ -319,7 +327,9 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented",
+        "security": []
       }
     },
     "/api/auth/logout": {
@@ -350,7 +360,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/auth/logout-all": {
@@ -362,7 +373,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/auth/me": {
@@ -374,7 +386,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices": {
@@ -386,7 +399,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "post": {
         "tags": [
@@ -412,10 +426,11 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices/{deviceId}": {
@@ -438,7 +453,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices/{deviceId}/link": {
@@ -477,10 +493,11 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices/{deviceId}/transfer": {
@@ -522,7 +539,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices/{deviceId}/unlink": {
@@ -545,7 +563,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/devices/{deviceId}/archive": {
@@ -568,7 +587,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/health": {
@@ -580,7 +600,9 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented",
+        "security": []
       }
     },
     "/api/owner/devices/{deviceId}/alarm-events": {
@@ -603,7 +625,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/devices/{deviceId}/alarm-events/{alarmEventId}": {
@@ -635,7 +658,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/devices/{deviceId}/commands": {
@@ -658,7 +682,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "post": {
         "tags": [
@@ -696,9 +721,31 @@
         },
         "responses": {
           "202": {
-            "description": "Accepted"
+            "description": "Command request accepted (PENDING). Not device execution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOwnerDeviceCommand"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_UNAUTHENTICATED"
+          },
+          "403": {
+            "description": "AUTH_FORBIDDEN / ownership"
+          },
+          "409": {
+            "description": "Conflict / rejectCode (e.g. COMMAND_CONFLICT, IDEMPOTENCY_CONFLICT)"
+          },
+          "503": {
+            "description": "SERVICE_UNAVAILABLE"
           }
-        }
+        },
+        "x-implementation-status": "implemented",
+        "summary": "Accept owner device command (not execution proof)",
+        "description": "Returns HTTP 202 with ApiResponse data OwnerDeviceCommandResponseDto. status=PENDING and actualStateChanged=false on accept. IdempotencyKey required. Device-confirmed arm/siren only via later ACK/STATE."
       }
     },
     "/api/owner/devices/{deviceId}/commands/{commandId}": {
@@ -730,7 +777,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/devices": {
@@ -742,7 +790,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/devices/{deviceId}": {
@@ -765,7 +814,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/notifications": {
@@ -777,7 +827,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/owner/notifications/{notificationId}": {
@@ -800,7 +851,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/owners": {
@@ -812,7 +864,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "post": {
         "tags": [
@@ -838,10 +891,11 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/owners/{id}": {
@@ -864,7 +918,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "put": {
         "tags": [
@@ -904,7 +959,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/owners/{id}/disable": {
@@ -927,7 +983,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/admin/owners/{id}/archive": {
@@ -950,7 +1007,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/me/push-tokens": {
@@ -962,7 +1020,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "post": {
         "tags": [
@@ -991,7 +1050,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       },
       "delete": {
         "tags": [
@@ -1001,7 +1061,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     },
     "/api/me/push-tokens/{pushTokenId}": {
@@ -1024,7 +1085,8 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "x-implementation-status": "implemented"
       }
     }
   },
@@ -1053,7 +1115,8 @@
         "properties": {
           "type": {
             "type": "string",
-            "nullable": true
+            "nullable": false,
+            "description": "ARM | DISARM | MUTE_ALARM | TEST_SIREN | STOP_TEST"
           },
           "idempotencyKey": {
             "type": "string",
@@ -1065,7 +1128,11 @@
             "nullable": true
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "idempotencyKey"
+        ]
       },
       "CreateOwnerRequestDto": {
         "type": "object",
@@ -1112,7 +1179,8 @@
           },
           "refreshDelivery": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "body (mobile) or cookie (web)"
           }
         },
         "additionalProperties": false
@@ -1172,7 +1240,7 @@
       "RegisterDeviceSettingsDto": {
         "type": "object",
         "properties": {
-          "alarmRule": { },
+          "alarmRule": {},
           "eventBufferCapacity": {
             "type": "integer",
             "format": "int32"
@@ -1227,6 +1295,209 @@
           }
         },
         "additionalProperties": false
+      },
+      "ApiErrorBody": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorBody"
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ]
+      },
+      "OwnerDeviceCommandResponseDto": {
+        "type": "object",
+        "description": "Owner command acceptance/status payload. actualStateChanged is false on HTTP accept.",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "PENDING on accept; later terminal states from device lifecycle"
+          },
+          "commandSequence": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ownershipVersion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "observedStateSequence": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "targetAlarmEventUid": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "rejectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultStateSequence": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acknowledgedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reconciledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "idempotentReplay": {
+            "type": "boolean"
+          },
+          "actualStateChanged": {
+            "type": "boolean",
+            "description": "Always false on HTTP accept"
+          },
+          "confirmedArmState": {
+            "type": "string",
+            "nullable": true
+          },
+          "confirmedSirenState": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "commandId",
+          "deviceId",
+          "type",
+          "status",
+          "actualStateChanged",
+          "idempotentReplay"
+        ]
+      },
+      "ApiResponseOwnerDeviceCommand": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/OwnerDeviceCommandResponseDto"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "MeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AuthTokensResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer"
+          },
+          "refreshToken": {
+            "type": "string",
+            "nullable": true,
+            "description": "Present for body channel; null for cookie channel"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MeResponseDto"
+          },
+          "refreshChannel": {
+            "type": "string",
+            "description": "body | cookie"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "refreshChannel",
+          "user"
+        ]
       }
     },
     "securitySchemes": {
@@ -1240,7 +1511,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }

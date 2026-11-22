@@ -28,6 +28,11 @@ public sealed class MqttDraftV1SchemaTests
     public static IEnumerable<object[]> RejectSamples() =>
         Directory.GetFiles(RejectDirectory(), "*.json").Select(path => new object[] { path });
 
+    public static IEnumerable<object[]> OrderingSamples() =>
+        Directory.Exists(OrderingDirectory())
+            ? Directory.GetFiles(OrderingDirectory(), "*.json").Select(path => new object[] { path })
+            : Array.Empty<object[]>();
+
     [Fact]
     public void Implemented_Message_Types_Have_Schemas_And_Accept_Samples()
     {
@@ -64,9 +69,36 @@ public sealed class MqttDraftV1SchemaTests
         Assert.False(result.IsValid, samplePath);
     }
 
-    private static EvaluationResults Evaluate(string samplePath)
+    /// <summary>
+    /// INT-T-02 ordering scenario messages must remain schema-valid (not G1 adoption).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(OrderingSamples))]
+    public void Ordering_Scenario_Messages_Match_Schemas(string samplePath)
     {
-        var key = SchemaKey(samplePath);
+        var key = OrderingSchemaKey(samplePath);
+        var result = EvaluateWithKey(samplePath, key);
+        Assert.True(result.IsValid, samplePath + " failed schema evaluation as " + key);
+    }
+
+    [Fact]
+    public void Ordering_Scenarios_Cover_Ack_And_State_Pairs()
+    {
+        var files = Directory.GetFiles(OrderingDirectory(), "*.json")
+            .Select(Path.GetFileName)
+            .ToArray();
+        Assert.Contains(files, f => f!.StartsWith("S01-state-", StringComparison.Ordinal));
+        Assert.Contains(files, f => f!.StartsWith("S01-ack-", StringComparison.Ordinal));
+        Assert.Contains(files, f => f!.StartsWith("S04-ack-stale-", StringComparison.Ordinal));
+        Assert.Contains(files, f => f!.StartsWith("S08-ack-rejected-", StringComparison.Ordinal));
+        Assert.True(files.Length >= 12, "Expected INT-T-02 ordering sample set (>=12 JSON files).");
+    }
+
+    private static EvaluationResults Evaluate(string samplePath) =>
+        EvaluateWithKey(samplePath, SchemaKey(samplePath));
+
+    private static EvaluationResults EvaluateWithKey(string samplePath, string key)
+    {
         var schemaPath = Path.Combine(SchemaDirectory(), key + ".schema.json");
         Assert.True(File.Exists(schemaPath), schemaPath);
         var schema = JsonSchema.FromFile(schemaPath);
@@ -81,6 +113,16 @@ public sealed class MqttDraftV1SchemaTests
         return split < 0 ? stem : stem[..split];
     }
 
+    private static string OrderingSchemaKey(string samplePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(samplePath).ToLowerInvariant();
+        if (name.Contains("-ack-", StringComparison.Ordinal) || name.Contains("ack-", StringComparison.Ordinal))
+            return "command-ack";
+        if (name.Contains("-state-", StringComparison.Ordinal) || name.Contains("state-", StringComparison.Ordinal))
+            return "state";
+        throw new InvalidOperationException("Cannot map ordering sample to schema: " + samplePath);
+    }
+
     private static string SchemaDirectory() =>
         Path.Combine(RepoRoot(), "docs", "contracts", "mqtt", "v1");
 
@@ -89,6 +131,9 @@ public sealed class MqttDraftV1SchemaTests
 
     private static string RejectDirectory() =>
         Path.Combine(SchemaDirectory(), "samples", "reject");
+
+    private static string OrderingDirectory() =>
+        Path.Combine(SchemaDirectory(), "samples", "ordering");
 
     private static string RepoRoot()
     {

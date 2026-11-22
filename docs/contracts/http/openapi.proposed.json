@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "ESP32 Smart Security API — PROPOSED only",
+    "version": "v1-proposed",
+    "description": "INT-T-03: symbolic proposed HTTP items NOT implemented as standalone routes. Do NOT treat as production contract. Implemented surface remains openapi.json."
+  },
+  "paths": {
+    "/api/owner/devices/{deviceId}/faults/{faultId}": {
+      "get": {
+        "x-implementation-status": "proposed",
+        "x-proposal-id": "PROP-HTTP-02",
+        "summary": "Owner-facing device fault detail (not a separate route today; fault may embed in device detail)",
+        "tags": ["Proposed"],
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "faultId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proposed only — not served by current Backend"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProposedOwnerPagedList": {
+        "x-implementation-status": "proposed",
+        "x-proposal-id": "PROP-HTTP-01",
+        "type": "object",
+        "description": "Optional future paging wrapper for owner device/command/alarm lists (admin already uses PagedResultDto).",
+        "properties": {
+          "items": { "type": "array", "items": { "type": "object" } },
+          "page": { "type": "integer" },
+          "pageSize": { "type": "integer" },
+          "totalCount": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

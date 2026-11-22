@@ -1,0 +1,25 @@
+{
+  "environment": "production",
+  "httpsRequiredForCookieChannel": true,
+  "notes": "Production web security template. Do not copy development or staging origins. MQTT production remains DISABLED until explicit authorization.",
+  "corsAllowedOrigins": [
+    "https://app.example.invalid"
+  ],
+  "cookie": {
+    "name": "esp32_rt",
+    "path": "/api/auth",
+    "domain": "app.example.invalid",
+    "sameSite": "None",
+    "httpOnly": true,
+    "secure": true
+  },
+  "csrf": {
+    "cookieName": "esp32_csrf",
+    "headerName": "X-CSRF-TOKEN",
+    "boundToSession": true
+  },
+  "refreshChannels": {
+    "mobile": "body",
+    "web": "cookie"
+  }
+}

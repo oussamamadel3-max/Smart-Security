@@ -1,0 +1,13 @@
+{
+  "response": {
+    "status": 401,
+    "body": {
+      "success": false,
+      "error": {
+        "code": "AUTH_UNAUTHENTICATED",
+        "message": "يجب تسجيل الدخول للمتابعة.",
+        "meta": {}
+      }
+    }
+  }
+}

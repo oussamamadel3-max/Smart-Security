@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "deviceId": "11111111-1111-4111-8111-111111111111",
+  "messageId": "a8888888-8888-4888-8888-888888888801",
+  "messageType": "COMMAND_ACK",
+  "bootId": "boot-s08",
+  "commandId": "22222222-2222-4222-8222-222222222222",
+  "ownershipVersion": 1,
+  "status": "REJECTED",
+  "resultStateSequence": 13,
+  "armState": "ARMED",
+  "sirenState": "ALARM",
+  "healthState": "HEALTHY",
+  "currentAlarmEventUid": "33333333-3333-4333-8333-333333333333",
+  "confirmedOwnershipVersion": 1,
+  "clockTrusted": false,
+  "rejectCode": "CLOCK_UNTRUSTED"
+}

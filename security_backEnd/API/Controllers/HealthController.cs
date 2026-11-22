@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 /// <summary>
-/// Liveness probe for the API host.
+/// Legacy JSON liveness under /api/health (ApiResponse envelope).
+/// Canonical ops probes: GET /health/live (process) and GET /health/ready (PostgreSQL).
 /// </summary>
 [ApiController]
 [Route("api")]

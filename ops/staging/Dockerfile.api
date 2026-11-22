@@ -1,0 +1,35 @@
+# OPS-T-03 — API image for staging-like labs. No secrets baked in.
+# Build context: repository root (SmartSecurity/).
+# Example:
+#   docker build -f ops/staging/Dockerfile.api -t smartsecurity-api:local-stg .
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY security_backEnd/Backend.sln ./
+COPY security_backEnd/API/API.csproj API/
+COPY security_backEnd/Application/Application.csproj Application/
+COPY security_backEnd/Domain/Domain.csproj Domain/
+COPY security_backEnd/Infrastructure/Infrastructure.csproj Infrastructure/
+RUN dotnet restore API/API.csproj
+COPY security_backEnd/ ./
+# Image SDK is the build authority. Repo global.json pins a host SDK that may differ.
+RUN rm -f global.json \
+    && dotnet publish API/API.csproj -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends wget \
+    && rm -rf /var/lib/apt/lists/*
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Staging
+# MQTT/Outbox/FCM must stay off unless explicitly overridden at runtime after approval.
+ENV Mqtt__Inbound__Enabled=false
+ENV Mqtt__Outbound__LivePublishEnabled=false
+ENV Mqtt__Outbox__Enabled=false
+ENV Fcm__Enabled=false
+EXPOSE 8080
+COPY --from=build /app/publish .
+USER $APP_UID
+ENTRYPOINT ["dotnet", "API.dll"]

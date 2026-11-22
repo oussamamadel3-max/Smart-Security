@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "deviceId": "11111111-1111-4111-8111-111111111111",
+  "messageId": "a3333333-3333-4333-8333-333333333301",
+  "messageType": "COMMAND_ACK",
+  "bootId": "boot-s03",
+  "commandId": "22222222-2222-4222-8222-222222222222",
+  "ownershipVersion": 1,
+  "status": "EXECUTED",
+  "resultStateSequence": 5,
+  "armState": "ARMED",
+  "sirenState": "OFF",
+  "healthState": "UNKNOWN",
+  "currentAlarmEventUid": null,
+  "clockTrusted": false
+}

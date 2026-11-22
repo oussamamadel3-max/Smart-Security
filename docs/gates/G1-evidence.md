@@ -6,9 +6,117 @@
 
 سجل 2026-11-15 يبقى أدناه كدليل PostgreSQL والمخططات. نتائج الوسيط في ذلك اليوم أُعيد فحصها في 2026-11-16؛ البنود في «معيار G1» تعكس آخر نتيجة.
 
+## إضافة 2026-11-22 — OPS-T-03 تحقق محلي تكميلي (ليس إغلاق G1 ولا Staging عام)
+
+- Forwarded Headers: ثقة صريحة فقط (`ForwardedHeadersSetup`). المختبر يفعّل شبكات Docker الخاصة ويبقي API بلا منفذ مضيف. Caddy يحذف ترويسات العميل.
+- `Test-StagingLocalRuntime.ps1`: بناء `smartsecurity-api:local-stg`، `/health/live` و`/health/ready` عبر HTTPS محلي (Caddy `local_certs`)، إعادة تشغيل، بقاء `smartsecurity_stg_pgdata` بعد `down` بلا `-v`. **PASS**.
+- هذا الدليل = **Local Runtime Validated**. H1–H7 على مضيف عام تبقى **NOT VERIFIED**.
+- **G1 يبقى BLOCKED.** MQTT إنتاجي DISABLED. OPS-T-03 **لم تُغلق**.
+- التقرير التكميلي: `docs/reports/ops/OPS-T-03-supplement-report.md`.
+
+## إضافة 2026-11-22 — OPS-T-03 قوالب Staging + probes (ليس إغلاق G1)
+
+- قوالب: `ops/staging/` (compose 127.0.0.1، Caddy، Dockerfile.api، ROLLBACK، HTTPS-ACCEPTANCE H1–H7)
+- Backend: `GET /health/live` · `GET /health/ready` (DbContext) · Forwarded Headers
+- تحقق:
+
+```text
+cd ops
+.\scripts\Test-OpsT03.ps1
+# PASS — config/network/https-checklist/secrets/dev health
+
+dotnet test API.IntegrationTests --filter FullyQualifiedName~HealthProbeTests
+# Passed 3
+```
+
+- HTTPS حي على مضيف staging عام: **NOT VERIFIED** (DEP-OPS-03 / DEP-WEB-01).
+- **G1 يبقى BLOCKED.** MQTT إنتاجي DISABLED. OPS-T-03 **لم تُغلق** بعد.
+- التقرير: `docs/reports/ops/OPS-T-03-report.md`.
+
+## إضافة 2026-11-22 — OPS-T-02 عزل بيئات/أسرار (ليس إغلاق G1)
+
+- وثائق/قوالب: `ops/environments/` · `ops/docs/ENV-ISOLATION.md` · `SECRETS-AND-JWT.md` · `WEB-SECURITY-PER-ENV.md`
+- تحقق محلي:
+
+```text
+cd ops
+.\scripts\Test-OpsT02.ps1
+```
+
+- نتيجة الجلسة: Secrets hygiene PASS · Env templates PASS · Compose healthy · ACL **9/9 PASS**.
+- HTTPS حي على staging: **NOT RUN** (لا مضيف — مجهَّز لـ OPS-T-03).
+- **G1 يبقى BLOCKED.** MQTT إنتاجي DISABLED.
+- **OPS-T-02 أُغلقت رسمياً** 2026-11-22 (`OPS-T-02-CLOSURE-REPORT.md`) — عزل بيئات/أسرار فقط؛ HTTPS الحي مؤجّل لـ OPS-T-03؛ لا يغيّر حكم G1 أعلاه.
+
+## إضافة 2026-11-22 — INT-T-03 مسودة HTTP / OpenAPI (ليس إغلاق G1)
+
+- وثائق: `integration/contracts/HTTP-V1-DRAFT.md` · `HTTP-ENDPOINT-INVENTORY.md` · `INT-T-03-CROSS-PROJECT-REVIEW.md`
+- OpenAPI: `docs/contracts/http/openapi.json` (منفَّذ + overlays) · `openapi.proposed.json` · `error-codes.md` · `samples/`
+- اختبارات (من `security_backEnd/` وFlutter):
+
+```text
+dotnet test Application.Tests/Application.Tests.csproj --filter "FullyQualifiedName~HttpOpenApiDraftTests|FullyQualifiedName~OwnerDeviceCommandAcceptanceRulesTests|FullyQualifiedName~OwnerDeviceCommandRulesTests"
+# Failed 0, Passed 33, Skipped 0
+
+dotnet test API.IntegrationTests/API.IntegrationTests.csproj --filter "FullyQualifiedName~OwnerDeviceCommandHttpTests|FullyQualifiedName~OpenApiDraftExportTests"
+# Failed 0, Passed 9, Skipped 0  (PostgreSQL عبر OPS-T-01 / ESP32_SECURITY_TEST_DB)
+
+flutter test test/features/devices/device_command_entity_test.dart test/features/devices/command_poll_policy_test.dart
+# (security_mobile) All tests passed — 5
+
+flutter test test/features/devices/device_detail_command_guards_test.dart
+# (admin_web) All tests passed — 6
+```
+
+- **G1 يبقى BLOCKED.** لا تفعيل MQTT إنتاجي.
+- **INT-T-03 أُغلقت رسمياً** 2026-11-22 (`INT-T-03-CLOSURE-REPORT.md`) — قبول مسودة HTTP/OpenAPI فقط؛ لا يغيّر حكم G1 أعلاه. مخططات استجابة OpenAPI **ليست** مكتملة لجميع DTOs (فجوة موثّقة PROP-HTTP-03).
+
+## إضافة 2026-11-22 — INT-T-02 توثيق D-09 / ترتيب ACK·STATE (ليس إغلاق G1)
+
+- وثيقة: `integration/contracts/D-09-COMMAND-ACK-AND-STATE.md`
+- عينات ترتيب: `docs/contracts/mqtt/v1/samples/ordering/` (12 JSON)
+- مراجعة توافق: `integration/contracts/INT-T-02-CROSS-PROJECT-REVIEW.md`
+- اختبارات مخطط (من `security_backEnd/`):
+
+```text
+dotnet test Application.Tests/Application.Tests.csproj --nologo --filter FullyQualifiedName~MqttDraftV1SchemaTests
+```
+
+- النتيجة: **Failed 0, Passed 45, Skipped 0** (exit 0) — يشمل عينات القبول/الرفض + ترتيب INT-T-02.
+- انحدار وارد ACK/STATE على PostgreSQL:
+
+```text
+dotnet test API.IntegrationTests/API.IntegrationTests.csproj --nologo --filter "FullyQualifiedName~DeviceInboundTelemetryTests|FullyQualifiedName~DeviceCommandLifecycleTests.Late_Ack"
+```
+
+- النتيجة: **Failed 0, Passed 10, Skipped 0** (exit 0).
+- **G1 يبقى BLOCKED.** لا تفعيل MQTT إنتاجي.
+- **INT-T-02 أُغلقت رسمياً** 2026-11-22 (`INT-T-02-CLOSURE-REPORT.md`) — قبول توثيق D-09 فقط؛ لا يغيّر حكم G1 أعلاه.
+
+## إضافة 2026-11-22 — OPS-T-01 مكدس محلي (ليس إغلاق G1)
+
+- مسار: `ops/docker-compose.yml` — `postgres:16-alpine` + `eclipse-mosquitto:2` (broker **2.1.2**).
+- منافذ مضيف معزولة: `127.0.0.1:5433` (Postgres)، `127.0.0.1:1883` / `8883` (MQTT نصي/TLS).
+- ACL محلي بهويات `srv`/`deva`/`devb` وفق مسودة MQTT v1؛ مصفوفة OPS: **9/9 PASS** عبر عميل paho MQTT v5 (PUBACK 135 للرفض؛ 0/16 للسماح).
+- TLS اختبار محلي (طبقة أ/ب): CA موثوق ينجح؛ بدون CA / CA غير موثوق يُرفض. **لا** نسخ إلى إنتاج؛ `appsettings.json` يبقى `UseTls=false` وLivePublish/Inbound/Outbox معطّلة.
+- الحكم على البوابة: **G1 يبقى BLOCKED**. نجاح OPS-T-01 ≠ G1-03 مغلق ≠ PRODUCTION READY.
+- **OPS-T-01 أُغلقت رسمياً** 2026-11-22 (`OPS-T-01-CLOSURE-REPORT.md`) — الإغلاق تشغيلي محلي فقط؛ لا يغيّر حكم G1 أعلاه.
+
 ## إضافة 2026-11-21 — قرارات مالك بلا أدلة تشغيل جديدة
 
 تثبيت قرارات المالك في [`../reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](../reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md) **لم يُشغّل** اختبارات جديدة ولم يغيّر نتائج G1-01…G1-11 أدناه. قرارات العقد المعتمدة ≠ اجتياز البوابة. كتالوج الاعتماديات: [`G0-G1-remaining-dependencies.md`](./G0-G1-remaining-dependencies.md).
+
+## إضافة 2026-11-21 — INT-T-01 (مسودة Integration)
+
+- ملكية المسودة: `integration/contracts/MQTT-V1-DRAFT.md` (DRAFT/UNDER REVIEW).
+- إعادة تشغيل تحقق المخططات من `security_backEnd/`:
+
+```text
+dotnet test Application.Tests/Application.Tests.csproj --nologo --filter FullyQualifiedName~MqttDraftV1SchemaTests
+```
+
+- النتيجة الفعلية (تنفيذ INT-T-01): **Failed 0, Passed 32, Skipped 0, Total 32, Duration 2 s** (exit 0).
+- إعادة تشغيل 2026-11-22 (مراجعة ما قبل الإغلاق): **Failed 0, Passed 32, Skipped 0, Total 32, Duration ~911 ms** (exit 0). يثبت توافق العينات مع مخططات المسودة فقط — **ليس** اعتماد G1 ولا إغلاق INT-T-01. التفاصيل: `docs/reports/integration/INT-T-01-CLOSURE-REVIEW.md`.
 
 ## إضافة 2026-11-16 — مسار Backend وMosquitto
 

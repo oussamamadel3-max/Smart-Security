@@ -1,0 +1,22 @@
+# OPS-T-01 local ACL — MQTT v1 draft topics (INT-T-01).
+# Usernames only. Passwords live in gitignored mosquitto/passwd.
+# Pattern mirrors security_backEnd/API.IntegrationTests/mosquitto/acl.
+# This is NOT a G1 production approval and NOT a production broker policy.
+
+# Backend / server test identity: publish commands, subscribe telemetry
+user srv
+topic readwrite devices/#
+
+# Device A — own channels only
+user deva
+topic write devices/11111111-1111-4111-8111-111111111111/state
+topic write devices/11111111-1111-4111-8111-111111111111/events
+topic write devices/11111111-1111-4111-8111-111111111111/acks
+topic read devices/11111111-1111-4111-8111-111111111111/commands
+
+# Device B — own channels only
+user devb
+topic write devices/22222222-2222-4222-8222-222222222222/state
+topic write devices/22222222-2222-4222-8222-222222222222/events
+topic write devices/22222222-2222-4222-8222-222222222222/acks
+topic read devices/22222222-2222-4222-8222-222222222222/commands

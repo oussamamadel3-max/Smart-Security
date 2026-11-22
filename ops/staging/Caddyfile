@@ -1,0 +1,23 @@
+# OPS-T-03 — reverse proxy (local lab). Host publish is 127.0.0.1 only.
+# local_certs issues an internal CA certificate (lab only, not a public staging cert).
+# bind 0.0.0.0 lets Docker forward the published loopback port into the container.
+
+{
+	local_certs
+	auto_https disable_redirects
+}
+
+localhost:8443, 127.0.0.1:8443 {
+	bind 0.0.0.0
+	encode gzip
+	reverse_proxy api:8080 {
+		header_up -X-Forwarded-For
+		header_up -X-Forwarded-Proto
+		header_up -X-Forwarded-Host
+	}
+}
+
+http://localhost:8080, http://127.0.0.1:8080 {
+	bind 0.0.0.0
+	redir https://127.0.0.1:8443{uri} permanent
+}

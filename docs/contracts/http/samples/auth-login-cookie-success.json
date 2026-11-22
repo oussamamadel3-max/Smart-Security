@@ -1,0 +1,37 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/auth/login",
+    "body": {
+      "userName": "owner.demo",
+      "password": "REDACTED",
+      "refreshDelivery": "cookie"
+    }
+  },
+  "response": {
+    "status": 200,
+    "setCookie": [
+      "refreshToken=HttpOnly; Secure; SameSite=... (REDACTED)",
+      "csrf=... (REDACTED)"
+    ],
+    "body": {
+      "success": true,
+      "message": null,
+      "data": {
+        "accessToken": "REDACTED.jwt",
+        "tokenType": "Bearer",
+        "expiresIn": 900,
+        "refreshToken": null,
+        "refreshChannel": "cookie",
+        "user": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "userName": "owner.demo",
+          "fullName": "مالك تجريبي",
+          "email": null
+        }
+      },
+      "meta": {}
+    }
+  },
+  "notes": "Web channel. Refresh stays in HttpOnly cookie; CSRF required on refresh."
+}

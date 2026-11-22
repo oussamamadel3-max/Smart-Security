@@ -1,0 +1,34 @@
+{
+  "environment": "staging",
+  "httpsRequiredForCookieChannel": true,
+  "notes": "Real HTTPS staging verification is prepared here and executed under OPS-T-03 when a host exists. Do not reuse development origins.",
+  "corsAllowedOrigins": [
+    "https://staging.example.invalid"
+  ],
+  "cookie": {
+    "name": "esp32_rt_stg",
+    "path": "/api/auth",
+    "domain": "staging.example.invalid",
+    "sameSite": "None",
+    "httpOnly": true,
+    "secure": true
+  },
+  "csrf": {
+    "cookieName": "esp32_csrf_stg",
+    "headerName": "X-CSRF-TOKEN",
+    "boundToSession": true
+  },
+  "refreshChannels": {
+    "mobile": "body",
+    "web": "cookie"
+  },
+  "httpsAcceptanceChecklist": [
+    "Secure + HttpOnly + Path on refresh cookie",
+    "SameSite policy matches cross-site needs",
+    "Origin allowlist accepts staging web only",
+    "CSRF header required on cookie refresh",
+    "Rejected Origin returns AUTH_ORIGIN_REJECTED",
+    "CORS credentials only for allowlisted Origin",
+    "No tokens in container logs"
+  ]
+}

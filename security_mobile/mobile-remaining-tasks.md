@@ -16,6 +16,8 @@
 | R-09 | Server-side Pagination للسجلات | تعديل Backend/عقد — ممنوع في هذه المرحلة | query params معتمدة في integration |
 | R-10 | تشغيل APK على جهاز/محاكٍ | ممنوع في قيود الاستكمال | إقلاع يدوي موثّق |
 | R-11 | مطابقة بصرية pixel-perfect لـ `design/index.html` | لا لقطات مقارنة في البيئة | screenshots جنب-إلى-جنب عند توفر بيئة عرض |
+| R-12 | عرض `healthCode` / تأهيل pill الحماية عند `FAULT`/`UNKNOWN` (S1 UX) | فجوة مراجعة INT-T-01 Flutter — غير مانعة لمسودة العقد؛ `DEP-SAFE-01` / عميل | قاعدة عرض مركّبة + اختبار؛ لا ادّعاء «محمي مؤكد» عند عطل/عدم يقين |
+| R-13 | اختبارات حراس الأوامر (parity مع Web `device_detail_command_guards_test`) | فجوة مراجعة INT-T-01 — منطق موجود؛ تغطية Mobile أضعف من Web | نقل/مكافئ اختبارات الحراس على `security_mobile` |
 
 ## تمييز صريح
 

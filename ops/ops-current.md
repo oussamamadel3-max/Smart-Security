@@ -1,46 +1,43 @@
 # المهمة الحالية — التشغيل والبيئات
 
-status: pending — sequenced after INT-T-01 per owner 2026-11-21; not started in documentation phase
-task: بيئة تطوير محلية — Docker Compose (PostgreSQL + MQTT)
-srs: P2 من خطة التطوير — يمهّد NFR-002 تشغيلياً
-parent: T-01 / local compose stack
-branch: (لم تُنشأ بعد)
+status: implementation_complete_external_validation_pending — awaiting APPROVE TASK CLOSURE: OPS-T-03
+task: نشر الخدمات والصحة (OPS-02 / OPS-04 / OPS-05)
+srs: خطة OPS-02…05
+parent: T-03 / deploy & health
+branch: (محلي)
 worktree: C:/Users/Osama/Desktop/SmartSecurity/ops
 
-## السياق
+## المطلوب (من البطاقة)
 
-- مجلد `ops` لملكية البيئات والنشر والنسخ والمراقبة والتجربة الميدانية.
-- يسرع عمل الباك إند والـESP دون انتظار VPS كامل.
-- بلا أسرار إنتاج في الملفات الملتزم بها؛ الأمثلة المحلية تستخدم قيماً تجريبية وآلية تحميل secrets غير متعقبة.
-- Backend `T-02` يوفّر API مصادقة حالياً؛ إعداد TLS/ACL الاختباري لا يعني إغلاق G1 أو جاهزية بيئة production.
+1. OPS-02 نشر معزول + MQTT/TLS (قالب؛ MQTT API معطّل)
+2. OPS-04 بدء/إيقاف وصحة ومساحات دائمة
+3. OPS-05 إصدار محدد + خطة رجوع
+4. اختبار HTTPS حقيقي Cookie/CSRF/CORS
+5. probes منفصلة live/ready + فشل DB
+6. قائمة خدمات مقيّدة بما نُفّذ
 
-## المطلوب
+## تم (برمجي/محلي — بلا إغلاق)
 
-1. `docker-compose` (أو مكافئ) لـ PostgreSQL ووسيط MQTT.
-2. إعداد TLS تجريبي وACL نموذجي لعزل قنوات الأجهزة في اتجاهي **النشر والاشتراك**، ومراجعة سياسة المصادقة على broker.
-3. مساحات تخزين دائمة وHealthcheck أساسي.
-4. README تشغيل/إيقاف للمطوّرين.
-5. اختبار بعميلَي MQTT تجريبيَّين مستقلين A وB: السماح لكل جهاز بالاتصال والنشر/الاشتراك في قنواته المسموحة فقط، ورفض النشر والاشتراك في قنوات الآخر، ورفض عميل مجهول أو اعتماد غير صالح.
-6. توثيق اسم وإصدار صورة PostgreSQL ووسيط MQTT، وطريقة حفظ الـvolumes وتنظيف بيانات الاختبار، مع منع أي اتصال ببيئة الإنتاج.
+- [x] `/health/live` و`/health/ready` + Forwarded Headers
+- [x] `ops/staging/*` Compose/Dockerfile/Caddy/ROLLBACK/HTTPS-ACCEPTANCE
+- [x] سكربتات `Test-OpsT03*.ps1`
+- [x] HealthProbeTests 3/3 + ForwardedHeadersSetupTests 3/3
+- [x] بناء صورة `smartsecurity-api:local-stg` وإقلاع المكدس محلياً (`Test-StagingLocalRuntime.ps1` PASS)
+- [ ] HTTPS حي H1–H7 على مضيف staging عام — **NOT VERIFIED** (DEP-OPS-03 / DEP-WEB-01)
 
-## غير مطلوب في هذه المهمة
+## تحقق
 
-- نشر staging/production (`T-03`).
-- نسخ احتياطي إنتاجي (`T-04`).
-- تجربة ميدانية (`T-06`).
+- [x] `Test-OpsT03.ps1` PASS (config/network/https-checklist/secrets)
+- [x] Local Runtime: live/ready عبر HTTPS مختبر، restart، volume بعد `down` بلا `-v`
+- [ ] `APPROVE TASK CLOSURE: OPS-T-03` — معلّق؛ المالك لم يوافق على الإغلاق
+- الحكم: **IMPLEMENTATION COMPLETE — EXTERNAL VALIDATION PENDING**
+- **SOFTWARE COMPLETE ≠ STAGING VALIDATED**
 
-## القبول
+## ثوابت
 
-- المكدس يقلع محلياً من التعليمات المكتوبة.
-- لا كلمات مرور/مفاتيح إنتاج في Git.
-- تقرير تحقق ACL يبين لكل حالة (هوية A/B/مجهولة، عملية publish/subscribe، القناة، متوقع allow/deny، فعلي) مع عدم تسجيل كلمات المرور.
-- إثبات healthchecks ودوام البيانات المحلية بعد restart، والتمييز بين فحص حياة الحاوية وجاهزية الخدمة إن استُخدما.
-- بطاقات T-01 في `ops-development-tasks.md` تُعلَّم عند الإغلاق.
+G0=`NOT CLOSED` · G1=`BLOCKED` · G2=`NOT CLOSED` · MQTT Production=`DISABLED`  
+Official **26/50** · Ops **2/6** حتى موافقة الإغلاق.
 
-## تم
+## التالي بعد الإغلاق فقط
 
-_(فارغ — المهمة لم تبدأ)_
-
-## التحقق
-
-_(بعد التنفيذ: أوامر التشغيل ونتيجة عزل القنوات)_
+- OPS-T-04 و/أو INT-T-04 بتفويض START — **لا بدء تلقائي**.

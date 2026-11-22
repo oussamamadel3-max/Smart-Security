@@ -1,0 +1,17 @@
+.git
+**/.git
+**/.vs
+**/.idea
+**/.dart_tool
+**/bin
+**/obj
+**/build
+**/node_modules
+**/*.user
+**/TestResults
+ops/tls
+ops/logs
+ops/tmp
+docs/reports
+*.md
+!ops/staging/Dockerfile.api

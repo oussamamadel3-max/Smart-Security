@@ -1,6 +1,6 @@
 # التقدّم العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-21  
+آخر تحديث: 2026-11-22  
 السياق العام: [`system-context.md`](./system-context.md) · قرارات مالك: [`docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](./docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md)
 
 ## توضيح التسميات (ملفات التخطيط)
@@ -37,9 +37,9 @@
 | ESP | [`security_esp/esp-progress.md`](./security_esp/esp-progress.md) | 0 / 9 (`[x]`) · ESP-C 6/6 · connectivity مبني | قرارات مالك مثبّتة؛ G0 NOT CLOSED؛ ESP-T-01 بلا إغلاق | 0% رسمياً |
 | موبايل | [`security_mobile/mobile-progress.md`](./security_mobile/mobile-progress.md) | 8 / 8 | تسلسل عميل مكتمل | 100% |
 | ويب | [`admin_web/web-progress.md`](./admin_web/web-progress.md) | 8 / 8 | لا تالية. استكمال WEB-C خارج العدّاد. الحي معلّق | 8/8؛ ليست جاهزية إنتاج |
-| تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | 0 / 6 | التالية المعتمدة INT-T-01 (لم تُبدأ في جولة التوثيق) | 0% |
-| تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | 0 / 6 | OPS-T-01 بعد INT-T-01 (لم تبدأ) | 0% |
-| **المجموع** | — | **21 / 50** | — | **42%** |
+| تكامل | [`integration/integration-progress.md`](./integration/integration-progress.md) | **3 / 6** | INT-T-01 ✓؛ INT-T-02 ✓؛ INT-T-03 ✓؛ التالية INT-T-04 بانتظار START | 50% |
+| تشغيل | [`ops/ops-progress.md`](./ops/ops-progress.md) | **2 / 6** | OPS-T-01 ✓؛ OPS-T-02 ✓؛ OPS-T-03 برمجي — EXTERNAL VALIDATION PENDING | ~33% |
+| **المجموع** | — | **26 / 50** | — | **52%** |
 
 ## سجل عام (معالم فقط)
 
@@ -66,13 +66,27 @@
 | 2026-11-18 | `admin_web` | إغلاق تلقائي **WEB-T-08** (مجموعة قبول العميل؛ test 80/80؛ `flutter analyze` نظيف؛ `flutter build web --release`). CSRF/Origin الحي وG1/ACK ونقل الملكية الحي وFCM الحي والمتصفح ضد Backend حقيقي **BLOCKED / NOT VERIFIED**. لا مهمة ويب تالية داخل التسلسل. التقرير: `docs/reports/web/WEB-FINAL-REPORT.md`. |
 | 2026-11-18 | `admin_web` | إغلاق استكمال **WEB-C-01…C-06** خارج 21/50 (إعادة تحقق C-06: test 121/121). الحكم SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. ليست جاهزية إنتاج. التقرير: `docs/reports/web/completion/WEB-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
 | 2026-11-19 | `security_esp` | إغلاق فجوات **ESP-C-03…C-06** (إعادة فتح ثم إغلاق ذاتي): طبقة `connectivity` + ربط `app_main`؛ host **100/100**؛ `idf.py fullclean/build` **1018/1018**؛ bin `0xea740`. لا flash ولا اختبار شبكة حي. العدّاد الرسمي 0/9 بلا تغيير. التقرير: `docs/reports/esp/ESP-SOFTWARE-COMPLETION-FINAL-REPORT.md`. |
-| 2026-11-21 | حوكمة G0/G1 | تثبيت قرارات المالك (D-01 مؤجّل قطع؛ D-02 قاعدة اهتزاز؛ D-03 قيم مؤقتة؛ D-04 تدوير يدوي v1؛ S1؛ MQTT محلي معزول/إنتاج معطّل؛ قرارات G1 الثمانية نافذة). **لا** إغلاق بوابات/مهام؛ **21/50** بلا تغيير. التقرير: `docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md` · الاعتماديات: `docs/gates/G0-G1-remaining-dependencies.md`. |
+| 2026-11-21 | حوكمة G0/G1 | تثبيت قرارات المالك. **لا** إغلاق بوابات/مهام؛ **21/50** بلا تغيير. التقرير: `G0-G1-OWNER-DECISIONS-REPORT.md`. |
+| 2026-11-21 | `integration` | تنفيذ **INT-T-01** توثيقياً. تقرير: `INT-T-01-report.md`. |
+| 2026-11-22 | `integration` | مراجعة تقنية مشتركة INT-T-01 (AI). المحضر: `INT-T-01-CROSS-PROJECT-REVIEW.md`. |
+| 2026-11-22 | `integration` | **إغلاق INT-T-01** بموافقة المالك — مسودة MQTT v1 مقبولة؛ G1 تبقى BLOCKED. العدّاد **22/50** · Integration **1/6**. التقرير: `docs/reports/integration/INT-T-01-CLOSURE-REPORT.md`. |
+| 2026-11-22 | `ops` | تنفيذ **OPS-T-01** (Compose+Postgres+Mosquitto ACL/TLS محلي؛ ACL 9/9). التقرير: `docs/reports/ops/OPS-T-01-report.md`. |
+| 2026-11-22 | `ops` | **إغلاق OPS-T-01** بموافقة صريحة بعد تحقق التقرير. العدّاد **23/50** · Ops **1/6**. الإغلاق: `docs/reports/ops/OPS-T-01-CLOSURE-REPORT.md`. |
+| 2026-11-22 | `integration` | تنفيذ **INT-T-02** (D-09 + ordering samples؛ schema 45؛ وارد 10). التقرير: `docs/reports/integration/INT-T-02-report.md`. |
+| 2026-11-22 | `integration` | **إغلاق INT-T-02** بموافقة المالك — D-09 DOCUMENTATION ACCEPTED؛ G1 تبقى BLOCKED. العدّاد **24/50** · Integration **2/6**. الإغلاق: `docs/reports/integration/INT-T-02-CLOSURE-REPORT.md`. |
+| 2026-11-22 | `integration` | تنفيذ **INT-T-03** (HTTP/OpenAPI draft). التقرير: `docs/reports/integration/INT-T-03-report.md`. |
+| 2026-11-22 | `integration` | **إغلاق INT-T-03** بموافقة المالك — HTTP V1 DRAFT ACCEPTED؛ G1 تبقى BLOCKED. العدّاد **25/50** · Integration **3/6**. الإغلاق: `docs/reports/integration/INT-T-03-CLOSURE-REPORT.md`. |
+| 2026-11-22 | `ops` | تنفيذ **OPS-T-02** (عزل بيئات/أسرار + سكربتات نظافة؛ ACL 9/9 انحدار). التقرير: `docs/reports/ops/OPS-T-02-report.md`. |
+| 2026-11-22 | `ops` | **إغلاق OPS-T-02** بموافقة المالك — ENVIRONMENT ISOLATION ACCEPTED؛ G1 تبقى BLOCKED. العدّاد **26/50** · Ops **2/6**. الإغلاق: `docs/reports/ops/OPS-T-02-CLOSURE-REPORT.md`. |
+
+| 2026-11-22 | `ops` | تنفيذ **OPS-T-03** (قوالب staging + live/ready + Test-OpsT03؛ HTTPS حي NOT VERIFIED). بانتظار موافقة الإغلاق. العدّاد **26/50** · Ops **2/6** بلا تغيير. التقرير: `docs/reports/ops/OPS-T-03-report.md`. |
+| 2026-11-22 | `ops` | تحقق تكميلي OPS-T-03: Forwarded Headers مقيّدة، صورة API محلية، صحة/إعادة تشغيل/volume، HTTPS مختبر فقط. H1–H7 العام ما زال معلّقاً. العدّاد **26/50** · Ops **2/6**. التقرير: `docs/reports/ops/OPS-T-03-supplement-report.md`. |
 
 ## التالي على مستوى النظام
 
-1. بعد جولة التوثيق: تفويض بدء **INT-T-01** ثم **OPS-T-01** ثم INT-T-02/T-03 ثم تقوية Backend المستقلة — بلا تجاوز شروط بدء/إغلاق أي مهمة.  
-2. G0 تبقى `NOT CLOSED` (ESP-T-01 بلا `APPROVE TASK CLOSURE`)؛ G1 تبقى `BLOCKED`؛ لا أوامر/حوادث إنتاج قبل اعتماد G1.  
-3. Flutter موبايل/ويب: عميل مكتمل برمجياً؛ الاعتمادات الخارجية والعتاد مؤجّلة — **ليست جاهزية إنتاج**.
+1. موافقة **`APPROVE TASK CLOSURE: OPS-T-03`** و/أو تفويض **`START TASK: INT-T-04`** — لا بدء OPS-T-04 تلقائياً.  
+2. G0=`NOT CLOSED` · G1=`BLOCKED` · لا أوامر/حوادث إنتاج قبل اعتماد G1.  
+3. Flutter: عميل مكتمل برمجياً؛ فجوات S1/`healthCode`/حراس Mobile موثّقة في المتبقي — **ليست جاهزية إنتاج**.
 
 ## قواعد المزامنة
 
@@ -81,4 +95,4 @@
 3. حدّث `*-context.md` إن تغيّر المانع أو الهوية أو التبعية — لا تكرر السجل الزمني هناك.
 4. علّم `[x]` في `*-development-tasks.md` فقط بعد القبول وتعريف الإنجاز.
 
-**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 5/13 للباك بعد إغلاق T-09، و8/8 للموبايل (نطاق عميل)، و8/8 للويب (نطاق عميل؛ المجموع 21/50). T-05 لم تُبدأ رسمياً كمسار أوامر في الباك؛ T-06…T-08 في الباك تنفيذ اختباري بلا `[x]`؛ Mosquitto الحي وG1 وFCM الإنتاجي غير منجزين. تشغيل تطبيق الموبايل على جهاز/محاكٍ وiOS مؤجّلان وليسا ضمن دليل الإغلاق. تحقق ACK الحي لأوامر الويب **BLOCKED**. نقل ملكية حي لسجل ويب T-05 **NOT VERIFIED**. تسليم FCM الحي لتنبيه الويب T-07 **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب الحي والمتصفح التفاعلي ضد Backend حقيقي **NOT VERIFIED / BLOCKED**. إغلاق بطاقات الويب 8/8 لا يعني جاهزية إنتاج 100%.
+**حدود الدليل:** عدّ المهام المكتملة على مستوى T-xx = 5/13 للباك، و8/8 للموبايل، و8/8 للويب، و**3/6 للتكامل بعد INT-T-01+INT-T-02+INT-T-03**، و**2/6 للتشغيل بعد OPS-T-01+OPS-T-02** (المجموع **26/50**). مسودات MQTT/D-09/HTTP ومكدس Compose وعزل البيئات لا تغلق G1 ولا تفعّل MQTT الإنتاجي. قوالب staging/prod ≠ نشر فعلي. مخططات استجابة OpenAPI ليست مكتملة لجميع DTOs. T-05 لم تُبدأ رسمياً كمسار أوامر في الباك؛ T-06…T-08 في الباك تنفيذ اختباري بلا `[x]`؛ G1 وFCM الإنتاجي غير منجزين. تشغيل تطبيق الموبايل على جهاز/محاكٍ وiOS مؤجّلان وليسا ضمن دليل الإغلاق. تحقق ACK الحي لأوامر الويب **BLOCKED**. نقل ملكية حي لسجل ويب T-05 **NOT VERIFIED**. تسليم FCM الحي لتنبيه الويب T-07 **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب الحي والمتصفح التفاعلي ضد Backend حقيقي **NOT VERIFIED / BLOCKED**. إغلاق بطاقات الويب 8/8 لا يعني جاهزية إنتاج 100%.

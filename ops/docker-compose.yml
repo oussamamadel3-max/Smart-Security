@@ -1,0 +1,88 @@
+# OPS-T-01 — Smart Security local infrastructure (dev only)
+# Project: smartsecurity · Network: smartsecurity_local
+# Bind published ports to 127.0.0.1 only. No production publish paths.
+# Secrets: load from `.env` (see `.env.example`). Do not put real secrets in this file.
+
+name: smartsecurity
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:16-alpine}
+    container_name: smartsecurity-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-esp32_security_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-ss_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in ops/.env}
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - smartsecurity_pgdata:/var/lib/postgresql/data
+    networks:
+      - smartsecurity_local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  mosquitto:
+    image: ${MOSQUITTO_IMAGE:-eclipse-mosquitto:2}
+    container_name: smartsecurity-mosquitto
+    restart: unless-stopped
+    # Copy bind-mounted config/certs into writable paths owned by mosquitto (uid 1883).
+    # Avoids Windows/WSL bind-mount permission failures on password_file.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mkdir -p /mosquitto/config /mosquitto/certs /mosquitto/data
+        cp /ro/config/mosquitto.conf /mosquitto/config/mosquitto.conf
+        cp /ro/config/acl /mosquitto/config/acl
+        cp /ro/config/passwd /mosquitto/config/passwd
+        cp /ro/certs/ca.crt /mosquitto/certs/ca.crt
+        cp /ro/certs/server.crt /mosquitto/certs/server.crt
+        cp /ro/certs/server.key /mosquitto/certs/server.key
+        chown -R mosquitto:mosquitto /mosquitto/config /mosquitto/certs /mosquitto/data
+        chmod 0700 /mosquitto/config/passwd /mosquitto/config/acl
+        chmod 600 /mosquitto/certs/server.key
+        exec mosquitto -c /mosquitto/config/mosquitto.conf
+    user: "0:0"
+    ports:
+      - "127.0.0.1:${MQTT_HOST_PORT:-1883}:1883"
+      - "127.0.0.1:${MQTT_TLS_HOST_PORT:-8883}:8883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/ro/config/mosquitto.conf:ro
+      - ./mosquitto/acl:/ro/config/acl:ro
+      - ./mosquitto/passwd:/ro/config/passwd:ro
+      - ./tls/server/ca.crt:/ro/certs/ca.crt:ro
+      - ./tls/server/server.crt:/ro/certs/server.crt:ro
+      - ./tls/server/server.key:/ro/certs/server.key:ro
+      - smartsecurity_mosquitto_data:/mosquitto/data
+    networks:
+      - smartsecurity_local
+    healthcheck:
+      # srv may publish under devices/# (ACL). Password from container env (local .env only).
+      test:
+        [
+          "CMD-SHELL",
+          "mosquitto_pub -h 127.0.0.1 -p 1883 -u srv -P \"$$MQTT_SRV_PASSWORD\" -t devices/00000000-0000-4000-8000-000000000000/state -m health -q 0 >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    environment:
+      MQTT_SRV_PASSWORD: ${MQTT_SRV_PASSWORD:?Set MQTT_SRV_PASSWORD in ops/.env}
+
+networks:
+  smartsecurity_local:
+    name: smartsecurity_local
+    driver: bridge
+
+volumes:
+  smartsecurity_pgdata:
+    name: smartsecurity_pgdata
+  smartsecurity_mosquitto_data:
+    name: smartsecurity_mosquitto_data

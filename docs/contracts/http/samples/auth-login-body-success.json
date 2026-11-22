@@ -1,0 +1,33 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/auth/login",
+    "body": {
+      "userName": "owner.demo",
+      "password": "REDACTED",
+      "refreshDelivery": "body"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": null,
+      "data": {
+        "accessToken": "REDACTED.jwt",
+        "tokenType": "Bearer",
+        "expiresIn": 900,
+        "refreshToken": "REDACTED.refresh",
+        "refreshChannel": "body",
+        "user": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "userName": "owner.demo",
+          "fullName": "مالك تجريبي",
+          "email": null
+        }
+      },
+      "meta": {}
+    }
+  },
+  "notes": "Mobile channel. Never log access/refresh tokens. MeResponseDto has no roles array."
+}

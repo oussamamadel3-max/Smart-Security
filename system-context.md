@@ -1,6 +1,6 @@
 # السياق العام — نظام الأمان الذكي
 
-آخر تحديث: 2026-11-21 (تثبيت قرارات مالك G0/G1؛ البوابات غير مغلقة؛ 21/50 بلا تغيير)  
+آخر تحديث: 2026-11-22 (تنفيذ OPS-T-03 بانتظار إغلاق؛ 26/50 ثابت؛ Ops 2/6؛ G1 BLOCKED)  
 الغرض: صورة واحدة لحالة كل المشاريع وتبعياتها؛ التفاصيل داخل `*-context.md` لكل مجلد.  
 التقدّم الزمني والمؤشرات: [`system-progress.md`](./system-progress.md) · **توضيح التسميات** في أعلى ذلك الملف.  
 قرارات المالك: [`docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md`](./docs/reports/integration/G0-G1-OWNER-DECISIONS-REPORT.md) · الاعتماديات: [`docs/gates/G0-G1-remaining-dependencies.md`](./docs/gates/G0-G1-remaining-dependencies.md)
@@ -32,16 +32,16 @@
 | `security_esp` | عتاد + firmware + إنذار محلي | [`esp-context`](./security_esp/esp-context.md) | [`esp-progress`](./security_esp/esp-progress.md) | قرارات مالك مثبّتة؛ **G0 NOT CLOSED**؛ ESP-T-01 بلا إغلاق؛ ESP-C 6/6؛ لا flash | 0/9 |
 | `security_mobile` | تطبيق مالك Flutter + FCM عميل + Wi-Fi محلي · يستهلك `packages/smart_security_app_core` | [`mobile-context`](./security_mobile/mobile-context.md) | [`mobile-progress`](./security_mobile/mobile-progress.md) | تسلسل T-01…T-08 مكتمل (عميل؛ ميداني مؤجّل) | 8/8 |
 | `admin_web` | Flutter Web مالك + أدمن · يستهلك نفس الحزمة المشتركة | [`web-context`](./admin_web/web-context.md) | [`web-progress`](./admin_web/web-progress.md) | لا تالية. T-01…T-08 وWEB-C مغلقة (عميل). الحي معلّق. ليست جاهزية إنتاج | 8/8 |
-| `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | **INT-T-01** التالية المعتمدة بعد تثبيت القرارات — لم تُبدأ في جولة التوثيق | 0/6 |
-| `ops` | Compose · بيئات · نشر · نسخ · ميداني | [`ops-context`](./ops/ops-context.md) | [`ops-progress`](./ops/ops-progress.md) | **OPS-T-01** بعد INT-T-01 في التسلسل المعتمد — لم تُبدأ | 0/6 |
+| `integration` | عقود MQTT/HTTP · G1/G2 · مصفوفة قبول | [`integration-context`](./integration/integration-context.md) | [`integration-progress`](./integration/integration-progress.md) | INT-T-01 ✓؛ INT-T-02 ✓؛ INT-T-03 ✓؛ التالية **INT-T-04** بانتظار START | **3/6** |
+| `ops` | Compose · بيئات · نشر · نسخ · ميداني | [`ops-context`](./ops/ops-context.md) | [`ops-progress`](./ops/ops-progress.md) | OPS-T-01 ✓؛ OPS-T-02 ✓؛ **OPS-T-03** برمجي مكتمل — EXTERNAL VALIDATION PENDING | **2/6** |
 
 ## ترتيب التنفيذ المقترح (مرتفع المستوى)
 
 | مرحلة | المعنى | أين تُحرَّك الآن |
 |--------|--------|-------------------|
-| **P0** | قرارات عتاد/عقود/بيئات | قرارات مالك G0/G1 **مُسجَّلة** 2026-11-21؛ التالي المعتمد: **INT-T-01** ثم **OPS-T-01** (بلا بدء في جولة التوثيق) |
+| **P0** | قرارات عتاد/عقود/بيئات | قرارات مالك مُسجَّلة؛ **INT-T-01/T-02/T-03 مغلقتان**؛ **OPS-T-01/T-02 مغلقتان**؛ **OPS-T-03** بانتظار موافقة إغلاق (HTTPS حي معلّق)؛ INT-T-04 بتفويض START |
 | **P1** | تجربة عتاد محلية | بعد توفر القطع ورفع تأجيل D-01 → `security_esp` T-02…؛ G0 تبقى مفتوحة حتى الموافقة والأدلة |
-| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ وT-09 ✓ · تقوية مسودة T-05…T-10 بلا تفعيل إنتاج · Compose عبر OPS-T-01 |
+| **P2** | DB + MQTT محلي | باك T-01…T-04 ✓ وT-09 ✓ · تقوية مسودة T-05…T-10 بلا تفعيل إنتاج · Compose OPS-T-01 ✓ |
 | **P3** | شريحة متكاملة أولى | بعد أدلة G1: أوامر/حوادث + ESP MQTT + واجهات |
 | **P4…P7** | بقية SRS → واجهات → VPS → قبول G2 | حسب المهام في كل `*-context` |
 
@@ -94,7 +94,7 @@ ops T-02…T-06 (نشر/نسخ/ميداني)  +  integration T-05 (G2)
 
 - Backend: T-01…T-04 و**T-09** مكتملة رسمياً (2026-11-06 أُغلق `BE-T-09` خلف Fake FCM؛ Firebase الحي معطّل). T-06…T-08 تنفيذ اختباري بلا إغلاق رسمي. التالية المؤهلة **T-05** أوامر/Outbox (لم تُبدأ؛ إغلاق إنتاجي بعد G1). **استقبال MQTT الحي واعتماد G1 غير منجزين**؛ AC-T-19/Broker معلقان.
 - Flutter: **MOB-T-01…T-08** مكتملة ضمن نطاق العميل (Autonomous Sequential؛ test 34/34). بطاقات G1/Firebase/soft-AP/جهاز مؤجّلة. **WEB-T-01…T-08** مغلقة ضمن نطاق العميل (لقطة T-08: test 80/80). استكمال **WEB-C-01…C-06** مغلق 2026-11-18 خارج العدّاد (إعادة تحقق C-06: test 121/121) والحكم **SOFTWARE COMPLETE — EXTERNAL DEPENDENCIES PENDING**. G1/ACK الحي **BLOCKED**. نقل الملكية الحي **NOT VERIFIED**. FCM الحي **NOT VERIFIED / BLOCKED**. CSRF/Origin/CORS الحي وتعطيل الحساب والمتصفح ضد Backend **NOT VERIFIED / BLOCKED**. `WEB-EXT-09` مكتمل محليًا. `WEB-EXT-08` PARTIAL. لا مهمة ويب تالية. إغلاق البطاقات ليس جاهزية إنتاج.
-- التالي المعتمد (بعد جولة التوثيق): **INT-T-01** ثم **OPS-T-01** ثم INT-T-02/T-03 ثم تقوية Backend المستقلة؛ العتاد/الخارجي لاحقاً. ويب وموبايل: عميل مكتمل برمجياً. **ليس PRODUCTION READY.**
+- التالي: موافقة **`APPROVE TASK CLOSURE: OPS-T-03`** و/أو تفويض **`START TASK: INT-T-04`**؛ العتاد/الخارجي لاحقاً. **ليس PRODUCTION READY.** G1=`BLOCKED`. قوالب staging ≠ Staging Runtime Validated.
 
 ## كيف تُحدَّث ملفات السياق والتقدّم
 
